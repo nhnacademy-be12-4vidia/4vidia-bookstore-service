@@ -4,14 +4,14 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://s4.java21.net:13306/project_be12_team4
+    url: jdbc:mysql://10.116.64.14:13306/nhn_academy_13
 
-    username: project_be12_team4
-    password: Qrs8WavVsmxaQd[O
+    username: nhn_academy_13
+    password: EOcV(baaATcu3lny
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
@@ -25,12 +25,9 @@ spring:
 
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-
   elasticsearch:
     uris: s4.java21.net:9200
     username: elastic
     password: nhnacademy123!
     socket-timeout: 30s
     connection-timeout: 5s
-
-
