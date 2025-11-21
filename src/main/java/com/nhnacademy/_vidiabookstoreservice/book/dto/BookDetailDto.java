@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BookDetailResponse {
+public class BookDetailDto {
 
     @NotNull(message = "id는 필수입니다.")
     private Long id;
