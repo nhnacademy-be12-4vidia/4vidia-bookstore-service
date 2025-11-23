@@ -1,10 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.book.service;
 
-import com.nhnacademy._vidiabookstoreservice.book.dto.BookCreateRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.BookIdDto;
+import com.nhnacademy._vidiabookstoreservice.book.dto.request.BookCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.response.BookIdResponse;
 
 public interface BookService {
 
-    BookIdDto createBook(BookCreateRequest request);
+    BookIdResponse createBook(BookCreateRequest request);
 
 }
