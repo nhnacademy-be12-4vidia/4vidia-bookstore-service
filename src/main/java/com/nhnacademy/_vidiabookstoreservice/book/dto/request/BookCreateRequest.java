@@ -54,6 +54,7 @@ public class BookCreateRequest {
             .publishedDate(this.publishedDate)
             .priceStandard(this.priceStandard)
             .volumeNumber(parseIntegerSafe(this.volumeNumber))
+            .imageUrl(this.imageUrl)
             .build();
     }
 
