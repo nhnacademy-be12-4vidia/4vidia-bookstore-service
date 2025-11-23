@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,12 +24,11 @@ public class BookAuthor {
     @Column(name = "book_author_id")
     Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
-    @Setter
     Book book;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     @Setter
     Author author;
@@ -42,6 +42,13 @@ public class BookAuthor {
         this.book = book;
         this.author = author;
         this.role = role;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
+        if (!book.getBookAuthors().contains(this)) {
+            book.getBookAuthors().add(this);
+        }
     }
 
 }
