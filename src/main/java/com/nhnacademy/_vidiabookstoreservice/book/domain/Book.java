@@ -89,15 +89,18 @@ public class Book extends BaseEntity {
     private Integer volumeNumber;
 
     @Builder
-    public Book(String isbn, String title, String description,
+    public Book(String isbn, String title, String description, String subtitle,String index,
         Publisher publisher,
-        LocalDate publishedDate, Integer priceStandard, Integer priceSales) {
+        LocalDate publishedDate, Integer priceStandard, Integer priceSales, Integer volumeNumber) {
         this.isbn = isbn;
         this.title = title;
+        this.subtitle = subtitle;
+        this.index = index;
         this.description = description;
         this.publisher = publisher;
         this.publishedDate = publishedDate;
         this.priceSales = priceSales;
+        this.volumeNumber = volumeNumber;
     }
 
 

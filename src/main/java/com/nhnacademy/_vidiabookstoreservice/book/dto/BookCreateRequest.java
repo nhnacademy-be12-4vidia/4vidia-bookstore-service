@@ -1,5 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.dto;
 
+import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import lombok.Getter;
@@ -35,8 +37,32 @@ public class BookCreateRequest {
     @NotBlank(message = "저자는 필수입니다.")
     private String authorList;
 
+    private String contributorList;
+
     private String volumeNumber;
 
     private String imageUrl;
+
+    public Book toEntity(Publisher publisher) {
+        return Book.builder()
+            .isbn(this.isbn)
+            .title(this.title)
+            .subtitle(this.subtitle)
+            .index(this.index)
+            .description(this.description)
+            .publisher(publisher)
+            .publishedDate(this.publishedDate)
+            .priceStandard(this.priceStandard)
+            .volumeNumber(parseIntegerSafe(this.volumeNumber))
+            .build();
+    }
+
+    private Integer parseIntegerSafe(String value) {
+        try {
+            return value != null ? Integer.parseInt(value) : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 
 }
