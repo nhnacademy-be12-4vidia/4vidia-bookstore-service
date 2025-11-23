@@ -1,10 +1,10 @@
-package com.nhnacademy._vidiabookstoreservice.book.dto;
+package com.nhnacademy._vidiabookstoreservice.book.dto.response;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class BookListDto {
+public class BookListResponse {
     @NotBlank(message = "제목은 필수입니다.")
     private String title;
 

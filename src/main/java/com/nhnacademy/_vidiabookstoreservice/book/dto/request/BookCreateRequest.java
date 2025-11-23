@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.dto;
+package com.nhnacademy._vidiabookstoreservice.book.dto.request;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
@@ -22,7 +22,7 @@ public class BookCreateRequest {
 
     private String subtitle;
 
-    private String index;
+    private String bookIndex;
 
     private String description;
 
@@ -48,7 +48,7 @@ public class BookCreateRequest {
             .isbn(this.isbn)
             .title(this.title)
             .subtitle(this.subtitle)
-            .index(this.index)
+            .bookIndex(this.bookIndex)
             .description(this.description)
             .publisher(publisher)
             .publishedDate(this.publishedDate)
