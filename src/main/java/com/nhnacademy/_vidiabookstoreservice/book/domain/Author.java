@@ -20,11 +20,11 @@ public class Author extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "author_id")
-    Long id;
+    private Long id;
 
     @Column(name = "author_name")
     @Setter
-    String name;
+    private String name;
 
     @Builder
     public Author(String name) {
