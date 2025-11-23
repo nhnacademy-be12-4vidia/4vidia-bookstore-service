@@ -4,8 +4,8 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
-import com.nhnacademy._vidiabookstoreservice.book.dto.BookCreateRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.BookIdDto;
+import com.nhnacademy._vidiabookstoreservice.book.dto.request.BookCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.response.BookIdResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.AuthorRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookAuthorRepository;
@@ -14,6 +14,7 @@ import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +26,8 @@ public class BookServiceImpl implements BookService {
     private final PublisherRepository publisherRepository;
 
     @Override
-    public BookIdDto createBook(BookCreateRequest request) {
+    @Transactional
+    public BookIdResponse createBook(BookCreateRequest request) {
 
         if (bookRepository.existsByIsbn(request.getIsbn())) {
             throw new BookAlreadyExistsException(
@@ -38,7 +40,7 @@ public class BookServiceImpl implements BookService {
         saveAuthors(savedBook, request.getAuthorList(), "지은이");
         saveAuthors(savedBook, request.getContributorList(), "기여자/역자");
 
-        BookIdDto bookIdDto = new BookIdDto();
+        BookIdResponse bookIdDto = new BookIdResponse();
         bookIdDto.setId(savedBook.getId());
         return bookIdDto;
     }
