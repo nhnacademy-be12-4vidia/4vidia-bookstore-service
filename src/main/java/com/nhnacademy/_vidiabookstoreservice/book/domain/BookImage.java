@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.domain;
 
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,43 +13,37 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BookAuthor {
+public class BookImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "book_author_id")
-    Long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id")
-    Book book;
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id")
-    @Setter
-    Author author;
+    @Column(name = "image_url", nullable = false)
+    private String imageUrl;
 
-    @Column(name = "author_role")
-    @Setter
-    String role;
+    @Column(name = "image_type", nullable = false)
+    private ImageType imageType;
 
     @Builder
-    public BookAuthor(Book book, Author author, String role) {
+    public BookImage(Book book, String imageUrl, ImageType imageType) {
         this.book = book;
-        this.author = author;
-        this.role = role;
+        this.imageUrl = imageUrl;
+        this.imageType = imageType;
     }
 
     public void setBook(Book book) {
         this.book = book;
-        if (!book.getBookAuthors().contains(this)) {
-            book.getBookAuthors().add(this);
+        if (!book.getBookImageList().contains(this)) {
+            book.getBookImageList().add(this);
         }
     }
-
 }
