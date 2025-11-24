@@ -1,13 +1,10 @@
-package com.nhnacademy._vidiabookstoreservice.book.dto.response;
+package com.nhnacademy._vidiabookstoreservice.book.dto.book.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
