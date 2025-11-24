@@ -1,9 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.book.domain;
 
+import com.nhnacademy._vidiabookstoreservice.book.domain.converters.StockStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,8 +13,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +31,10 @@ import lombok.ToString;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "book", indexes = {
+    @Index(name = "idx_book_publisher_id", columnList = "publisher_id"),
+    @Index(name = "idx_book_category_id", columnList = "category_id")
+})
 @ToString(exclude = {"bookAuthors", "bookImageList"})
 public class Book extends BaseEntity {
 
@@ -55,6 +64,7 @@ public class Book extends BaseEntity {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "publisher_id")
     @Setter
     private Publisher publisher;
 
@@ -65,7 +75,7 @@ public class Book extends BaseEntity {
     @Setter
     private LocalDate publishedDate;
 
-    @Column(name = "paged_count")
+    @Column(name = "page_count")
     @Setter
     private Integer pageCount;
 
@@ -87,14 +97,14 @@ public class Book extends BaseEntity {
 
     @Column(name = "stock_status")
     @Setter
-    @Enumerated(value = EnumType.STRING)
+    @Convert(converter = StockStatusConverter.class)
     private StockStatus stockStatus = StockStatus.OUT_OF_STOCK;
 
     @Column(name = "packaging_available")
     @Setter
     private boolean packagingAvailable = false;
 
-    @Column(name = "volume_number", columnDefinition = "INT DEFAULT 0")
+    @Column(name = "volume_number", columnDefinition = "INT DEFAULT 1")
     @Setter
     private Integer volumeNumber;
 
@@ -102,29 +112,31 @@ public class Book extends BaseEntity {
     @Setter
     private List<BookImage> bookImageList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     @Setter
-    private List<Category> categories = new ArrayList<>();
+    private Category category;
 
     @Builder
     public Book(String isbn, String title, String description, String subtitle,String bookIndex,
         Publisher publisher,
-        LocalDate publishedDate, Integer priceStandard, Integer priceSales, Integer volumeNumber, String imageUrl) {
+        LocalDate publishedDate, Integer priceStandard, Integer priceSales, Integer volumeNumber, Category category,
+        Integer stock, Integer pageCount, String language, boolean packagingAvailable) {
         this.isbn = isbn;
         this.title = title;
         this.subtitle = subtitle;
         this.bookIndex = bookIndex;
         this.description = description;
         this.publisher = publisher;
+        this.category = category;
         this.publishedDate = publishedDate;
         this.priceStandard = priceStandard;
         this.priceSales = priceSales;
         this.volumeNumber = volumeNumber;
-        BookImage bookImage = BookImage.builder()
-            .imageUrl(imageUrl)
-            .imageType(ImageType.THUMBNAIL)
-            .build();
-        this.bookImageList.add(bookImage);
+        this.stock = stock;
+        this.pageCount = pageCount;
+        this.language = language;
+        this.packagingAvailable = packagingAvailable;
     }
 
     public void addBookAuthor(BookAuthor bookAuthor) {
@@ -142,5 +154,4 @@ public class Book extends BaseEntity {
             bookImage.setBook(this);
         }
     }
-
 }
