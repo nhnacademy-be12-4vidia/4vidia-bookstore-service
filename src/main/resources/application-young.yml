@@ -24,6 +24,7 @@ spring:
 
 
         dialect: org.hibernate.dialect.MySQL8Dialect
+        default_batch_fetch_size: 100
 
   elasticsearch:
     uris: s4.java21.net:9200
