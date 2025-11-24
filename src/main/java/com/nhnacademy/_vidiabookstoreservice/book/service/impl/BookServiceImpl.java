@@ -8,8 +8,12 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import com.nhnacademy._vidiabookstoreservice.book.dto.request.BookCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.request.BookSearchRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.response.BookIdResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.CategoryNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.AuthorRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookAuthorRepository;
@@ -17,7 +21,10 @@ import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -63,6 +70,31 @@ public class BookServiceImpl implements BookService {
         BookIdResponse bookIdDto = new BookIdResponse();
         bookIdDto.setId(savedBook.getId());
         return bookIdDto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BookDetailResponse getBookDetail(Long id) {
+
+        Book book = bookRepository.findByIdWithAuthors(id).orElseThrow(
+            () -> new BookNotFoundException("ID에 해당하는 도서를 찾을 수 없습니다. ID: %d".formatted(id)));
+
+        return BookDetailResponse.from(book);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookListResponse> getBookList(BookSearchRequest request, Pageable pageable) {
+
+        Page<Book> bookPage;
+        if (StringUtils.hasText(request.getKeyword())) {
+            bookPage = bookRepository.findByTitleContaining(request.getKeyword(), pageable);
+        } else if (StringUtils.hasText(request.getCategoryCode())) {
+            bookPage = bookRepository.findByCategory_KdcCode(request.getCategoryCode(), pageable);
+        } else {
+            bookPage = bookRepository.findAll(pageable);
+        }
+        return bookPage.map(BookListResponse::from);
     }
 
     private Publisher getOrSavePublisher(String publisherName) {
