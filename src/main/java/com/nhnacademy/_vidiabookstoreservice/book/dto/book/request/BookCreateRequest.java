@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.dto.request;
+package com.nhnacademy._vidiabookstoreservice.book.dto.book.request;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
