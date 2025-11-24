@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.dto.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -35,7 +36,7 @@ public class BookDetailResponse {
 
     private List<String> authors;
     private Integer volumeNumber;
-    private String imageUrl;
+    private List<String> imageUrls;
 
     public static BookDetailResponse from(Book book) {
         return BookDetailResponse.builder()
@@ -59,6 +60,7 @@ public class BookDetailResponse {
             .authors(book.getBookAuthors().stream()
                 .map(ba -> ba.getAuthor().getName())
                 .toList())
+            .imageUrls(book.getBookImageList().stream().map(BookImage::getImageUrl).toList())
             .build();
     }
 
