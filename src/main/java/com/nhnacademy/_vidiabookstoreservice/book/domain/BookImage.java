@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.book.domain;
 
+import com.nhnacademy._vidiabookstoreservice.book.domain.converters.ImageTypeConverter;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,6 +33,7 @@ public class BookImage {
     private String imageUrl;
 
     @Column(name = "image_type", nullable = false)
+    @Convert(converter = ImageTypeConverter.class)
     private ImageType imageType;
 
     @Builder

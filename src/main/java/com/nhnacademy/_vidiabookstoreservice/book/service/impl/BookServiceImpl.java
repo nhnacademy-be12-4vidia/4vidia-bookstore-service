@@ -3,18 +3,24 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
+import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import com.nhnacademy._vidiabookstoreservice.book.dto.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.response.BookIdResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.CategoryNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.AuthorRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookAuthorRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
+import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +30,7 @@ public class BookServiceImpl implements BookService {
     private final AuthorRepository authorRepository;
     private final BookAuthorRepository bookAuthorRepository;
     private final PublisherRepository publisherRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     @Transactional
@@ -35,7 +42,20 @@ public class BookServiceImpl implements BookService {
         }
 
         Publisher publisher = getOrSavePublisher(request.getPublisherName());
-        Book savedBook = bookRepository.save(request.toEntity(publisher));
+        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("잘못된 카테고리 코드입니다."));
+        Book book = request.toEntity(publisher, category);
+
+        if (StringUtils.hasText(request.getImageUrl())) {
+            BookImage bookImage = BookImage.builder()
+                .imageUrl(request.getImageUrl())
+                .book(book)
+                .imageType(ImageType.THUMBNAIL)
+                .build();
+
+            book.addBookImage(bookImage);
+        }
+
+        Book savedBook = bookRepository.save(book);
 
         saveAuthors(savedBook, request.getAuthorList(), "지은이");
         saveAuthors(savedBook, request.getContributorList(), "기여자/역자");

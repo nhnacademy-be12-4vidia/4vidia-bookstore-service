@@ -9,12 +9,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 
 @Entity
 @Getter
@@ -37,8 +36,7 @@ public class Review extends BaseEntity {
     private Book book;
 
     @Column(nullable = false)
-    @Max(5)
-    @Min(1)
+    @Range(max = 5, min = 1)
     private Integer rating;
 
     @Column(name = "review_content", columnDefinition = "TEXT")
