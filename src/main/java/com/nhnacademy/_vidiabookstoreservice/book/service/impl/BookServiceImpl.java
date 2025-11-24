@@ -20,6 +20,8 @@ import com.nhnacademy._vidiabookstoreservice.book.repository.BookAuthorRepositor
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
+import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,8 +35,8 @@ import org.springframework.util.StringUtils;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
-    private final AuthorRepository authorRepository;
-    private final BookAuthorRepository bookAuthorRepository;
+    private final AuthorService authorService;
+    private final BookAuthorService bookAuthorService;
     private final PublisherRepository publisherRepository;
     private final CategoryRepository categoryRepository;
 
@@ -109,22 +111,14 @@ public class BookServiceImpl implements BookService {
         if (nameStr == null || nameStr.isBlank()) {
             return;
         }
-
         String[] names = nameStr.split(",");
 
         for (String name : names) {
             String cleanName = name.trim();
             if (cleanName.isEmpty()) continue;
-            Author author = authorRepository.findByName(cleanName)
-                .orElseGet(() -> authorRepository.save(new Author(cleanName)));
+            Author author = authorService.getOrCreateAuthor(cleanName);
 
-            BookAuthor bookAuthor = BookAuthor.builder()
-                .author(author)
-                .book(book)
-                .role(role)
-                .build();
-
-            bookAuthorRepository.save(bookAuthor);
+            bookAuthorService.create(book, author, role);
         }
     }
 }

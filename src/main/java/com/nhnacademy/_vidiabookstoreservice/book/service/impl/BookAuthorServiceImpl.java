@@ -1,0 +1,45 @@
+package com.nhnacademy._vidiabookstoreservice.book.service.impl;
+
+import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
+import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
+import com.nhnacademy._vidiabookstoreservice.book.exception.BookAuthorAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.repository.BookAuthorRepository;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class BookAuthorServiceImpl implements BookAuthorService {
+
+    private final BookAuthorRepository bookAuthorRepository;
+
+
+    @Override
+    @Transactional
+    public void create(Book book, Author author, String role) {
+
+        BookAuthor bookAuthor = BookAuthor.builder()
+            .book(book)
+            .author(author)
+            .role(role)
+            .build();
+
+        createByEntity(bookAuthor);
+    }
+
+    @Override
+    @Transactional
+    public void createByEntity(BookAuthor bookAuthor) {
+
+        if (bookAuthorRepository.existsByBookIdAndAuthorId(bookAuthor.getBook().getId(),
+            bookAuthor.getAuthor().getId())) {
+            throw new BookAuthorAlreadyExistsException("이미 해당 도서에 등록된 작가입니다. (도서: %s, 작가: %s)"
+                .formatted(bookAuthor.getBook().getTitle(), bookAuthor.getAuthor().getName()));
+        }
+
+        bookAuthorRepository.save(bookAuthor);
+    }
+}
