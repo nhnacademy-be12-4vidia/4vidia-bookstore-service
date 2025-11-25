@@ -36,6 +36,7 @@ cloud:
   aws:
     s3:
       endpoint: http://storage.java21.net
+      bucket: 4vidia
     credentials:
       access-key: KOOWETafG0GjyRlW6fP8
       secret-key: ${MINIO_SECRET_KEY}
@@ -43,3 +44,7 @@ cloud:
       static: us-east-1
     stack:
       auto: false
+
+image:
+  default:
+    thumbnail: http://storage.java21.net/browser/4vidia/default-book-cover.png
