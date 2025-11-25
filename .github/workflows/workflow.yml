@@ -44,6 +44,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ADMIN_ID: ${{ secrets.ADMIN_ID }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         with:
           host: s2.java21.net
           username: be12-team4
