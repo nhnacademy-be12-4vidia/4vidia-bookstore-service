@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.domain;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.converters.ImageTypeConverter;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
+import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -19,28 +20,33 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BookImage {
+public class BookImage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "book_image_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url", nullable = false, length = 500)
     private String imageUrl;
 
     @Column(name = "image_type", nullable = false)
     @Convert(converter = ImageTypeConverter.class)
     private ImageType imageType;
 
+    @Column(name = "display_order")
+    private Integer displayOrder;
+
     @Builder
-    public BookImage(Book book, String imageUrl, ImageType imageType) {
+    public BookImage(Book book, String imageUrl, ImageType imageType, Integer displayOrder) {
         this.book = book;
         this.imageUrl = imageUrl;
         this.imageType = imageType;
+        this.displayOrder = displayOrder;
     }
 
     public void setBook(Book book) {

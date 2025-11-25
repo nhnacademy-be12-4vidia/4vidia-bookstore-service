@@ -48,7 +48,6 @@ public class BookCreateRequest {
     private String subtitle;
     private String bookIndex;
     private String description;
-    private String imageUrl;
 
     private Integer pageCount;
     private String language;
