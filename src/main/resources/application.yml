@@ -40,3 +40,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://${ADMIN_ID}:${ADMIN_PASSWORD}@4vidia-discovery-1:8080/eureka/
+
+
+toss:
+  secretKey: test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy

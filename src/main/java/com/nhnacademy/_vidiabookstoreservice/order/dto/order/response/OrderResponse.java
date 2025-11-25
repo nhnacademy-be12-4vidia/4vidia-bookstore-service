@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 

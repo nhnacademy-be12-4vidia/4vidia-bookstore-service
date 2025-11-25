@@ -1,4 +1,4 @@
-package com.nhnacademy.order.domain.dto;
+package com.nhnacademy._vidiabookstoreservice.order.dto.payment.request;
 
 public record PaymentCreateRequest(
         long orderId,

@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.domain;
 
-import com.nhnacademy.order.domain.dto.OrderCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

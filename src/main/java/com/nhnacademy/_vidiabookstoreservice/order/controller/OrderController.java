@@ -1,8 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
-import com.nhnacademy.order.domain.dto.OrderCreateRequest;
-import com.nhnacademy.order.domain.dto.OrderResponse;
-import com.nhnacademy.order.service.OrderService;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

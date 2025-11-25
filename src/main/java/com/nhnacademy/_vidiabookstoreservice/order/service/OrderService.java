@@ -1,10 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
-import com.nhnacademy.order.domain.Order;
-import com.nhnacademy.order.domain.OrderStatus;
-import com.nhnacademy.order.domain.dto.OrderCreateRequest;
-import com.nhnacademy.order.domain.dto.OrderResponse;
-import com.nhnacademy.order.repository.OrderRepository;
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
+import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
