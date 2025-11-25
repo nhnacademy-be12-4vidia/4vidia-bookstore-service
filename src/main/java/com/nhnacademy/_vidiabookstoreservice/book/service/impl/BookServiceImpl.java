@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
@@ -15,20 +14,25 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResp
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.CategoryNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.book.repository.AuthorRepository;
-import com.nhnacademy._vidiabookstoreservice.book.repository.BookAuthorRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -37,12 +41,17 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final AuthorService authorService;
     private final BookAuthorService bookAuthorService;
+    private final BookImageService bookImageService;
+    private final MinioService minioService;
     private final PublisherRepository publisherRepository;
     private final CategoryRepository categoryRepository;
 
+    @Value("${image.default.thumbnail}")
+    private String defaultThumbnailUrl;
+
     @Override
     @Transactional
-    public BookIdResponse createBook(BookCreateRequest request) {
+    public BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail, List<MultipartFile> detailImages) {
 
         if (bookRepository.existsByIsbn(request.getIsbn())) {
             throw new BookAlreadyExistsException(
@@ -53,17 +62,11 @@ public class BookServiceImpl implements BookService {
         Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("잘못된 카테고리 코드입니다."));
         Book book = request.toEntity(publisher, category);
 
-        if (StringUtils.hasText(request.getImageUrl())) {
-            BookImage bookImage = BookImage.builder()
-                .imageUrl(request.getImageUrl())
-                .book(book)
-                .imageType(ImageType.THUMBNAIL)
-                .build();
-
-            book.addBookImage(bookImage);
-        }
 
         Book savedBook = bookRepository.save(book);
+
+        saveThumbnail(thumbnail, savedBook);
+        saveBookImages(detailImages, savedBook);
 
         saveAuthors(savedBook, request.getAuthorList(), "지은이");
         saveAuthors(savedBook, request.getContributorList(), "기여자/역자");
@@ -98,7 +101,8 @@ public class BookServiceImpl implements BookService {
         return bookPage.map(BookListResponse::from);
     }
 
-    private Publisher getOrSavePublisher(String publisherName) {
+    @Transactional
+    public Publisher getOrSavePublisher(String publisherName) {
         if (publisherName == null || publisherName.isBlank()) {
             return null;
         }
@@ -106,8 +110,8 @@ public class BookServiceImpl implements BookService {
             publisherRepository.save(new Publisher(publisherName.trim())));
     }
 
-
-    private void saveAuthors(Book book, String nameStr, String role) {
+    @Transactional
+    public void saveAuthors(Book book, String nameStr, String role) {
         if (nameStr == null || nameStr.isBlank()) {
             return;
         }
@@ -120,5 +124,53 @@ public class BookServiceImpl implements BookService {
 
             bookAuthorService.create(book, author, role);
         }
+    }
+
+    @Transactional
+    public void saveThumbnail(MultipartFile thumbnail, Book savedBook) {
+        String thumbnailUrl;
+
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            thumbnailUrl = minioService.upload(thumbnail);
+        } else {
+            thumbnailUrl = defaultThumbnailUrl;
+        }
+
+        BookImage thumbnailImage = bookImageService.create(savedBook, thumbnailUrl, ImageType.THUMBNAIL, 0);
+        savedBook.addBookImage(thumbnailImage);
+    }
+
+    @Transactional
+    public void saveBookImages(List<MultipartFile> images, Book savedBook) {
+        if (images == null || images.isEmpty()) return;
+
+        Set<String> uniqueFIleCheck = new HashSet<>();
+
+        List<BookImage> imageEntities = new ArrayList<>();
+
+        int order = 1;
+
+        for (MultipartFile file : images) {
+            if (file.isEmpty()) continue;
+
+            String duplicateKey = file.getOriginalFilename() + "_" + file.getSize();
+
+            if (!uniqueFIleCheck.add(duplicateKey)) {
+                continue;
+            }
+
+            String imageUrl = minioService.upload(file);
+
+            BookImage bookImage = BookImage.builder()
+                .book(savedBook)
+                .imageUrl(imageUrl)
+                .imageType(ImageType.DETAIL)
+                .displayOrder(order++)
+                .build();
+
+            imageEntities.add(bookImage);
+            savedBook.addBookImage(bookImage);
+        }
+        bookImageService.saveAll(imageEntities);
     }
 }
