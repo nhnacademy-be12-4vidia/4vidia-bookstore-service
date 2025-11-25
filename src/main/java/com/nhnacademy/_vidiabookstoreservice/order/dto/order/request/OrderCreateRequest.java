@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.order.request;
 
-
+import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,4 +18,4 @@ public record OrderCreateRequest(
         int payPrice,
         List<OrderItem> orderItems
 ) {
-}// order.html에서 넘어오는 값
+}

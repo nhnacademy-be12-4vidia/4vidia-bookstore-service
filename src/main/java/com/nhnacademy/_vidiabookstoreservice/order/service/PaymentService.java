@@ -1,8 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
-import com.nhnacademy.order.domain.Payment;
-import com.nhnacademy.order.domain.dto.PaymentCreateRequest;
-import com.nhnacademy.order.repository.PaymentRepository;
+import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +15,14 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
 
     public void savePayment(PaymentCreateRequest paymentCreateRequest) {
-        Payment payment = new Payment(paymentCreateRequest);
+        Payment payment = Payment.builder()
+                .orderId(paymentCreateRequest.orderId())
+                .payStatus(paymentCreateRequest.payStatus())
+                .payMethod(paymentCreateRequest.payMethod())
+                .amount(paymentCreateRequest.amount())
+                .paymentKey(paymentCreateRequest.paymentKey())
+                .sendOrderId(paymentCreateRequest.sendOrderId())
+                .build();
 
         paymentRepository.save(payment);
     }

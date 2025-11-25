@@ -1,10 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.order.domain.dto.TossPayment;
-import com.nhnacademy.order.exception.PaymentConfirmException;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,13 +13,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Map;
 
 @Service
 public class TossPaymentService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    ObjectMapper objectMapper = new ObjectMapper(); //TODO 오브젝트매퍼 받아오기?
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${toss.secretKey}")
     private String API_SECRET_KEY;
@@ -29,39 +28,39 @@ public class TossPaymentService {
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
 
-    public TossPayment confirmPayment(String paymentKey, String orderId, long amount) throws IOException {
-        JSONObject requestData = new JSONObject();
-        requestData.put("paymentKey", paymentKey);
-        requestData.put("orderId", orderId);
-        requestData.put("amount", amount);
+    public TossPaymentResponse confirmPayment(String paymentKey, String orderId, long amount) throws IOException {
+        Map<String, Object> requestData = Map.of(
+                "paymentKey", paymentKey,
+                "orderId", orderId,
+                "amount", amount
+        );
 
-        JSONObject response = sendRequest(requestData, API_SECRET_KEY, TOSS_CONFIRM_URL);
+        Map<String, Object> response = sendRequest(requestData, API_SECRET_KEY, TOSS_CONFIRM_URL);
 
-        logger.info("Response Data: {}", response); // TODO 확인용. 지우기
-
-        if (response.containsKey("error")) {
-            throw new PaymentConfirmException(response.toJSONString());
+        if (response.containsKey("code")) {
+            throw new PaymentConfirmException(response.toString());
         }
 
-        TossPayment tossPayment = objectMapper.convertValue(response, TossPayment.class);
+        TossPaymentResponse tossPayment = objectMapper.convertValue(response, TossPaymentResponse.class);
 
        return tossPayment;
     }
 
-    private JSONObject sendRequest(JSONObject requestData, String secretKey, String urlString) throws IOException {
+    private Map<String, Object> sendRequest(Map<String, Object> requestData, String secretKey, String urlString) throws IOException {
         HttpURLConnection connection = createConnection(secretKey, urlString);
+
         try (OutputStream os = connection.getOutputStream()) {
-            os.write(requestData.toString().getBytes(StandardCharsets.UTF_8));
+            objectMapper.writeValue(os, requestData);
         }
 
         try (InputStream responseStream = connection.getResponseCode() == 200 ? connection.getInputStream() : connection.getErrorStream();
              Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8)) {
-            return (JSONObject) new JSONParser().parse(reader);
+
+            return objectMapper.readValue(reader, new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
         } catch (Exception e) {
-            logger.error("Error reading response", e);
-            JSONObject errorResponse = new JSONObject();
-            errorResponse.put("error", "Error reading response");
-            return errorResponse;
+            logger.error("Error reading response or parsing JSON", e);
+            return Map.of("code", "COMMUNICATION_ERROR", "message", e.getMessage());
         }
     }
 

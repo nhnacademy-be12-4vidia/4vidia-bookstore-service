@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.domain;
 
-
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

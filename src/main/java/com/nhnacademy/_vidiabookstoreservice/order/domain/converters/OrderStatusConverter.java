@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.domain.converters;
 
-import com.nhnacademy.order.domain.OrderStatus;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

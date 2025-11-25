@@ -1,7 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.order.domain;
 
-
-import com.nhnacademy.order.domain.dto.PaymentCreateRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,12 +34,12 @@ public class Payment {
     String sendOrderId;
 
     @Builder
-    public Payment(PaymentCreateRequest paymentCreateRequest) {
-        this.orderId = paymentCreateRequest.orderId();
-        this.payStatus = paymentCreateRequest.payStatus();
-        this.payMethod = paymentCreateRequest.payMethod();
-        this.amount = paymentCreateRequest.amount().intValue();
-        this.paymentKey = paymentCreateRequest.paymentKey();
-        this.sendOrderId = paymentCreateRequest.sendOrderId();
+    public Payment(long orderId, String payStatus, String payMethod, long amount, String paymentKey, String sendOrderId) {
+        this.orderId = orderId;
+        this.payStatus = payStatus;
+        this.payMethod = payMethod;
+        this.amount = (int) amount;
+        this.paymentKey = paymentKey;
+        this.sendOrderId = sendOrderId;
     }
 }
