@@ -39,7 +39,7 @@ cloud:
       endpoint: http://storage.java21.net
       bucket: 4vidia
     credentials:
-      access-key: KOOWETafG0GjyRlW6fP8
+      access-key: gaNAQg19pCH82fuMbsU2
       secret-key: ${MINIO_SECRET_KEY}
     region:
       static: us-east-1
