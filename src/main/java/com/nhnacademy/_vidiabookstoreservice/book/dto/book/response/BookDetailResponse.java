@@ -18,8 +18,10 @@ public class BookDetailResponse {
     private String bookIndex;
     private String description;
 
-    private String publisherName;
+    private PublisherInfo publisher;
     private LocalDate publishedDate;
+
+    private CategoryInfo category;
 
     private Integer pageCount;
     private String language;
@@ -29,9 +31,31 @@ public class BookDetailResponse {
     private String stockStatus;
     private boolean packagingAvailable;
 
-    private List<String> authors;
+    private List<AuthorInfo> authors;
     private Integer volumeNumber;
     private List<String> imageUrls;
+
+    @Getter @Builder
+    public static class PublisherInfo {
+        private Long id;
+        private String name;
+    }
+
+    @Getter @Builder
+    public static class AuthorInfo {
+
+        private Long id;
+        private String name;
+        private String role;
+    }
+
+    @Getter @Builder
+    public static class CategoryInfo {
+
+        private Long id;
+        private String name;
+        private String kdcCode;
+    }
 
     public static BookDetailResponse from(Book book) {
         return BookDetailResponse.builder()
@@ -41,7 +65,15 @@ public class BookDetailResponse {
             .subtitle(book.getSubtitle())
             .bookIndex(book.getBookIndex())
             .description(book.getDescription())
-            .publisherName(book.getPublisher() != null ? book.getPublisher().getName() : "")
+            .publisher(book.getPublisher() != null ? PublisherInfo.builder()
+                .id(book.getPublisher().getId())
+                .name(book.getPublisher().getName())
+                .build() : null)
+            .category(book.getCategory() != null ? CategoryInfo.builder()
+                .id(book.getCategory().getId())
+                .name(book.getCategory().getCategoryName())
+                .kdcCode(book.getCategory().getKdcCode())
+                .build() : null)
             .publishedDate(book.getPublishedDate())
             .pageCount(book.getPageCount())
             .language(book.getLanguage())
@@ -50,11 +82,12 @@ public class BookDetailResponse {
             .stock(book.getStock())
             .stockStatus(book.getStockStatus().name())
             .packagingAvailable(book.isPackagingAvailable())
+            .authors(book.getBookAuthors().stream().map(ba -> AuthorInfo.builder()
+                .id(ba.getAuthor().getId())
+                .name(ba.getAuthor().getName())
+                .role(ba.getRole())
+                .build()).toList())
             .volumeNumber(book.getVolumeNumber())
-
-            .authors(book.getBookAuthors().stream()
-                .map(ba -> ba.getAuthor().getName())
-                .toList())
             .imageUrls(book.getBookImageList().stream().map(BookImage::getImageUrl).toList())
             .build();
     }
