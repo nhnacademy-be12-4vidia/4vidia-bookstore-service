@@ -109,7 +109,6 @@ public class Book extends BaseEntity {
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC ")
-    @Setter
     private List<BookImage> bookImageList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

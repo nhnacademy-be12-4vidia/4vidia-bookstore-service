@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
@@ -120,7 +121,8 @@ public class BookServiceImpl implements BookService {
             if (cleanName.isEmpty()) continue;
             Author author = authorService.getOrCreateAuthor(cleanName);
 
-            bookAuthorService.create(book, author, role);
+            BookAuthor bookAuthor = bookAuthorService.create(book, author, role);
+            book.addBookAuthor(bookAuthor);
         }
     }
 
