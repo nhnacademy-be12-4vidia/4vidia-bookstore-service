@@ -19,7 +19,7 @@ public class BookAuthorServiceImpl implements BookAuthorService {
 
     @Override
     @Transactional
-    public void create(Book book, Author author, String role) {
+    public BookAuthor create(Book book, Author author, String role) {
 
         BookAuthor bookAuthor = BookAuthor.builder()
             .book(book)
@@ -27,12 +27,12 @@ public class BookAuthorServiceImpl implements BookAuthorService {
             .role(role)
             .build();
 
-        createByEntity(bookAuthor);
+        return createByEntity(bookAuthor);
     }
 
     @Override
     @Transactional
-    public void createByEntity(BookAuthor bookAuthor) {
+    public BookAuthor createByEntity(BookAuthor bookAuthor) {
 
         if (bookAuthorRepository.existsByBookIdAndAuthorId(bookAuthor.getBook().getId(),
             bookAuthor.getAuthor().getId())) {
@@ -40,6 +40,6 @@ public class BookAuthorServiceImpl implements BookAuthorService {
                 .formatted(bookAuthor.getBook().getTitle(), bookAuthor.getAuthor().getName()));
         }
 
-        bookAuthorRepository.save(bookAuthor);
+        return bookAuthorRepository.save(bookAuthor);
     }
 }
