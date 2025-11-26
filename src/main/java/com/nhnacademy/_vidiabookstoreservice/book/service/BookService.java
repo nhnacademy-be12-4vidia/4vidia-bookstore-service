@@ -18,4 +18,12 @@ public interface BookService {
 
     BookDetailResponse getBookDetail(Long id);
 
+    Page<BookListResponse> getBookListByCategory(Long categoryId, Pageable pageable);
+
+    Page<BookListResponse> getBookListByPublisher(Long publisherId, Pageable pageable);
+
+    Page<BookListResponse> getBookListByAuthor(Long authorId, Pageable pageable);
+
+    Page<BookListResponse> getBookListByCategoryPath(Long categoryId, Pageable pageable);
+
 }
