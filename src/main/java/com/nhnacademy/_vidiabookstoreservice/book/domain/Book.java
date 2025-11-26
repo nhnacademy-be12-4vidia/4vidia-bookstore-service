@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.domain;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.converters.StockStatusConverter;
-import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
@@ -47,11 +46,11 @@ public class Book extends BaseEntity {
     @Setter
     private String isbn;
 
-    @Column(name = "title", nullable = false, length = 1000)
+    @Column(name = "title", nullable = false, length = 500)
     @Setter
     private String title;
 
-    @Column(name = "subtitle")
+    @Column(name = "subtitle", length = 500)
     @Setter
     private String subtitle;
 
