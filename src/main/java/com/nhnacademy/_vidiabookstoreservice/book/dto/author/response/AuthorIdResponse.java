@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.dto.Author.response;
+package com.nhnacademy._vidiabookstoreservice.book.dto.author.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

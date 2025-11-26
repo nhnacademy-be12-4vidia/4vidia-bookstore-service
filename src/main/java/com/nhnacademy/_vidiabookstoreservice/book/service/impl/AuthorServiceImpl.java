@@ -1,8 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
-import com.nhnacademy._vidiabookstoreservice.book.dto.Author.response.AuthorIdResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.Author.response.AuthorResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorIdResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.AuthorAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.AuthorIdNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.AuthorNameNotFoundException;
