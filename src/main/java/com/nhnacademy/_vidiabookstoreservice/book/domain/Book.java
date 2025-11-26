@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.converters.StockStatusC
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -15,6 +16,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -106,7 +108,8 @@ public class Book extends BaseEntity {
     @Setter
     private Integer volumeNumber;
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC ")
     @Setter
     private List<BookImage> bookImageList = new ArrayList<>();
 
