@@ -17,5 +17,16 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findByTitleContaining(String keyword, Pageable pageable);
 
-    Page<Book> findByCategory_KdcCode(String categoryKdcCode, Pageable pageable);
+    Page<Book> findByCategoryKdcCode(String categoryKdcCode, Pageable pageable);
+
+    Page<Book> findByCategoryId(Long categoryId, Pageable pageable);
+
+    Page<Book> findByPublisherId(Long publisherId, Pageable pageable);
+
+    @Query("SELECT b FROM Book b JOIN b.bookAuthors ba WHERE ba.author.id = :authorId")
+    Page<Book> findByAuthorId(@Param("authorId")Long authorId, Pageable pageable);
+
+    @Query("SELECT b FROM Book b JOIN b.category c WHERE c.path LIKE :pathPattern%")
+    Page<Book> findAllByCategoryPath(@Param("pathPattern") String pathPattern, Pageable pageable);
+
 }

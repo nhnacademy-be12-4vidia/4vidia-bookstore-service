@@ -13,14 +13,13 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdRespon
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.book.exception.CategoryNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
-import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +43,7 @@ public class BookServiceImpl implements BookService {
     private final BookImageService bookImageService;
     private final MinioService minioService;
     private final PublisherRepository publisherRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     @Value("${image.default.thumbnail}")
     private String defaultThumbnailUrl;
@@ -59,9 +58,8 @@ public class BookServiceImpl implements BookService {
         }
 
         Publisher publisher = getOrSavePublisher(request.getPublisherName());
-        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("잘못된 카테고리 코드입니다."));
+        Category category = categoryService.getCategory(request.getCategoryId());
         Book book = request.toEntity(publisher, category);
-
 
         Book savedBook = bookRepository.save(book);
 
@@ -94,7 +92,7 @@ public class BookServiceImpl implements BookService {
         if (StringUtils.hasText(request.getKeyword())) {
             bookPage = bookRepository.findByTitleContaining(request.getKeyword(), pageable);
         } else if (StringUtils.hasText(request.getCategoryCode())) {
-            bookPage = bookRepository.findByCategory_KdcCode(request.getCategoryCode(), pageable);
+            bookPage = bookRepository.findByCategoryKdcCode(request.getCategoryCode(), pageable);
         } else {
             bookPage = bookRepository.findAll(pageable);
         }
@@ -172,5 +170,40 @@ public class BookServiceImpl implements BookService {
             savedBook.addBookImage(bookImage);
         }
         bookImageService.saveAll(imageEntities);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookListResponse> getBookListByCategory(Long categoryId, Pageable pageable) {
+
+        Page<Book> bookPage = bookRepository.findByCategoryId(categoryId, pageable);
+
+        return bookPage.map(BookListResponse::from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookListResponse> getBookListByPublisher(Long publisherId, Pageable pageable) {
+
+        Page<Book> bookPage = bookRepository.findByPublisherId(publisherId, pageable);
+        return bookPage.map(BookListResponse::from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookListResponse> getBookListByAuthor(Long authorId, Pageable pageable) {
+
+        Page<Book> bookPage = bookRepository.findByAuthorId(authorId, pageable);
+        return bookPage.map(BookListResponse::from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookListResponse> getBookListByCategoryPath(Long categoryId, Pageable pageable) {
+
+        Category category = categoryService.getCategory(categoryId);
+
+        Page<Book> bookPage = bookRepository.findAllByCategoryPath(category.getPath(), pageable);
+        return bookPage.map(BookListResponse::from);
     }
 }
