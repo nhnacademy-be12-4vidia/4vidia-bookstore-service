@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
 @Entity
@@ -23,7 +24,7 @@ public class Review extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
-    Long id;
+    private Long id;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
@@ -36,14 +37,19 @@ public class Review extends BaseEntity {
     private Book book;
 
     @Column(nullable = false)
-    @Range(max = 5, min = 1)
     private Integer rating;
 
     @Column(name = "review_content", columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "has_photo", nullable = false)
+    @Setter
     private boolean hasPhoto;
+
+    public void updateContent(String content, Integer rating) {
+        this.content = content;
+        this.rating = rating;
+    }
 
     @Builder
     public Review(Long userId, Long orderItemId, Book book, Integer rating, String content,
