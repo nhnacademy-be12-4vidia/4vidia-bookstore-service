@@ -6,8 +6,8 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 
 public interface BookAuthorService {
 
-    void create(Book book, Author author, String role);
+    BookAuthor create(Book book, Author author, String role);
 
-    void createByEntity(BookAuthor bookAuthor);
+    BookAuthor createByEntity(BookAuthor bookAuthor);
 
 }
