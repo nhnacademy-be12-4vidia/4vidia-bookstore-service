@@ -1,10 +1,8 @@
-package com.nhnacademy._vidiabookstoreservice.order.service;
+package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +16,14 @@ import java.util.Map;
 @Service
 public class TossPaymentService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    ObjectMapper objectMapper = new ObjectMapper();
-
     @Value("${toss.secretKey}")
     private String API_SECRET_KEY;
+
+    private final ObjectMapper objectMapper;
+
+    TossPaymentService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
@@ -43,7 +43,7 @@ public class TossPaymentService {
 
         TossPaymentResponse tossPayment = objectMapper.convertValue(response, TossPaymentResponse.class);
 
-       return tossPayment;
+        return tossPayment;
     }
 
     private Map<String, Object> sendRequest(Map<String, Object> requestData, String secretKey, String urlString) throws IOException {
@@ -59,7 +59,6 @@ public class TossPaymentService {
             return objectMapper.readValue(reader, new com.fasterxml.jackson.core.type.TypeReference<>() {});
 
         } catch (Exception e) {
-            logger.error("Error reading response or parsing JSON", e);
             return Map.of("code", "COMMUNICATION_ERROR", "message", e.getMessage());
         }
     }

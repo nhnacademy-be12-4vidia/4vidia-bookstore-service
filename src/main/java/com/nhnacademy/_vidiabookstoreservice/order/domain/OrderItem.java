@@ -9,6 +9,7 @@ import lombok.*;
 @Entity
 @Table(name = "order_item")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class OrderItem {
 
     @Id
@@ -29,6 +30,15 @@ public class OrderItem {
     @Column(name = "sale_price", nullable = false)
     Integer salePrice;
 
-    @Column(name = "order_item", nullable = false)
+    @Column(name = "confirm_status", nullable = false)
     ConfirmStatus confirmStatus = ConfirmStatus.UNCONFIRMED;
+
+    @Builder
+    public OrderItem(Order order, long bookId, int quantity, int salePrice, ConfirmStatus confirmStatus) {
+        this.order = order;
+        this.bookId = bookId;
+        this.quantity = quantity;
+        this.salePrice = salePrice;
+        this.confirmStatus = confirmStatus;
+    }
 }
