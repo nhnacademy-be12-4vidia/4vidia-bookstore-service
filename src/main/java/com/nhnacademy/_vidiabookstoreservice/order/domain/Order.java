@@ -81,7 +81,7 @@ public class Order {
     @Builder
     public Order(Long userId, String recipientName, String addressRoadname, String addressDetail, String zipCode,
                  String recipientPhone, String deliveryRequest, int couponDiscount, int pointUsed,
-                 LocalDate deliveryDate, int totalPrice, int payPrice, List<OrderItem> orderItems) {
+                 LocalDate deliveryDate, int totalPrice, int payPrice) {
         this.userId = userId;
         this.recipientName = recipientName;
         this.addressRoadname = addressRoadname;
@@ -94,6 +94,5 @@ public class Order {
         this.deliveryDate = deliveryDate;
         this.totalPrice = totalPrice;
         this.payPrice = payPrice;
-        this.orderItems = orderItems;
     }
 }

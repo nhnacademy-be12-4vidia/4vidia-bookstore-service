@@ -15,8 +15,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long paymentId;
 
-    @Column(name = "order_id", nullable = false)
-    Long orderId;
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
+    Order order;
 
     @Column(name = "pay_status", nullable = false)
     String payStatus;
@@ -33,9 +34,10 @@ public class Payment {
     @Column(name = "send_order_id", nullable = false)
     String sendOrderId;
 
+
     @Builder
-    public Payment(long orderId, String payStatus, String payMethod, long amount, String paymentKey, String sendOrderId) {
-        this.orderId = orderId;
+    public Payment(Order order, String payStatus, String payMethod, long amount, String paymentKey, String sendOrderId) {
+        this.order = order;
         this.payStatus = payStatus;
         this.payMethod = payMethod;
         this.amount = (int) amount;

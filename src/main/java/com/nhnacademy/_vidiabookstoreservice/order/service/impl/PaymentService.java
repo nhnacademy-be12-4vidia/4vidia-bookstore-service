@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.order.service;
+package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
@@ -16,7 +16,7 @@ public class PaymentService {
 
     public void savePayment(PaymentCreateRequest paymentCreateRequest) {
         Payment payment = Payment.builder()
-                .orderId(paymentCreateRequest.orderId())
+                .order(paymentCreateRequest.order())
                 .payStatus(paymentCreateRequest.payStatus())
                 .payMethod(paymentCreateRequest.payMethod())
                 .amount(paymentCreateRequest.amount())
