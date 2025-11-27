@@ -2,7 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
-import com.nhnacademy._vidiabookstoreservice.order.service.impl.OrderService;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +17,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Long> createOrder(@RequestBody OrderCreateRequest orderCreateRequest) {
+        //TODO 회원은 헤더에서 X-User-Id 꺼내기. 비회원은 X-Guest-Id
         long orderId = orderService.saveOrder(orderCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);

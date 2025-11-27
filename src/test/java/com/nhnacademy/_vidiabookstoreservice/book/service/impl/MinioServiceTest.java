@@ -4,7 +4,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import static org.assertj.core.api.Assertions.*;
 
 import com.nhnacademy._vidiabookstoreservice.order.controller.PaymentController;
-import com.nhnacademy._vidiabookstoreservice.order.service.impl.TossPaymentService;
+import com.nhnacademy._vidiabookstoreservice.order.service.impl.TossPaymentServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class MinioServiceTest {
     private PaymentController paymentController;
 
     @MockitoBean
-    private TossPaymentService tossPaymentService;
+    private TossPaymentServiceImpl tossPaymentServiceImpl;
 
     @Test
     void uploadRealFile() {

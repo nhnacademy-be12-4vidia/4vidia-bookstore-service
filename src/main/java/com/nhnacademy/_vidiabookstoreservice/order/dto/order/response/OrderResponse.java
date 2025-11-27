@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 
 import java.time.LocalDate;
@@ -23,4 +24,24 @@ public record OrderResponse(
         int totalPrice,
         int payPrice
 ) {
+    public static OrderResponse from(Order order) {
+        return new OrderResponse(
+                order.getOrderId(),
+                order.getUserId(),
+                order.getRecipientName(),
+                order.getAddressRoadname(),
+                order.getAddressDetail(),
+                order.getZipCode(),
+                order.getRecipientPhone(),
+                order.getDeliveryRequest(),
+                order.getCreatedAt(),
+                order.getCouponDiscount(),
+                order.getPointUsed(),
+                order.getDeliveryDate(),
+                order.getDeliveryStatus(),
+                order.getActualDeliveryDate(),
+                order.getTotalPrice(),
+                order.getPayPrice()
+        );
+    }
 }

@@ -8,10 +8,12 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PackagingOptionRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PackagingRepository;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class OrderService {
+public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -29,7 +31,7 @@ public class OrderService {
     private final PackagingOptionRepository packagingOptionRepository;
 
     public Long saveOrder(OrderCreateRequest request) {
-        Long userId = 1L; //TODO userId 꺼내기. 비회원일 경우 랜덤값 생성
+        Long userId = 1L; //TODO userId 꺼내기. 비회원일 경우 랜덤값 생성?
 
         //TODO 재고 차감 구현 wow 어떻게하냐
 
@@ -86,30 +88,27 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderResponse getOrderResponse(Long orderId) {
-        Order order = orderRepository.findByOrderId(orderId);
+        Order order = orderRepository.findByOrderId(orderId).orElseThrow(
+                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+        );
 
-        if (order == null) {
-            throw new NoSuchElementException("Order not found: " + orderId);
-        }
-
-        return new OrderResponse(order.getOrderId(), order.getUserId(), order.getRecipientName(),
-                order.getAddressRoadname(), order.getAddressDetail(), order.getZipCode(),
-                order.getRecipientPhone(), order.getDeliveryRequest(), order.getCreatedAt(),
-                order.getCouponDiscount(), order.getPointUsed(), order.getDeliveryDate(),
-                order.getDeliveryStatus(), order.getActualDeliveryDate(), order.getTotalPrice(), order.getPayPrice());
+        return OrderResponse.from(order);
     }
 
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+        Order order = orderRepository.findByOrderId(orderId).orElseThrow(
+                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+        );
+
         return order;
     }
 
-    public void updateOrderStatus(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+    public void updateOrderStatus(Long orderId, OrderStatus orderStatus) {
+        Order order = orderRepository.findByOrderId(orderId).orElseThrow(
+                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+        );
 
-        order.setOrderStatus(OrderStatus.PAID);
+        order.setOrderStatus(orderStatus);
     }
 }
