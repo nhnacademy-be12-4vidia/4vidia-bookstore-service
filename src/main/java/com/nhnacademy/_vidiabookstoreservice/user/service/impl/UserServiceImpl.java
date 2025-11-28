@@ -101,6 +101,12 @@ public class UserServiceImpl implements UserService {
         log.info("회원정보 수정완료");
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public User getProxyById(Long userId) {
+        return userRepository.getReferenceById(userId);
+    }
+
 
     /**
      * 비밀번호 수정
