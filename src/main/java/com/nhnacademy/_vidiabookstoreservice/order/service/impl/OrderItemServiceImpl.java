@@ -24,4 +24,9 @@ public class OrderItemServiceImpl implements OrderItemService {
 
         return OrderItemResponse.from(orderItem);
     }
+
+    @Override
+    public OrderItem getProxyById(Long orderItemId) {
+        return orderItemRepository.getReferenceById(orderItemId);
+    }
 }
