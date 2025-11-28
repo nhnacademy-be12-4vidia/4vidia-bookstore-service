@@ -1,7 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.user.domain;
 
-
-
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import jakarta.persistence.*;
@@ -98,7 +96,6 @@ public class User {
         this.phone = phone;
         this.birthDate = birthDate;
     }
-
 
 
     public void setDefaultAddress(UserAddress userAddress) {

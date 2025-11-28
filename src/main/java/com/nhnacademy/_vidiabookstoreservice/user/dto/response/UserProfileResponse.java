@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.dto.response;
 
 
-
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 
 import java.time.LocalDate;
@@ -26,7 +25,7 @@ public record UserProfileResponse(
                 user.getBirthDate(),
                 user.getPoint(),
                 user.getUserAddress() != null
-                ? AddressResponse.from(user.getUserAddress()):null,
+                ? AddressResponse.fromEntity(user.getUserAddress()):null,
                 user.getGrade().getGradeName().name()
         );
     }

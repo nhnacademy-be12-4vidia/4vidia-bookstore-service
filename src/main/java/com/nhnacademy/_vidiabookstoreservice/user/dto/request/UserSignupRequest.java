@@ -18,15 +18,14 @@ public record UserSignupRequest(
 
         @NotBlank(message = "비밀번호는 필수 입력입니다.")
         @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+=-]).{8,20}$",
-            message = "비밀번호는 소문자, 숫자, 특수문자를 포함한 8~20자여야 합니다."
+                regexp = "^(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+=-]).{8,20}$",
+                message = "비밀번호는 소문자, 숫자, 특수문자를 포함한 8~20자여야 합니다."
         )
         String password,
 
         @NotBlank(message = "이름은 필수 입력입니다.")
         String name,
 
-//        @NotBlank(message = "전화번호는 필수 입력입니다.")
         @NotBlank(message = "전화번호는 필수 입력입니다.")
         @Pattern(
                 regexp = "^01[0-9]\\d{3,4}\\d{4}$",

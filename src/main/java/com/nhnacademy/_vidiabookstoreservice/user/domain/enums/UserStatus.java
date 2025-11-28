@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.user.domain.enums;
 
-
 import lombok.Getter;
 
 @Getter

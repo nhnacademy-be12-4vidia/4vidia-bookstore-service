@@ -4,8 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-
-
 @Converter(autoApply = true)
 public class RoleNameConverter implements AttributeConverter<UserRole, Integer> {
     @Override
