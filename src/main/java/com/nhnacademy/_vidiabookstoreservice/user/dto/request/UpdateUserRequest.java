@@ -8,6 +8,5 @@ package com.nhnacademy._vidiabookstoreservice.user.dto.request;
 public record UpdateUserRequest (
         String name,
         String phone
-//        LocalDate birthDate // yyyy-MM-dd
 ){
 }

@@ -15,7 +15,7 @@ public record AddressResponse(
     /**
      *UserAddress 엔티티를 AddressResponse DTO로 변환하는 정적 팩토리 메서드
      */
-    public static AddressResponse from(UserAddress userAddress) {
+    public static AddressResponse fromEntity(UserAddress userAddress) {
         return new AddressResponse(
                 userAddress.getUserAddressId(),
                 userAddress.getAlias(),

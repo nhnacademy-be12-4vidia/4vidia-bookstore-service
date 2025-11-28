@@ -1,17 +1,13 @@
 package com.nhnacademy._vidiabookstoreservice.user.domain;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @Builder
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "user_address")
 public class UserAddress {
@@ -31,7 +27,7 @@ public class UserAddress {
     private String roadAddress; //도로명 주소
 
     @Column(length = 5, name = "address_postal_number",  nullable = false)
-    private String postalAddress; //우편번호
+    private String postalAddress; //우편번호 // todo : 변수명 통일해야함
 
     @Column(length = 30, name = "address_detail")
     private String addressDetail; //상세주소
@@ -44,4 +40,5 @@ public class UserAddress {
         this.postalAddress = postalAddress;
         this.addressDetail = addressDetail;
     }
+
 }
