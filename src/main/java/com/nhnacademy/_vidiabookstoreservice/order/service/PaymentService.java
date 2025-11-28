@@ -7,5 +7,5 @@ public interface PaymentService<T> {
 
     T confirmPayment(String paymentKey, String orderId, long amount);
 
-    T cancelPayment(String paymentKey, long amount);
+    T cancelPayment(String paymentKey, String reason, long amount);
 }
