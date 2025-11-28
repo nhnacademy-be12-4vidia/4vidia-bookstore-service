@@ -2,7 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.PackagingOptionRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.PackagingOptionResponse;
-import com.nhnacademy._vidiabookstoreservice.order.service.impl.PackagingOptionService;
+import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

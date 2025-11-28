@@ -1,9 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
-import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemResponse;
 
-public interface OrderItemService {
+public interface OrderItemService{
 
-    OrderItem getByOrderItemId(Long orderItemId);
+    OrderItemResponse getByOrderItemId(Long orderItemId);
 
 }
