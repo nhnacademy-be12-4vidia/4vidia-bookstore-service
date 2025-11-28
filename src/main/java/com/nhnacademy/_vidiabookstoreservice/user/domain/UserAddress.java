@@ -14,6 +14,7 @@ public class UserAddress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("주소 식별자")
+    @Column(name = "user_address_id")
     private Long userAddressId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -23,21 +24,20 @@ public class UserAddress {
     @Column(name = "alias", length = 20)
     private String alias; //별칭: 집, 회사 등
 
-    @Column(length = 30, name = "address_roadname", nullable = false)
+    @Column(name = "address_roadname", length = 30, nullable = false)
     private String roadAddress; //도로명 주소
 
-    @Column(length = 5, name = "address_postal_number",  nullable = false)
-    private String postalAddress; //우편번호 // todo : 변수명 통일해야함
+    @Column(name = "zip_code", length = 5, nullable = false)
+    private String zipCode; //우편번호
 
-    @Column(length = 30, name = "address_detail")
+    @Column(name = "address_detail", length = 30)
     private String addressDetail; //상세주소
 
 
-    public void updateAddress(String alias, String roadAddress, String postalAddress,
-                              String addressDetail) {
+    public void updateAddress(String alias, String roadAddress, String zipCode, String addressDetail) {
         this.alias = alias;
         this.roadAddress = roadAddress;
-        this.postalAddress = postalAddress;
+        this.zipCode = zipCode;
         this.addressDetail = addressDetail;
     }
 

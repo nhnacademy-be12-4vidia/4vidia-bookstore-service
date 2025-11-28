@@ -15,14 +15,17 @@ import lombok.*;
 public class Grade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "grade_id")
     private Long gradeId;
 
-    @Column(columnDefinition = "TINYINT", nullable = false)
+    @Column(name = "grade_name", columnDefinition = "TINYINT", nullable = false)
     @Convert(converter = GradeNameConverter.class)
     private GradeName gradeName;
 
-    @Column(nullable = false)
+    @Column(name = "point_rate", nullable = false)
     private Integer pointRate;
+
+
 
 
     @Builder
@@ -30,5 +33,4 @@ public class Grade {
         this.gradeName = gradeName;
         this.pointRate = pointRate;
     }
-
 }

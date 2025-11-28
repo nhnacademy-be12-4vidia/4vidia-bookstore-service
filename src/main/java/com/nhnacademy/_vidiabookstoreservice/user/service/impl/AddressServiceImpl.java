@@ -29,6 +29,7 @@ public class AddressServiceImpl implements AddressService {
 
     /**
      * 주소 등록
+     * todo : 이미 등록된 우편번호를 추가하려고 할때 에러처리하기
      */
     @Override
     public AddressResponse createAddress(Long userId, CreateAddressRequest request){
@@ -82,6 +83,7 @@ public class AddressServiceImpl implements AddressService {
 
     /**
      * 주소 수정
+     * todo : 등록과 동일하게 -> 이미 등록된 주소를 추가하려할때 에러처리
      */
     @Override
     public AddressResponse updateAddress(Long userId, Long addressId, AddressRequest request){
@@ -120,16 +122,17 @@ public class AddressServiceImpl implements AddressService {
         }
 
         // 삭제하려고 하는 주소가 기본주소인지 체크
-        UserAddress defaultAddress = user.getUserAddress();
-        if (defaultAddress != null && defaultAddress.getUserAddressId().equals(userAddress.getUserAddressId())) {
-            throw new DefaultAddressCannotBeDeletedException("기본 주소는 삭제할 수 없습니다. 기본 주소를 변경 후 시도해주세요. 현재 기본 주소 별칭 : " + defaultAddress.getAlias());
-        }
+//        UserAddress defaultAddress = user.getUserAddress();
+//        if (defaultAddress != null && defaultAddress.getUserAddressId().equals(userAddress.getUserAddressId())) {
+//            throw new DefaultAddressCannotBeDeletedException("기본 주소는 삭제할 수 없습니다. 기본 주소를 변경 후 시도해주세요. 현재 기본 주소 별칭 : " + defaultAddress.getAlias());
+//        }
 
         addressRepository.deleteByUser_UserIdAndUserAddressId(userId, addressId);
     }
 
     /**
      * 기본주소 변경
+     * todo : 이미 기본주소로 등록한 addressId를 기본주소로 등록하려고 할때 에러처리
      */
     @Override
     public void updateDefaultAddress(Long userId, Long addressId){

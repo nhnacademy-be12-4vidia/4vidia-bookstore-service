@@ -25,7 +25,7 @@ public record CreateAddressRequest(
                 .user(user)
                 .alias(this.alias)
                 .roadAddress(this.roadAddress)
-                .postalAddress(this.zipCode)
+                .zipCode(this.zipCode)
                 .addressDetail(this.addressDetail)
                 .build();
     }
