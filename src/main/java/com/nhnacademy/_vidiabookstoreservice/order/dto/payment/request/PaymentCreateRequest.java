@@ -11,12 +11,12 @@ public record PaymentCreateRequest(
         String paymentKey,
         String sendOrderId
 ) {
-    public static PaymentCreateRequest from(Order order, TossPaymentResponse tossPaymentResponse) {
+    public static PaymentCreateRequest from(Order order, TossPaymentResponse tossPaymentResponse, long amount) {
         return new PaymentCreateRequest(
                 order,
                 tossPaymentResponse.status(),
                 tossPaymentResponse.method(),
-                tossPaymentResponse.totalAmount(),
+                amount,
                 tossPaymentResponse.paymentKey(),
                 tossPaymentResponse.orderId()
         );

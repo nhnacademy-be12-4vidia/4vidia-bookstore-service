@@ -33,7 +33,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     }
 
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
-    private static final String TOSS_CANCEL_URL = "https://api.tosspayments.com/v1/";
+    private static final String TOSS_CANCEL_URL = "https://api.tosspayments.com/v1/payments/";
 
 
     public void savePayment(PaymentCreateRequest paymentCreateRequest) {
@@ -71,9 +71,9 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     }
 
     @Override
-    public TossPaymentResponse cancelPayment(String paymentKey, long amount) {
-        Map<String, Object> requestData = Map.of( //TODO 취소(반품) 사유 필수 , 취소금액(부분)
-                "cancelReason", "단순 변심",
+    public TossPaymentResponse cancelPayment(String paymentKey, String reason, long amount) {
+        Map<String, Object> requestData = Map.of(
+                "cancelReason", reason,
                 "cancelAmount", amount
         );
         /* TODO 가상계좌 사용시 환불 계좌 "refundReceiveAccount"
