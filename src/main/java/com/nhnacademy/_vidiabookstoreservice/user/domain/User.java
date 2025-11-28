@@ -19,53 +19,64 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
-    @Column( nullable = false, length = 50)
+    @Column(name = "email", nullable = false, length = 50)
     private String email;
 
-    @Column(nullable = false, length = 60)
+    @Column(name = "password", nullable = false, length = 60)
     private String password;
 
     @Setter
-    @Column(nullable = false, length = 50)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 
     @Setter
-    @Column( nullable = false, length = 50)
+    @Column(name = "phone", nullable = false, length = 50)
     private String phone;
 
     // Todo  user쪽에서 쿠폰 요청하기 (매월 1일마다)
     @Setter
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
+    @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private UserStatus status =  UserStatus.ACTIVE; // ACTIVE, DORMANT, DELETED
 
-    @Column(nullable = false)
+    @Column(name = "role", nullable = false)
     private UserRole role = UserRole.USER; //USER, ADMIN
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     @Setter
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+    @Column(name = "social_id")
     private String socialId; //OAUTH ID
+    @Column(name = "provider")
     private String provider; // PAYCO등
 
+    @Column(name = "point")
     private int point = 0;
 
     // 대표주소 (기본주소) FK
     @OneToOne
-    private UserAddress userAddress;
+    @JoinColumn(name = "user_address_id")
+    private UserAddress userAddress; // erd에는 컬럼이름 user_address_id로 되있는데..?
 
     // user 등급
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grade_id")
     private Grade grade;
+
+
+
 
     @Builder
     public User(String email, String password, String name,
@@ -91,10 +102,9 @@ public class User {
     // 비즈니스 로직 메소드
 
     // 회원 정보 수정
-    public void updateProfile(String name, String phone, LocalDate birthDate){
+    public void updateProfile(String name, String phone){
         this.name = name;
         this.phone = phone;
-        this.birthDate = birthDate;
     }
 
 

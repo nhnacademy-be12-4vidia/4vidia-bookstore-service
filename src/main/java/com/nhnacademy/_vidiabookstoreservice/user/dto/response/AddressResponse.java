@@ -20,7 +20,7 @@ public record AddressResponse(
                 userAddress.getUserAddressId(),
                 userAddress.getAlias(),
                 userAddress.getRoadAddress(),
-                userAddress.getPostalAddress(),
+                userAddress.getZipCode(),
                 userAddress.getAddressDetail()
         );
     }
