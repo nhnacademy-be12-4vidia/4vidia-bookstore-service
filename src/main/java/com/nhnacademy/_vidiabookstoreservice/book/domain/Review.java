@@ -64,6 +64,18 @@ public class Review extends BaseEntity {
         this.rating = rating;
     }
 
+    public void addReviewImage(ReviewImage reviewImage) {
+        this.imageList.add(reviewImage);
+
+        if (reviewImage.getReview() != this) {
+            reviewImage.setReview(this);
+        }
+    }
+
+    public void updateHasPhotoStatus() {
+        this.hasPhoto = !this.imageList.isEmpty();
+    }
+
     @Builder
     public Review(User user, OrderItem orderItem, Book book, Integer rating, String content,
         boolean hasPhoto) {

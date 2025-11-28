@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.service;
 
+import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
@@ -25,5 +26,9 @@ public interface BookService {
     Page<BookListResponse> getBookListByAuthor(Long authorId, Pageable pageable);
 
     Page<BookListResponse> getBookListByCategoryPath(Long categoryId, Pageable pageable);
+
+    Book getBookEntity(Long bookId);
+
+    Book getProxyById(Long bookId);
 
 }

@@ -43,68 +43,68 @@ public class Book extends BaseEntity {
     private Long id;
 
     @Column(name = "isbn_13", length = 13)
-    @Setter
+    
     private String isbn;
 
     @Column(name = "title", nullable = false, length = 500)
-    @Setter
+    
     private String title;
 
     @Column(name = "subtitle", length = 500)
-    @Setter
+    
     private String subtitle;
 
     @Column(name = "book_index", columnDefinition = "TEXT")
-    @Setter
+    
     private String bookIndex;
 
     @Column(name = "description", columnDefinition = "TEXT")
-    @Setter
+    
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "publisher_id")
-    @Setter
+    
     private Publisher publisher;
 
     @OneToMany(mappedBy = "book")
     private List<BookAuthor> bookAuthors = new ArrayList<>();
 
     @Column(name = "published_date")
-    @Setter
+    
     private LocalDate publishedDate;
 
     @Column(name = "page_count")
-    @Setter
+    
     private Integer pageCount;
 
     @Column(name = "language", length = 10)
-    @Setter
+    
     private String language;
 
     @Column(name = "price_standard")
-    @Setter
+    
     private Integer priceStandard;
 
     @Column(name = "price_sales")
-    @Setter
+    
     private Integer priceSales;
 
     @Column(name = "stock", columnDefinition = "INT DEFAULT 0")
-    @Setter
+    
     private Integer stock;
 
     @Column(name = "stock_status")
-    @Setter
+    
     @Convert(converter = StockStatusConverter.class)
     private StockStatus stockStatus = StockStatus.OUT_OF_STOCK;
 
     @Column(name = "packaging_available")
-    @Setter
+    
     private boolean packagingAvailable = false;
 
     @Column(name = "volume_number", columnDefinition = "INT DEFAULT 1")
-    @Setter
+    
     private Integer volumeNumber;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -113,7 +113,7 @@ public class Book extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    @Setter
+    
     private Category category;
 
     @Builder

@@ -102,7 +102,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public User getProxyById(Long userId) {
         return userRepository.getReferenceById(userId);
     }

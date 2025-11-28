@@ -7,6 +7,7 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.BookImageAlreadyExis
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookImageRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class BookImageServiceImpl implements BookImageService {
     @Override
     @Transactional
     public BookImage createByEntity(BookImage bookImage) {
-        if (bookImageRepository.existsByBookIdAndImageUrl(bookImage.getBook().getId(),
+        if (bookImageRepository.existsByBook_IdAndImageUrl(bookImage.getBook().getId(),
             bookImage.getImageUrl())) {
             throw new BookImageAlreadyExistsException(
                 "해당 Url은 이미 저장되어있습니다. 도서: %s, Url: %s".formatted(bookImage.getBook().getTitle(),
@@ -49,6 +50,18 @@ public class BookImageServiceImpl implements BookImageService {
     @Transactional
     public void saveAll(List<BookImage> bookImages) {
         if (bookImages.isEmpty()) return;
-        bookImageRepository.saveAll(bookImages);
+
+        List<String> requestUrlList = bookImages.stream()
+            .map(BookImage::getImageUrl).toList();
+
+        Set<String> existingUrls = bookImageRepository.findExistingUrls(requestUrlList);
+
+        List<BookImage> bookImageList = bookImages.stream()
+            .filter(bi -> !existingUrls.contains(bi.getImageUrl()))
+            .toList();
+
+        if (!bookImageList.isEmpty()) {
+            bookImageRepository.saveAll(bookImageList);
+        }
     }
 }

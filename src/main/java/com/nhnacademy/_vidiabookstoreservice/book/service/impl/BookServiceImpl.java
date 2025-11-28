@@ -59,8 +59,8 @@ public class BookServiceImpl implements BookService {
         }
 
         Publisher publisher = getOrSavePublisher(request.getPublisherName());
-        Category category = categoryService.getCategory(request.getCategoryId());
-        Book book = request.toEntity(publisher, category);
+        Category categoryProxy = categoryService.getCategoryProxy(request.getCategoryId());
+        Book book = request.toEntity(publisher, categoryProxy);
 
         Book savedBook = bookRepository.save(book);
 
@@ -144,7 +144,7 @@ public class BookServiceImpl implements BookService {
     public void saveBookImages(List<MultipartFile> images, Book savedBook) {
         if (images == null || images.isEmpty()) return;
 
-        Set<String> uniqueFIleCheck = new HashSet<>();
+        Set<String> uniqueFileCheck = new HashSet<>();
 
         List<BookImage> imageEntities = new ArrayList<>();
 
@@ -155,7 +155,7 @@ public class BookServiceImpl implements BookService {
 
             String duplicateKey = file.getOriginalFilename() + "_" + file.getSize();
 
-            if (!uniqueFIleCheck.add(duplicateKey)) {
+            if (!uniqueFileCheck.add(duplicateKey)) {
                 continue;
             }
 
@@ -207,5 +207,17 @@ public class BookServiceImpl implements BookService {
 
         Page<Book> bookPage = bookRepository.findAllByCategoryPath(category.getPath(), pageable);
         return bookPage.map(BookListResponse::from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Book getBookEntity(Long bookId) {
+        return bookRepository.findById(bookId).orElseThrow(
+            () -> new BookNotFoundException("ID에 해당하는 도서를 찾을 수 없습니다. ID: %d".formatted(bookId)));
+    }
+
+    @Override
+    public Book getProxyById(Long bookId) {
+        return bookRepository.getReferenceById(bookId);
     }
 }

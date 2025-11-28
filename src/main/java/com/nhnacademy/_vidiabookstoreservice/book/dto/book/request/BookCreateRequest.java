@@ -13,7 +13,6 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class BookCreateRequest {
 
