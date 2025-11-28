@@ -31,4 +31,10 @@ public class CategoryServiceImpl implements CategoryService {
             () -> new CategoryNotFoundException(
                 "해당하는 아이디의 카테고리는 존재하지 않습니다. ID: %d".formatted(categoryId)));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Category getCategoryProxy(Long categoryId) {
+        return categoryRepository.getReferenceById(categoryId);
+    }
 }

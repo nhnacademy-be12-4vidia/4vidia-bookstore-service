@@ -10,4 +10,6 @@ public interface CategoryService {
 
     Category getCategory(Long categoryId);
 
+    Category getCategoryProxy(Long categoryId);
+
 }
