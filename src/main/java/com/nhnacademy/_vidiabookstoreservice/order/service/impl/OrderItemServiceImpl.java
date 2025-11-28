@@ -26,6 +26,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderItem getProxyById(Long orderItemId) {
         return orderItemRepository.getReferenceById(orderItemId);
     }
