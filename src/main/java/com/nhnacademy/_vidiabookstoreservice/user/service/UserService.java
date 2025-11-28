@@ -4,6 +4,11 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.request.*;
 import com.nhnacademy._vidiabookstoreservice.user.dto.response.UserProfileResponse;
 
 public interface UserService {
+
+    User getByUserId(Long userId);
+
+    User getProxyById(Long userId);
+
     Long register(UserSignupRequest request);
     UserProfileResponse getUserInfo(Long id);
     void updateUserInfo(Long id, UpdateUserRequest request);
