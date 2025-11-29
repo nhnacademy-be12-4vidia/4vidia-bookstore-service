@@ -29,7 +29,7 @@ public class AddressServiceImpl implements AddressService {
 
     /**
      * 주소 등록
-     * todo : 이미 등록된 우편번호를 추가하려고 할때 에러처리하기
+     * todo : 이미 등록된 우편번호?주소?를 추가하려고 할때 에러처리하기 -> 안해도 될까요? 할 수가 있나?
      */
     @Override
     public AddressResponse createAddress(Long userId, CreateAddressRequest request){
