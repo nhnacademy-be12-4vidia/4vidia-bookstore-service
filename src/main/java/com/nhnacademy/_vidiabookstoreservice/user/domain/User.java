@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.domain;
 
+import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import jakarta.persistence.*;
@@ -15,7 +16,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,11 +52,6 @@ public class User {
     @Column(name = "role", nullable = false)
     private UserRole role = UserRole.USER; //USER, ADMIN
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-    @Setter
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
     @Column(name = "social_id")
     private String socialId; //OAUTH ID
     @Column(name = "provider")
@@ -66,8 +62,8 @@ public class User {
 
     // 대표주소 (기본주소) FK
     @OneToOne
-    @JoinColumn(name = "user_address_id")
-    private UserAddress userAddress; // erd에는 컬럼이름 user_address_id로 되있는데..?
+    @JoinColumn(name = "address_id")
+    private Address address;
 
     // user 등급
     @Setter
@@ -96,7 +92,7 @@ public class User {
     // users 1: userAddress N
     //회원이 가진 모든 주소 리스트
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserAddress> addresses = new ArrayList<>();
+    private List<Address> addresses = new ArrayList<>();
 
 
     // 비즈니스 로직 메소드
@@ -108,8 +104,8 @@ public class User {
     }
 
 
-    public void setDefaultAddress(UserAddress userAddress) {
-        this.userAddress = userAddress;
+    public void setDefaultAddress(Address address) {
+        this.address = address;
     }
     public void setStatus(UserStatus userStatus) {
         this.status = userStatus;
@@ -138,7 +134,6 @@ public class User {
         }
 
         this.password = encodedPassword;
-        this.updatedAt = LocalDateTime.now(); // 변경 시간 업데이트
     }
     public void setLastLoginAt(LocalDateTime now) {
         this.lastLoginAt = now;

@@ -1,7 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.dto.request;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.domain.UserAddress;
+import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -20,8 +20,8 @@ public record CreateAddressRequest(
         @Size(max = 30)
         String addressDetail
 ){
-    public UserAddress toEntity(User user) {
-        return UserAddress.builder()
+    public Address toEntity(User user) {
+        return Address.builder()
                 .user(user)
                 .alias(this.alias)
                 .roadAddress(this.roadAddress)

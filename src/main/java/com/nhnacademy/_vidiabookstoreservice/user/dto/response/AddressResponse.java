@@ -1,10 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.user.dto.response;
 
 
-import com.nhnacademy._vidiabookstoreservice.user.domain.UserAddress;
+import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
 
 public record AddressResponse(
-    Long userAddressId,
+    Long addressId,
     String alias,
     String roadAddress,
     String zipCode,
@@ -15,13 +15,13 @@ public record AddressResponse(
     /**
      *UserAddress 엔티티를 AddressResponse DTO로 변환하는 정적 팩토리 메서드
      */
-    public static AddressResponse fromEntity(UserAddress userAddress) {
+    public static AddressResponse fromEntity(Address address) {
         return new AddressResponse(
-                userAddress.getUserAddressId(),
-                userAddress.getAlias(),
-                userAddress.getRoadAddress(),
-                userAddress.getZipCode(),
-                userAddress.getAddressDetail()
+                address.getAddressId(),
+                address.getAlias(),
+                address.getRoadAddress(),
+                address.getZipCode(),
+                address.getAddressDetail()
         );
     }
 }

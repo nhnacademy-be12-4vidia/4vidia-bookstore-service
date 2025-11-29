@@ -9,13 +9,13 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "user_address")
-public class UserAddress {
+@Table(name = "address")
+public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("주소 식별자")
-    @Column(name = "user_address_id")
-    private Long userAddressId;
+    @Column(name = "address_id")
+    private Long addressId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
