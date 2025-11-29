@@ -1,5 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemResponse;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
@@ -30,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final GradeRepository gradeRepository;
     private final BCryptPasswordEncoder BCryptPasswordEncoder;
+    private final OrderService orderService;
 
     /**
      * 회원가입
@@ -74,13 +79,14 @@ public class UserServiceImpl implements UserService {
         return user.getEmail();
     }
 
+
     /**
      * 회원정보 조회 (마이페이지)
      */
     @Override
-    public UserProfileResponse getUserInfo(Long id) {
-        User user = userRepository.findById(id).orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다. "));
-        log.info("user id({}) -> email : {}", id, user.getEmail());
+    public UserProfileResponse getUserInfo(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다. "));
+        log.info("user id({}) -> email : {}", userId, user.getEmail());
         return UserProfileResponse.fromEntity(user);
     }
 
@@ -88,8 +94,8 @@ public class UserServiceImpl implements UserService {
      * 회원정보 수정
      */
     @Override
-    public void updateUserInfo(Long id, UpdateUserRequest request) {
-        User user = userRepository.findById(id).orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
+    public void updateUserInfo(Long userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
 
         if(request.name()!=null && !request.name().isBlank()){
             user.setName(request.name());
@@ -110,8 +116,8 @@ public class UserServiceImpl implements UserService {
      * 비밀번호 수정
      */
     @Override
-    public void changePassword(Long id, ChangePasswordRequest request) {
-        User user = userRepository.findById(id)
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
         // 기존 비밀번호 확인
         if(!BCryptPasswordEncoder.matches(request.currentPassword(),user.getPassword())){
@@ -136,8 +142,8 @@ public class UserServiceImpl implements UserService {
      * 회원 탈퇴
      */
     @Override
-    public void deleteUserById(Long id, DeleteUserRequest request) {
-        User user = userRepository.findById(id)
+    public void deleteUserById(Long userId, DeleteUserRequest request) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("회원이 존재하지 않습니다."));
 
         if(!BCryptPasswordEncoder.matches(request.currentPassword(), user.getPassword())) { // 순서가 중요?
@@ -146,7 +152,6 @@ public class UserServiceImpl implements UserService {
 
         user.setStatus(UserStatus.DELETED); // status → DELETED 로 변경 등
     }
-
 
 
 

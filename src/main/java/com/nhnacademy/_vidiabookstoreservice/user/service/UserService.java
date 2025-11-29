@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.request.*;
 import com.nhnacademy._vidiabookstoreservice.user.dto.response.UserProfileResponse;
 
+
 public interface UserService {
 
     User getProxyById(Long userId);
