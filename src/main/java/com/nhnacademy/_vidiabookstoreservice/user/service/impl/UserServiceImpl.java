@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Slf4j
 @Transactional
@@ -82,7 +81,7 @@ public class UserServiceImpl implements UserService {
     public UserProfileResponse getUserInfo(Long id) {
         User user = userRepository.findById(id).orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다. "));
         log.info("user id({}) -> email : {}", id, user.getEmail());
-        return UserProfileResponse.from(user);
+        return UserProfileResponse.fromEntity(user);
     }
 
     /**
@@ -131,8 +130,6 @@ public class UserServiceImpl implements UserService {
         // 비밀번호 암호화 및 업데이트
         String encodeNewPassword = BCryptPasswordEncoder.encode(request.newPassword());
         user.updateEncodedPassword(encodeNewPassword);
-        user.setUpdatedAt(LocalDateTime.now());
-        // 트랜잭션 종료시점에 자동으로 업데이트 됨
     }
 
     /**

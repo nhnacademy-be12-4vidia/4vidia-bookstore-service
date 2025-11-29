@@ -16,7 +16,7 @@ public record UserProfileResponse(
         String gradeName
 
 ) {
-    public static UserProfileResponse from(User user) {
+    public static UserProfileResponse fromEntity(User user) {
         return new UserProfileResponse(
                 user.getUserId(),
                 user.getEmail(),
@@ -24,8 +24,8 @@ public record UserProfileResponse(
                 user.getPhone(),
                 user.getBirthDate(),
                 user.getPoint(),
-                user.getUserAddress() != null
-                ? AddressResponse.fromEntity(user.getUserAddress()):null,
+                user.getAddress() != null
+                ? AddressResponse.fromEntity(user.getAddress()):null,
                 user.getGrade().getGradeName().name()
         );
     }

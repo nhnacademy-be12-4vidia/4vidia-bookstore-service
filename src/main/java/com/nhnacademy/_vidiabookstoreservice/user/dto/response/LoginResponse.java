@@ -8,7 +8,7 @@ public record LoginResponse(
         String email,
         String password // password는 넘어가면 안되는데..
 ) {
-    public static LoginResponse from(User user){
+    public static LoginResponse fromEntity(User user){
        return new LoginResponse(
                user.getEmail(),
                user.getPassword()
