@@ -32,5 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
+### yml ###
 application-young.yml
 application-rim.yml
+application-local.yml
