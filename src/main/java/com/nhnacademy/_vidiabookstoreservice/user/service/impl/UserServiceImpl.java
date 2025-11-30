@@ -1,8 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
@@ -28,8 +25,6 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
-    // 회원 가입, 조회, 수정, 삭제
 
     private final UserRepository userRepository;
     private final GradeRepository gradeRepository;
@@ -58,18 +53,15 @@ public class UserServiceImpl implements UserService {
                 .build();
         log.info("grade : {}", user.getGrade());
 
-
-
         userRepository.save(user);
-        System.out.println(">>> USER SAVED, ID = "+user.getUserId());
 
         return user.getUserId();
-
     }
 
     /**
      * 아이디 찾기 (이름 + 생일 + 전화번호)
      */
+    @Override
     public String findUserId(FindIdRequest request) {
         LocalDate birthday = LocalDate.parse(request.birthday());
         User user = userRepository.findByNameAndBirthDateAndPhone(
@@ -106,9 +98,21 @@ public class UserServiceImpl implements UserService {
         log.info("회원정보 수정완료");
     }
 
+    /**
+     * 이건 뭐죠? 지연로딩??
+     */
     @Override
     public User getProxyById(Long userId) {
         return userRepository.getReferenceById(userId);
+    }
+
+    /**
+     * 회원 pk 조회
+     * */
+    @Override
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("회원이 존재하지 않습니다."));
     }
 
 
@@ -152,9 +156,5 @@ public class UserServiceImpl implements UserService {
 
         user.setStatus(UserStatus.DELETED); // status → DELETED 로 변경 등
     }
-
-
-
-
 
 }

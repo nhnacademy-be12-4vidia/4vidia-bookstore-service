@@ -25,7 +25,8 @@ public class GradeServiceImpl implements GradeService {
      */
     @Override
     public GradeResponse getGrade(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
 
         return GradeResponse.builder()
                 .gradeName(user.getGrade().getGradeName().name())
@@ -33,14 +34,16 @@ public class GradeServiceImpl implements GradeService {
                 .build();
     }
 
-
     /**
      * 등급 변경
      */
     @Override
-    public void updateGrade(Long userId, Long gradeId/*Grade grade*/) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
-        Grade grade = gradeRepository.findById(gradeId).orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+    public void updateGrade(Long userId, Long gradeId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
+        Grade grade = gradeRepository.findById(gradeId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+
         user.setGrade(grade);
     }
 

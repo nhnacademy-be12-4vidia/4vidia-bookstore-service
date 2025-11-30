@@ -19,11 +19,11 @@ public class AddressController {
     private final AddressService addressService;
 
     /**
-     * 주소 등록 o
+     * 주소 등록
      */
     @PostMapping
     public ResponseEntity<String> registerAddress(@RequestHeader("X-USER-ID") Long id,
-                                                  @Valid @RequestBody CreateAddressRequest createAddressRequest) { // todo : @Valid 붙이기
+                                                  @Valid @RequestBody CreateAddressRequest createAddressRequest) {
         addressService.createAddress(id, createAddressRequest);
         return ResponseEntity.ok("주소 등록 완료");
     }
@@ -38,7 +38,7 @@ public class AddressController {
     }
 
     /**
-     * 주소 전체 조회 o
+     * 주소 전체 조회
      */
     @GetMapping
     public ResponseEntity<List<AddressResponse>> getAddressList(@RequestHeader("X-USER-ID") Long id) {

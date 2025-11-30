@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.user.dto.request.*;
 import com.nhnacademy._vidiabookstoreservice.user.dto.response.UserProfileResponse;
-import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,18 +12,17 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/my") // todo /my/profile
+@RequestMapping("/my")
 @RestController
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
 
     /**
      * 회원가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<String> singup(@RequestBody @Valid UserSignupRequest userSignupRequest) {
+    public ResponseEntity<String> singup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
         userService.register(userSignupRequest);
         return ResponseEntity.ok("성공적으로 저장되었습니다.");
     }
@@ -43,7 +41,7 @@ public class UserController {
      */
     @PatchMapping("/profile")
     public ResponseEntity<String> updateUser(@RequestHeader("X-USER-ID") Long id,
-                                           @RequestBody UpdateUserRequest updateUserRequest) {
+                                             @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         userService.updateUserInfo(id, updateUserRequest);
         return ResponseEntity.ok("수정 완료");
     }
@@ -64,14 +62,14 @@ public class UserController {
      */
     @PatchMapping("/delete")
     public ResponseEntity<String> deleteUser(@RequestHeader("X-USER-ID") Long id,
-                                             @RequestBody DeleteUserRequest deletePasswordRequest) {
+                                             @Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
         userService.deleteUserById(id, deletePasswordRequest);
         return ResponseEntity.ok("회원 탈퇴 완료");
     }
 
 
     /**
-     * 회원 아이디 찾기 ???? -> 이름,생일,전화번호 조회해서 찾기
+     * 회원 아이디 찾기 -> 이름,생일,전화번호 조회해서 찾기
      * */
     @PostMapping("/find-id")
     public ResponseEntity<String> findId(@Valid @RequestBody FindIdRequest findIdRequest) {
@@ -81,7 +79,7 @@ public class UserController {
 
 
     /**
-     * 회원 비밀번호 찾기 ->아이디,이름,전화번호 입력받아서  임시비밀번호 생성해서 -> 이메일로 보내기?
+     * 회원 비밀번호 찾기 ->아이디,이름,전화번호 입력받아서 임시비밀번호 생성해서 -> 이메일로 보내기?
      */
 //    @PostMapping("/find-password")
 //    public ResponseEntity<String> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
