@@ -16,7 +16,7 @@ public class GradeController {
      * 등급 조회
      */
     @GetMapping
-    public ResponseEntity<GradeResponse> getGrade(@RequestHeader("X-USER-ID") Long id) {
+    public ResponseEntity<GradeResponse> getGrade(@RequestHeader("X-User-Id") Long id) {
         return ResponseEntity.ok(gradeService.getGrade(id));
     }
 
@@ -25,7 +25,7 @@ public class GradeController {
      * 등급 변경
      */
     @PutMapping("/{gradeId}")
-    public ResponseEntity<String> updateGrade(@RequestHeader("X-USER-ID") Long id,
+    public ResponseEntity<String> updateGrade(@RequestHeader("X-User-Id") Long id,
                                               @PathVariable Long gradeId) {
         gradeService.updateGrade(id, gradeId);
         return ResponseEntity.ok("등급 변경 완료");

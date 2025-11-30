@@ -31,7 +31,7 @@ public class UserController {
      * 회원정보 조회 (마이페이지)
      */
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileResponse> getUserProfile(@RequestHeader("X-USER-ID") Long id) {
+    public ResponseEntity<UserProfileResponse> getUserProfile(@RequestHeader("X-User-Id") Long id) {
         UserProfileResponse user = userService.getUserInfo(id);
         return ResponseEntity.ok(user);
     }
@@ -40,7 +40,7 @@ public class UserController {
      * 회원정보 수정
      */
     @PatchMapping("/profile")
-    public ResponseEntity<String> updateUser(@RequestHeader("X-USER-ID") Long id,
+    public ResponseEntity<String> updateUser(@RequestHeader("X-User-Id") Long id,
                                              @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         userService.updateUserInfo(id, updateUserRequest);
         return ResponseEntity.ok("수정 완료");
@@ -51,7 +51,7 @@ public class UserController {
      * 비밀번호 수정 => post가 맞데요
      */
     @PatchMapping("/change-password")
-    public ResponseEntity<String> updatePassword(@RequestHeader("X-USER-ID") Long id,
+    public ResponseEntity<String> updatePassword(@RequestHeader("X-User-Id") Long id,
                                                  @Valid @RequestBody ChangePasswordRequest changePasswordRequest, BindingResult bindingResult) {
         userService.changePassword(id, changePasswordRequest);
         return ResponseEntity.ok("비밀번호 수정 완료");
@@ -61,7 +61,7 @@ public class UserController {
      * 회원 탈퇴
      */
     @PatchMapping("/delete")
-    public ResponseEntity<String> deleteUser(@RequestHeader("X-USER-ID") Long id,
+    public ResponseEntity<String> deleteUser(@RequestHeader("X-User-Id") Long id,
                                              @Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
         userService.deleteUserById(id, deletePasswordRequest);
         return ResponseEntity.ok("회원 탈퇴 완료");
