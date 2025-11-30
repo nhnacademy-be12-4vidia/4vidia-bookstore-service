@@ -17,7 +17,7 @@ public class GradeController {
      */
     @GetMapping
     public ResponseEntity<GradeResponse> getGrade(@RequestHeader("X-User-Id") Long id) {
-        return ResponseEntity.ok(gradeService.getGrade(id));
+        return ResponseEntity.ok().body(gradeService.getGrade(id)); // 200 OK + JSON
     }
 
 
@@ -28,7 +28,7 @@ public class GradeController {
     public ResponseEntity<String> updateGrade(@RequestHeader("X-User-Id") Long id,
                                               @PathVariable Long gradeId) {
         gradeService.updateGrade(id, gradeId);
-        return ResponseEntity.ok("등급 변경 완료");
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
 }
