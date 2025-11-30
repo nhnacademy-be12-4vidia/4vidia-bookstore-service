@@ -6,6 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +23,9 @@ public class UserController {
      * 회원가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<String> singup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
+    public ResponseEntity<Void> singup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
         userService.register(userSignupRequest);
-        return ResponseEntity.ok("성공적으로 저장되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
     }
 
     /**
@@ -33,17 +34,17 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<UserProfileResponse> getUserProfile(@RequestHeader("X-User-Id") Long id) {
         UserProfileResponse user = userService.getUserInfo(id);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok().body(user); // 200 OK + JSON
     }
 
     /**
      * 회원정보 수정
      */
     @PatchMapping("/profile")
-    public ResponseEntity<String> updateUser(@RequestHeader("X-User-Id") Long id,
-                                             @Valid @RequestBody UpdateUserRequest updateUserRequest) {
-        userService.updateUserInfo(id, updateUserRequest);
-        return ResponseEntity.ok("수정 완료");
+    public ResponseEntity<Void> updateUserProfile(@RequestHeader("X-User-Id") Long id,
+                                                  @Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        userService.updateUserProfile(id, updateUserRequest);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
 
@@ -51,30 +52,30 @@ public class UserController {
      * 비밀번호 수정 => post가 맞데요
      */
     @PatchMapping("/change-password")
-    public ResponseEntity<String> updatePassword(@RequestHeader("X-User-Id") Long id,
+    public ResponseEntity<Void> updatePassword(@RequestHeader("X-User-Id") Long id,
                                                  @Valid @RequestBody ChangePasswordRequest changePasswordRequest, BindingResult bindingResult) {
         userService.changePassword(id, changePasswordRequest);
-        return ResponseEntity.ok("비밀번호 수정 완료");
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     /**
      * 회원 탈퇴
      */
-    @PatchMapping("/delete")
-    public ResponseEntity<String> deleteUser(@RequestHeader("X-User-Id") Long id,
+    @PatchMapping("/delete") // todo : 실제로 회원을 삭제하지 않는데 맵핑, 메서드명에 delete가 맞는가?
+    public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") Long id,
                                              @Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
         userService.deleteUserById(id, deletePasswordRequest);
-        return ResponseEntity.ok("회원 탈퇴 완료");
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
 
     /**
-     * 회원 아이디 찾기 -> 이름,생일,전화번호 조회해서 찾기
+     * 회원 아이디(email) 찾기 -> 이름,생일,전화번호 조회해서 찾기
      * */
     @PostMapping("/find-id")
-    public ResponseEntity<String> findId(@Valid @RequestBody FindIdRequest findIdRequest) {
+    public ResponseEntity<String> findUserId(@Valid @RequestBody FindIdRequest findIdRequest) {
         String email = userService.findUserId(findIdRequest);
-        return ResponseEntity.ok(email);
+        return ResponseEntity.ok().body(email); // 200 OK + JSON
     }
 
 

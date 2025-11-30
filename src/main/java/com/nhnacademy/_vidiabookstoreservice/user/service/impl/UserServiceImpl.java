@@ -29,7 +29,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final GradeRepository gradeRepository;
     private final BCryptPasswordEncoder BCryptPasswordEncoder;
-    private final OrderService orderService;
 
     /**
      * 회원가입
@@ -86,8 +85,9 @@ public class UserServiceImpl implements UserService {
      * 회원정보 수정
      */
     @Override
-    public void updateUserInfo(Long userId, UpdateUserRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
+    public void updateUserProfile(Long userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
 
         if(request.name()!=null && !request.name().isBlank()){
             user.setName(request.name());
