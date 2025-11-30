@@ -9,6 +9,7 @@ public interface UserService {
 
     User getProxyById(Long userId);
 
+    User getUserById(Long userId);
     Long register(UserSignupRequest request);
     UserProfileResponse getUserInfo(Long id);
     void updateUserInfo(Long id, UpdateUserRequest request);

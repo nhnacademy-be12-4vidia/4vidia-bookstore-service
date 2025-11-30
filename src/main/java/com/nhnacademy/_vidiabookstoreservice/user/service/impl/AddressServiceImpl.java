@@ -8,6 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.request.CreateAddressReque
 import com.nhnacademy._vidiabookstoreservice.user.dto.response.AddressResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AddressNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressCannotBeDeletedException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
@@ -25,11 +26,8 @@ public class AddressServiceImpl implements AddressService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
 
-    // todo : 에러처리 - 서비스에서는 레포지토리 처리만 하고 컨트롤러에서는 받아오는거에 대해서만 처리
-
     /**
      * 주소 등록
-     * todo : 이미 등록된 우편번호?주소?를 추가하려고 할때 에러처리하기 -> 안해도 될까요? 할 수가 있나?
      */
     @Override
     public AddressResponse createAddress(Long userId, CreateAddressRequest request){
@@ -83,7 +81,6 @@ public class AddressServiceImpl implements AddressService {
 
     /**
      * 주소 수정
-     * todo : 등록과 동일하게 -> 이미 등록된 주소를 추가하려할때 에러처리
      */
     @Override
     public AddressResponse updateAddress(Long userId, Long addressId, AddressRequest request){
@@ -164,8 +161,7 @@ public class AddressServiceImpl implements AddressService {
 
         Address defaultAddress = user.getAddress();
         if (defaultAddress == null) {
-            // todo : DefaultAddressNotFoundException 를 새로 만들어야하는가?
-            throw new AddressNotFoundException("기본 주소가 설정되어 있지 않습니다.");
+            throw new DefaultAddressNotFoundException("기본 주소가 설정되어 있지 않습니다.");
         }
 
         return AddressResponse.fromEntity(defaultAddress);

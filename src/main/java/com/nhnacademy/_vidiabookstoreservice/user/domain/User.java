@@ -42,9 +42,9 @@ public class User extends BaseEntity {
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
+    @Setter
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
-
 
     @Column(name = "status", nullable = false)
     private UserStatus status =  UserStatus.ACTIVE; // ACTIVE, DORMANT, DELETED
@@ -58,7 +58,7 @@ public class User extends BaseEntity {
     private String provider; // PAYCO등
 
     @Column(name = "point")
-    private int point = 0;
+    private int point = 0; // todo : Integer로 수정해야함
 
     // 대표주소 (기본주소) FK
     @OneToOne
@@ -134,8 +134,5 @@ public class User extends BaseEntity {
         }
 
         this.password = encodedPassword;
-    }
-    public void setLastLoginAt(LocalDateTime now) {
-        this.lastLoginAt = now;
     }
 }

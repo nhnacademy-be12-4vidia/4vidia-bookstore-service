@@ -11,7 +11,7 @@ public record UserProfileResponse(
         String name,
         String phone,
         LocalDate birthDate,
-        int point,
+        int point, // todo : Integer로 변경해야함
         AddressResponse defaultAddress,
         String gradeName
 
