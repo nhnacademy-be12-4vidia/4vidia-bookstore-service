@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.global.exception;
+package com.nhnacademy._vidiabookstoreservice.global.exception.handler;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
