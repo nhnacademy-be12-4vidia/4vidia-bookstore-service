@@ -1,6 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.book.exception;
 
-public class AuthorIdNotFoundException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
+
+public class AuthorIdNotFoundException extends NotFoundException {
 
     public AuthorIdNotFoundException(String message) {
         super(message);
