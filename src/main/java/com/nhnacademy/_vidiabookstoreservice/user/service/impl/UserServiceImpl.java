@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.response.UserProfileRespon
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
+import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.Random;
 
 @Slf4j
 @Transactional
@@ -29,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final GradeRepository gradeRepository;
     private final BCryptPasswordEncoder BCryptPasswordEncoder;
+    private final EmailService mailService;
 
     /**
      * 회원가입
@@ -69,6 +72,41 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()-> new IllegalArgumentException("일치하는 회원정보가 없습니다."));
         return user.getEmail();
     }
+    /**
+     * 비밀번호 찾기 ( 아이디 + 이름 + 전화번호) -> 임시 비밀번호 발급
+     */
+    public String restPasswordAndSendMail (FindPasswordRequest request) {
+        User user = userRepository.findByEmailAndNameAndPhone(
+                request.email(),request.name(),request.phone()
+        ).orElseThrow(()-> new IllegalArgumentException("일치하는 회원젇보가 없습니다."));
+
+        // 임시 비밀번호 생성
+        String tempPassword = generateTempPassword(10);
+
+        // 비밀번호 암호화 후 저장
+
+        String encodedPassword = BCryptPasswordEncoder.encode(tempPassword);
+        user.updateEncodedPassword(encodedPassword);
+        userRepository.save(user);
+
+        // 이메일 발송 ( 구체 로직은 MailService에서)
+        mailService.sendTempPassword(user.getEmail(), tempPassword);
+        return "임시 비밀번호가 이메일로 발송되었습니다.";
+
+    }
+    // 임시 비밀번호 발급 로직
+    private String generateTempPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
+
 
 
     /**

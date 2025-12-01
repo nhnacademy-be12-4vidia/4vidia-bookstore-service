@@ -16,4 +16,5 @@ public interface UserService {
     void changePassword(Long id, ChangePasswordRequest request);
     void deleteUserById(Long id, DeleteUserRequest request);
     String findUserId(FindIdRequest request);
+    String restPasswordAndSendMail (FindPasswordRequest request);
 }

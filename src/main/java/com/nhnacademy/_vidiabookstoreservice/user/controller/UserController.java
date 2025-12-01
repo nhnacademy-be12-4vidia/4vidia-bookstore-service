@@ -82,12 +82,11 @@ public class UserController {
     /**
      * 회원 비밀번호 찾기 ->아이디,이름,전화번호 입력받아서 임시비밀번호 생성해서 -> 이메일로 보내기?
      */
-//    @PostMapping("/find-password")
-//    public ResponseEntity<String> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
-//        User user = userRepository.findByEmailAndNameAndPhone(
-//                findPasswordRequest.
-//        )
-//    }
+    @PostMapping("/find-password")
+    public ResponseEntity<String> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
+        userService.restPasswordAndSendMail(findPasswordRequest);
+        return ResponseEntity.ok("임시 비밀번호가 발급되었습니다.");
+    }
 
 
 
