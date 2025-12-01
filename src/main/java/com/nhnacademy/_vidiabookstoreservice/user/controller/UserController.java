@@ -40,20 +40,20 @@ public class UserController {
     /**
      * 회원정보 수정
      */
-    @PatchMapping("/profile")
-    public ResponseEntity<Void> updateUserProfile(@RequestHeader("X-User-Id") Long id,
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfileResponse> updateUserProfile(@RequestHeader("X-User-Id") Long id,
                                                   @Valid @RequestBody UpdateUserRequest updateUserRequest) {
-        userService.updateUserProfile(id, updateUserRequest);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        UserProfileResponse userProfileResponse = userService.updateUserProfile(id, updateUserRequest);
+        return ResponseEntity.ok().body(userProfileResponse); // 204 No Content ? 200 OK + JSON ??
     }
 
 
     /**
-     * 비밀번호 수정 => post가 맞데요
+     * 비밀번호 수정
      */
-    @PatchMapping("/change-password")
-    public ResponseEntity<Void> updatePassword(@RequestHeader("X-User-Id") Long id,
-                                                 @Valid @RequestBody ChangePasswordRequest changePasswordRequest, BindingResult bindingResult) {
+    @PutMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@RequestHeader("X-User-Id") Long id,
+                                               @Valid @RequestBody ChangePasswordRequest changePasswordRequest, BindingResult bindingResult) {
         userService.changePassword(id, changePasswordRequest);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
@@ -61,9 +61,9 @@ public class UserController {
     /**
      * 회원 탈퇴
      */
-    @PatchMapping("/delete") // todo : 실제로 회원을 삭제하지 않는데 맵핑, 메서드명에 delete가 맞는가?
+    @PutMapping("/delete") // todo : 실제로 회원을 삭제하지 않는데 맵핑, 메서드명에 delete가 맞는가?
     public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") Long id,
-                                             @Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
+                                           @Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
         userService.deleteUserById(id, deletePasswordRequest);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
