@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
@@ -26,6 +27,7 @@ import org.hibernate.annotations.OnDeleteAction;
 })
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class BookTag {
 
     @Id
@@ -36,14 +38,19 @@ public class BookTag {
     @ManyToOne(optional = false)
     @JoinColumn(name = "book_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @Setter
     private Book book;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "tag_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @Setter
     private Tag tag;
+
+    public void setBook(Book book) {
+        this.book = book;
+        if (!book.getBookTagList().contains(this)) {
+            book.getBookTagList().add(this);
+        }
+    }
 
     @Builder
     public BookTag(Book book, Tag tag) {
