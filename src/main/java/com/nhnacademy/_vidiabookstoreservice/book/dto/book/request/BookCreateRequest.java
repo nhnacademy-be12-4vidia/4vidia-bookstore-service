@@ -44,6 +44,7 @@ public class BookCreateRequest {
     private LocalDate publishedDate;
 
     private String contributorList;
+    private String tagList;
     private String subtitle;
     private String bookIndex;
     private String description;
