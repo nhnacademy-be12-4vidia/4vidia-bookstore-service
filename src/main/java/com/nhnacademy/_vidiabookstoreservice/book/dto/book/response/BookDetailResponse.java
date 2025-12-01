@@ -34,6 +34,7 @@ public class BookDetailResponse {
     private List<AuthorInfo> authors;
     private Integer volumeNumber;
     private List<String> imageUrls;
+    private List<String> tags;
 
     @Getter @Builder
     public static class PublisherInfo {
@@ -89,6 +90,7 @@ public class BookDetailResponse {
                 .build()).toList())
             .volumeNumber(book.getVolumeNumber())
             .imageUrls(book.getBookImageList().stream().map(BookImage::getImageUrl).toList())
+            .tags(book.getBookTagList().stream().map(bt -> bt.getTag().getName()).toList())
             .build();
     }
 
