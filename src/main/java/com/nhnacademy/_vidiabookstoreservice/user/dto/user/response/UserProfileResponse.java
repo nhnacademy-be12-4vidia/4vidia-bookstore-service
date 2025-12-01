@@ -1,7 +1,8 @@
-package com.nhnacademy._vidiabookstoreservice.user.dto.response;
+package com.nhnacademy._vidiabookstoreservice.user.dto.user.response;
 
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
 
 import java.time.LocalDate;
 

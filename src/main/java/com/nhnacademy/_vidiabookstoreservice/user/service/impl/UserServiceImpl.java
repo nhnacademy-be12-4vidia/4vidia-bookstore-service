@@ -1,16 +1,14 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
-import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
-import com.nhnacademy._vidiabookstoreservice.user.dto.request.*;
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.UserProfileResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
-import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
-import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.time.LocalDate;
-import java.util.Random;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Transactional
@@ -29,92 +27,26 @@ import java.util.Random;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final GradeRepository gradeRepository;
     private final BCryptPasswordEncoder BCryptPasswordEncoder;
-    private final EmailService mailService;
 
     /**
-     * 회원가입
-     */
+     * 이메일로 회원 조회
+     * */
     @Override
-    public Long register(UserSignupRequest request) {
-        if(userRepository.existsByEmail(request.email())){
-            throw new UserAlreadyExistsException("이미 존재하는 회원입니다. 이메일: %s".formatted(request.email()));
-        }
+    public UserInfoResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
 
-        Grade defaultGrade = gradeRepository.findByGradeName(GradeName.WELCOME);
-
-        // User 생성
-        User user = User.builder()
-                .email(request.email())
-                .password(BCryptPasswordEncoder.encode(request.password()))
-                .name(request.name())
-                .phone(request.phone())
-                .birthDate(request.birthDate())
-                .grade(defaultGrade)
-                .build();
-        log.info("grade : {}", user.getGrade());
-
-        userRepository.save(user);
-
-        return user.getUserId();
+        return UserInfoResponse.fromEntity(user);
     }
-
-    /**
-     * 아이디 찾기 (이름 + 생일 + 전화번호)
-     */
-    @Override
-    public String findUserId(FindIdRequest request) {
-        LocalDate birthday = LocalDate.parse(request.birthday());
-        User user = userRepository.findByNameAndBirthDateAndPhone(
-                        request.name(),birthday,request.phone()
-                )
-                .orElseThrow(()-> new IllegalArgumentException("일치하는 회원정보가 없습니다."));
-        return user.getEmail();
-    }
-    /**
-     * 비밀번호 찾기 ( 아이디 + 이름 + 전화번호) -> 임시 비밀번호 발급
-     */
-    public String restPasswordAndSendMail (FindPasswordRequest request) {
-        User user = userRepository.findByEmailAndNameAndPhone(
-                request.email(),request.name(),request.phone()
-        ).orElseThrow(()-> new IllegalArgumentException("일치하는 회원젇보가 없습니다."));
-
-        // 임시 비밀번호 생성
-        String tempPassword = generateTempPassword(10);
-
-        // 비밀번호 암호화 후 저장
-
-        String encodedPassword = BCryptPasswordEncoder.encode(tempPassword);
-        user.updateEncodedPassword(encodedPassword);
-        userRepository.save(user);
-
-        // 이메일 발송 ( 구체 로직은 MailService에서)
-        mailService.sendTempPassword(user.getEmail(), tempPassword);
-        return "임시 비밀번호가 이메일로 발송되었습니다.";
-
-    }
-    // 임시 비밀번호 발급 로직
-    private String generateTempPassword(int length) {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-
-        for(int i = 0; i < length; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return sb.toString();
-    }
-
-
-
 
     /**
      * 회원정보 조회 (마이페이지)
      */
     @Override
     public UserProfileResponse getUserInfo(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다. "));
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다. "));
         log.info("user id({}) -> email : {}", userId, user.getEmail());
         return UserProfileResponse.fromEntity(user);
     }

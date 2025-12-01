@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.user.dto.response;
+package com.nhnacademy._vidiabookstoreservice.user.dto.like.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;

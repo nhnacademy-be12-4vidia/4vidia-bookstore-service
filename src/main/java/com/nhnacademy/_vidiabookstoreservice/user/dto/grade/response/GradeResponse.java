@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.user.dto.response;
+package com.nhnacademy._vidiabookstoreservice.user.dto.grade.response;
 
 
 import lombok.Builder;

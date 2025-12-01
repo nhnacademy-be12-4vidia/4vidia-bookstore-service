@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.user.dto.request;
+package com.nhnacademy._vidiabookstoreservice.user.dto.address.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
