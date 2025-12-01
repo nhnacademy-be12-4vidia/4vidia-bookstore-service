@@ -61,10 +61,10 @@ public class AddressController {
      * 주소삭제
      */
     @DeleteMapping("/{addressId}")
-    public ResponseEntity<Void> deleteAddress(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<String> deleteAddress(@RequestHeader("X-User-Id") Long userId,
                                                 @PathVariable Long addressId) {
         addressService.deleteAddress(userId, addressId);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.ok().body("delete"); // 204 No Content
     }
 
 
