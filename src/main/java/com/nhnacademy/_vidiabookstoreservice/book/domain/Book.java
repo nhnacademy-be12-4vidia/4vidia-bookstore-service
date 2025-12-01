@@ -111,6 +111,9 @@ public class Book extends BaseEntity {
     @OrderBy("displayOrder ASC ")
     private List<BookImage> bookImageList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookTag> bookTagList = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     
@@ -151,6 +154,14 @@ public class Book extends BaseEntity {
 
         if (bookImage.getBook() != this) {
             bookImage.setBook(this);
+        }
+    }
+
+    public void addBookTag(BookTag bookTag) {
+        this.bookTagList.add(bookTag);
+
+        if (bookTag.getBook() != this) {
+            bookTag.setBook(this);
         }
     }
 }
