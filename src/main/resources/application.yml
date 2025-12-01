@@ -25,6 +25,19 @@ spring:
 
         dialect: org.hibernate.dialect.MySQL8Dialect
         default_batch_fetch_size: 100
+    #SMTP
+  mail:
+      host: smtp.gmail.com
+      port: 587
+      username: 4vidia.bookservice@gmail.com
+      password: jnstvwwweeauxmzt
+      properties:
+        mail:
+          smtp:
+            starttls:
+              enable: true
+            auth: true
+
 
 
   elasticsearch:
@@ -59,3 +72,7 @@ eureka:
 
 toss:
   secretKey: test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy
+
+
+
+
