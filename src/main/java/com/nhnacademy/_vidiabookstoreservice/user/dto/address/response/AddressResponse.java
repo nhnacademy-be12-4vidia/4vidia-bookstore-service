@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.user.dto.response;
+package com.nhnacademy._vidiabookstoreservice.user.dto.address.response;
 
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.Address;

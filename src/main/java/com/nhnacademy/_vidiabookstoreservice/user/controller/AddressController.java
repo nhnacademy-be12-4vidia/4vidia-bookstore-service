@@ -1,8 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
-import com.nhnacademy._vidiabookstoreservice.user.dto.request.AddressRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.request.CreateAddressRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.AddressResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

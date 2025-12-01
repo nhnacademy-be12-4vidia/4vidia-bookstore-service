@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.LikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,10 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.repository;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.LikeResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +16,7 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     //DB에서 바로 필요한 데이터만 조회
     //DTO 변환 불필요, 쿼리 단에서 바로 만들어짐
 //    @Query("""
-//        SELECT new com.nhnacademy._vidiabookstoreservice.user.dto.response.LikeResponse(
+//        SELECT new com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse(
 //            l.book.id, l.book.title, l.book.bookAuthors, l.book.priceStandard, l.book.priceSales, l.book.stockStatus, l.book.bookImageList
 //        )
 //        FROM Like l

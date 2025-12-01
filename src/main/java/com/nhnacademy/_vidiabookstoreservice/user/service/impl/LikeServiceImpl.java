@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.LikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AlreadyLikedException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.LikeNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.LikeRepository;
@@ -59,8 +59,8 @@ public class LikeServiceImpl implements LikeService {
             throw new AlreadyLikedException("이미 좋아요가 되어있습니다.");
         }
 
-        User user = userService.getUserById(userId);
-        Book book = bookService.getBookEntity(bookId);
+        User user = userService.getProxyById(userId);
+        Book book = bookService.getProxyById(bookId);
 
         // 좋아요 저장
         Like like = Like.builder()
