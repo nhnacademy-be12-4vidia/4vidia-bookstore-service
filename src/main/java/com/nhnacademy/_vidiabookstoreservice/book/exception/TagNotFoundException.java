@@ -2,9 +2,9 @@ package com.nhnacademy._vidiabookstoreservice.book.exception;
 
 import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
 
-public class AuthorIdNotFoundException extends NotFoundException {
+public class TagNotFoundException extends NotFoundException {
 
-    public AuthorIdNotFoundException(String message) {
+    public TagNotFoundException(String message) {
         super(message);
     }
 }
