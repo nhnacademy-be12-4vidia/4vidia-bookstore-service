@@ -12,7 +12,7 @@ public interface UserService {
     User getUserById(Long userId);
     Long register(UserSignupRequest request);
     UserProfileResponse getUserInfo(Long id);
-    void updateUserProfile(Long id, UpdateUserRequest request);
+    UserProfileResponse updateUserProfile(Long id, UpdateUserRequest request);
     void changePassword(Long id, ChangePasswordRequest request);
     void deleteUserById(Long id, DeleteUserRequest request);
     String findUserId(FindIdRequest request);

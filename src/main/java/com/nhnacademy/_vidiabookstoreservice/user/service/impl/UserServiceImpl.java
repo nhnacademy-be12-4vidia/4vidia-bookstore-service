@@ -123,7 +123,7 @@ public class UserServiceImpl implements UserService {
      * 회원정보 수정
      */
     @Override
-    public void updateUserProfile(Long userId, UpdateUserRequest request) {
+    public UserProfileResponse updateUserProfile(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
 
@@ -134,6 +134,9 @@ public class UserServiceImpl implements UserService {
             user.setPhone(request.phone());
         }
         log.info("회원정보 수정완료");
+
+        userRepository.save(user);
+        return UserProfileResponse.fromEntity(user);
     }
 
     /**
