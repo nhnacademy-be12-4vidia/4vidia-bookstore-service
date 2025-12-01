@@ -1,6 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.book.exception;
 
-public class AuthorAlreadyExistsException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsException;
+
+public class AuthorAlreadyExistsException extends AlreadyExistsException {
 
     public AuthorAlreadyExistsException(String message) {
         super(message);

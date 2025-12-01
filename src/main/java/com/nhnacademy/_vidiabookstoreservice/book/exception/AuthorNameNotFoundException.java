@@ -1,6 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.book.exception;
 
-public class AuthorNameNotFoundException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
+
+public class AuthorNameNotFoundException extends NotFoundException {
 
     public AuthorNameNotFoundException(String message) {
         super(message);

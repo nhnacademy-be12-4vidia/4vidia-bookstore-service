@@ -1,6 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.book.exception;
 
-public class BookImageAlreadyExistsException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsException;
+
+public class BookImageAlreadyExistsException extends AlreadyExistsException {
 
     public BookImageAlreadyExistsException(String message) {
         super(message);
