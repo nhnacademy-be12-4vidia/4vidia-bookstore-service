@@ -1,8 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.exception;
 
-import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
-
-public class BookNotFoundException extends NotFoundException {
+public class BookNotFoundException extends RuntimeException {
 
     public BookNotFoundException(String message) {
         super(message);
