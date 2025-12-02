@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 
+
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
@@ -16,7 +17,7 @@ public record OrderItemResponse(
         return new OrderItemResponse(
                 orderItem.getOrderItemId(),
                 orderItem.getOrder(),
-                orderItem.getBookId(),
+                orderItem.getBook().getId(),
                 orderItem.getQuantity(),
                 orderItem.getSalePrice(),
                 orderItem.getConfirmStatus()

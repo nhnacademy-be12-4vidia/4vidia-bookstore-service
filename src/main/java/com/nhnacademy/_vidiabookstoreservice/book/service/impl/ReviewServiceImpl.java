@@ -52,7 +52,8 @@ public class ReviewServiceImpl implements ReviewService {
     public void createReview(ReviewCreateRequest request, Long userId, List<MultipartFile> reviewImages) {
 
         OrderItemResponse orderItemResponse = orderItemService.getByOrderItemId(request.getOrderItemId());
-        Long orderedUserId = orderItemResponse.order().getUserId();
+        Long orderedUserId = orderItemResponse.order().getUser().getUserId();
+        //TODO? 근데 이거 원래 Order 객체로 보내면 안되고 long값 보내줘야하는건가요? 근데 오더아이템에 유저아이디 없는데
 
         if (!orderedUserId.equals(userId)) {
             throw new ReviewUserMismatchException(

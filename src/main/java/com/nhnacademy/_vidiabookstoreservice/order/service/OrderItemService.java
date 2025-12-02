@@ -5,6 +5,10 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemR
 
 public interface OrderItemService{
 
+    void addOrderItem(OrderItem orderItem);
+
+    void confirmOrderItem(OrderItem orderItem);
+
     OrderItemResponse getByOrderItemId(Long orderItemId);
 
     OrderItem getProxyById(Long orderItemId);

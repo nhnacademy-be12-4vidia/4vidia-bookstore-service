@@ -1,0 +1,74 @@
+### packaging_option 생성 ㅇ
+POST localhost:8080/api/v1/packaging
+Content-Type: application/json
+
+{
+  "name": "포장지이름예시",
+  "price": 2000
+}
+### packaging_option 조회 ㅇ
+GET localhost:8080/api/v1/packaging
+
+
+### orders 저장
+POST localhost:8080/api/v1/orders
+Content-Type: application/json
+
+{
+  "recipientName": "홍길동",
+  "addressRoadname": "서울시 강남구 테헤란로",
+  "addressDetail": "NHN빌딩 10층",
+  "zipCode": "06123",
+  "recipientPhone": "010-9999-8888",
+  "deliveryRequest": "문 앞에 놓아주세요. (조심히 다뤄주세요)",
+  "deliveryDate": "2025-11-29",
+
+  "totalPrice": 55000,
+  "deliveryCost": 3000,
+  "packagingCost": 1000,
+
+  "couponDiscount": 5000,
+  "pointUsed": 1000,
+  "payPrice": 52000,
+
+  "orderItems": [
+    {
+      "bookId": 1,
+      "quantity": 1,
+      "salePrice": 3000,
+      "packagingOptionId": 1
+    },
+    {
+      "bookId": 1,
+      "quantity": 2,
+      "salePrice": 3000,
+      "packagingOptionId": 3
+    }
+  ]
+}
+
+### orders 조회 ㅇ
+GET localhost:8080/api/v1/orders/17
+
+
+## payment 조회, packaging 조회(DB)
+
+
+### toss 결제 취소 ㅇ (근데 전액은 방식이 다른가? 취소 금액 이후 잔액이 0이면 부분취소가 안되네?)
+POST localhost:8080/api/v1/orders/23/cancel
+Content-Type: application/json
+
+{
+  "paymentKey": "tviva20251127225624tFxg6",
+  "reason": "파손",
+  "amount": 100
+}
+
+
+
+### Toss api 결제 요청
+
+
+
+### Toss api 결제 취소 요청
+

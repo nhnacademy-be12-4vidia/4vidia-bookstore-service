@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderItemNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
@@ -14,6 +15,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderItemServiceImpl implements OrderItemService {
 
     private final OrderItemRepository orderItemRepository;
+
+
+    @Override
+    public void addOrderItem(OrderItem orderItem) {
+        orderItemRepository.save(orderItem);
+    }
+
+    @Override
+    public void confirmOrderItem(OrderItem orderItem) {
+        OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItem.getOrderItemId()).orElseThrow(
+                () -> new OrderItemNotFoundException("ID에 해당하는 주문아이템을 찾을 수 없습니다. ID: %d".formatted(orderItem.getOrderItemId())));
+        findOrderItem.setConfirmStatus(ConfirmStatus.CONFIRMED);
+    }
 
     @Override
     @Transactional(readOnly = true)

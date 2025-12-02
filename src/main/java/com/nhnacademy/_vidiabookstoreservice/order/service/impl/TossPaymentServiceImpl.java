@@ -33,7 +33,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     }
 
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
-    private static final String TOSS_CANCEL_URL = "https://api.tosspayments.com/v1/payments/";
+    private static final String TOSS_URL = "https://api.tosspayments.com/v1/payments/";
 
 
     public void savePayment(PaymentCreateRequest paymentCreateRequest) {
@@ -83,13 +83,12 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
          */
         Map<String, Object> response = null;
         try {
-            response = sendRequest(requestData, API_SECRET_KEY, TOSS_CANCEL_URL + paymentKey + "/cancel");
+            response = sendRequest(requestData, API_SECRET_KEY, TOSS_URL + paymentKey + "/cancel");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         return  objectMapper.convertValue(response, TossPaymentResponse.class);
-
     }
 
     private Map<String, Object> sendRequest(Map<String, Object> requestData, String secretKey, String urlString) throws IOException {
