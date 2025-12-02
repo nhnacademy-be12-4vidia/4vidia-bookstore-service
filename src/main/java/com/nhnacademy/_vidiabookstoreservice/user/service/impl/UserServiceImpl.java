@@ -2,6 +2,8 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
@@ -9,16 +11,17 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResp
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
+import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.Random;
 
 @Slf4j
 @Transactional
@@ -28,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder BCryptPasswordEncoder;
+    private final EmailService mailService;
 
     /**
      * 이메일로 회원 조회
@@ -44,6 +48,7 @@ public class UserServiceImpl implements UserService {
      * 회원정보 조회 (마이페이지)
      */
     @Override
+    @Transactional(readOnly = true)
     public UserProfileResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다. "));
@@ -129,5 +134,55 @@ public class UserServiceImpl implements UserService {
 
         user.setStatus(UserStatus.DELETED); // status → DELETED 로 변경 등
     }
+
+    /**
+     * 아이디 찾기 (이름 + 생일 + 전화번호)
+     */
+    @Override
+    public String findUserId(FindIdRequest request) {
+        LocalDate birthday = LocalDate.parse(request.birthday());
+        User user = userRepository.findByNameAndBirthDateAndPhone(
+                        request.name(),birthday,request.phone()
+                )
+                .orElseThrow(()-> new IllegalArgumentException("일치하는 회원정보가 없습니다."));
+        return user.getEmail();
+    }
+
+
+    /**
+     * 비밀번호 찾기 ( 아이디 + 이름 + 전화번호) -> 임시 비밀번호 발급
+     */
+    @Override
+    public String restPasswordAndSendMail (FindPasswordRequest request) {
+        User user = userRepository.findByEmailAndNameAndPhone(
+                request.email(),request.name(),request.phone()
+        ).orElseThrow(()-> new IllegalArgumentException("일치하는 회원젇보가 없습니다."));
+
+        // 임시 비밀번호 생성
+        String tempPassword = generateTempPassword(10);
+
+        // 비밀번호 암호화 후 저장
+
+        String encodedPassword = BCryptPasswordEncoder.encode(tempPassword);
+        user.updateEncodedPassword(encodedPassword);
+        userRepository.save(user);
+
+        // 이메일 발송 ( 구체 로직은 MailService에서)
+        mailService.sendTempPassword(user.getEmail(), tempPassword);
+        return "임시 비밀번호가 이메일로 발송되었습니다.";
+
+    }
+    // 임시 비밀번호 발급 로직
+    private String generateTempPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
 
 }

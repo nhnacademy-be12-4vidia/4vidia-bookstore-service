@@ -1,5 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
@@ -9,6 +11,7 @@ import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -70,5 +73,27 @@ public class UserController {
         userService.deleteUserById(id, deletePasswordRequest);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
+
+
+    /**
+     * 회원 아이디(email) 찾기 -> 이름,생일,전화번호 조회해서 찾기
+     * */
+    @PostMapping("/find-id")
+    public ResponseEntity<String> findUserId(@Valid @RequestBody FindIdRequest findIdRequest) {
+        String email = userService.findUserId(findIdRequest);
+        return ResponseEntity.ok().body(email); // 200 OK + JSON
+    }
+
+
+    /**
+     * 회원 비밀번호 찾기 ->아이디,이름,전화번호 입력받아서 임시비밀번호 생성해서 -> 이메일로 보내기?
+     */
+    @PostMapping("/find-password")
+    public ResponseEntity<String> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
+        userService.restPasswordAndSendMail(findPasswordRequest);
+        return ResponseEntity.ok("임시 비밀번호가 발급되었습니다.");
+    }
+
+
 
 }
