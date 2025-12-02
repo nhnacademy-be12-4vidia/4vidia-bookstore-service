@@ -1,12 +1,15 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,10 +18,19 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @GetMapping("/delivery-dates")
+    public ResponseEntity<List<DeliveryDateResponse>> getDeliveryDate() {
+        List<DeliveryDateResponse> deliveryDateResponses = orderService.getDeliveryDates();
+
+        return ResponseEntity.status(HttpStatus.OK).body(deliveryDateResponses);
+    }
+
     @PostMapping
-    public ResponseEntity<Long> createOrder(@RequestBody OrderCreateRequest orderCreateRequest) {
-        //TODO 회원은 헤더에서 X-User-Id 꺼내기. 비회원은 X-Guest-Id
-        long orderId = orderService.saveOrder(orderCreateRequest);
+    public ResponseEntity<Long> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+                                            @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
+                                            @RequestBody OrderCreateRequest orderCreateRequest) {
+        long userId = xUserId == null ? xGuestId : xUserId;
+        long orderId = orderService.saveOrder(userId, orderCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
     }

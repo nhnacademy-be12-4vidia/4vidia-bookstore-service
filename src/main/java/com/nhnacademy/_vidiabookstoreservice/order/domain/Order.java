@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.order.domain;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
+import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,8 +23,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long orderId;
 
-    @Column(name = "user_id", nullable = false)
-    Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    User user;
 
     @Column(name = "recipient_name", length = 50, nullable = false)
     String recipientName;
@@ -79,10 +81,10 @@ public class Order {
     }
 
     @Builder
-    public Order(Long userId, String recipientName, String addressRoadname, String addressDetail, String zipCode,
+    public Order(User user, String recipientName, String addressRoadname, String addressDetail, String zipCode,
                  String recipientPhone, String deliveryRequest, int couponDiscount, int pointUsed,
                  LocalDate deliveryDate, int totalPrice, int payPrice) {
-        this.userId = userId;
+        this.user = user;
         this.recipientName = recipientName;
         this.addressRoadname = addressRoadname;
         this.addressDetail = addressDetail;

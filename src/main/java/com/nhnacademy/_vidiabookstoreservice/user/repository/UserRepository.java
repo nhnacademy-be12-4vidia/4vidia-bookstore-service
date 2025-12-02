@@ -12,5 +12,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 아이디 찾기
     Optional<User> findByNameAndBirthDateAndPhone(String name, LocalDate birthday, String phone);
-
 }
