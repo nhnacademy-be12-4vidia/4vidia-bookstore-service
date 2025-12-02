@@ -28,7 +28,7 @@ public class BookListResponse {
             .title(book.getTitle())
             .isbn(book.getIsbn())
             .priceSales(book.getPriceSales())
-            .authorNames(book.getBookAuthors().stream().map(BookAuthor::getAuthor).map(
+            .authorNames(book.getBookAuthorList().stream().map(BookAuthor::getAuthor).map(
                 Author::getName).toList())
             .publisherName(book.getPublisher().getName())
             .imageUrl(book.getBookImageList().stream().filter(i -> i.getImageType().equals(

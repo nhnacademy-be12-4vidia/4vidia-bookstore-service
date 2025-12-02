@@ -1,0 +1,10 @@
+###  등급 조회
+GET http://localhost:8080/grades
+Content-Type: application/json
+X-User-Id: 5
+
+
+### 등급 변경
+PUT http://localhost:8080/grades/4
+Content-Type: application/json
+X-User-Id: 5
