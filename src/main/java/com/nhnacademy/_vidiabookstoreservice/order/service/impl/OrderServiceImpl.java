@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCreateResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
@@ -59,7 +60,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Long saveOrder(Long userId, OrderCreateRequest request) {
+    public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
         User user = userService.getUserById(userId);
 
         //TODO 재고 차감 구현 wow 어떻게하냐
@@ -114,7 +115,7 @@ public class OrderServiceImpl implements OrderService {
 
         }
 
-        return savedOrder.getOrderId();
+        return new OrderCreateResponse(savedOrder.getOrderId());
     }
 
     @Override

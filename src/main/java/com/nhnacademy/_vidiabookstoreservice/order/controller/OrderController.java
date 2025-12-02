@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCreateResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
@@ -34,11 +35,11 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+    public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
                                             @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
                                             @RequestBody OrderCreateRequest orderCreateRequest) {
         long userId = xUserId == null ? xGuestId : xUserId;
-        long orderId = orderService.saveOrder(userId, orderCreateRequest);
+        OrderCreateResponse orderId = orderService.saveOrder(userId, orderCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
     }
