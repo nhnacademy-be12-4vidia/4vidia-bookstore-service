@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsExcep
 
 public class BookAlreadyExistsException extends AlreadyExistsException {
 
-    public BookAlreadyExistsException(String message) {
-        super(message);
+    public BookAlreadyExistsException(String isbn) {
+        super("이미 존재하는 도서입니다. ISBN : %s".formatted(isbn));
     }
 }

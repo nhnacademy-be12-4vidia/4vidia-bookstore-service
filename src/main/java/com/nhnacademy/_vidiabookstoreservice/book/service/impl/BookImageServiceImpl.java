@@ -40,9 +40,7 @@ public class BookImageServiceImpl implements BookImageService {
     public BookImage createByEntity(BookImage bookImage) {
         if (bookImageRepository.existsByBook_IdAndImageUrl(bookImage.getBook().getId(),
             bookImage.getImageUrl())) {
-            throw new BookImageAlreadyExistsException(
-                "해당 Url은 이미 저장되어있습니다. 도서: %s, Url: %s".formatted(bookImage.getBook().getTitle(),
-                    bookImage.getImageUrl()));
+            throw new BookImageAlreadyExistsException(bookImage.getBook().getTitle(), bookImage.getImageUrl());
         }
 
         return bookImageRepository.save(bookImage);

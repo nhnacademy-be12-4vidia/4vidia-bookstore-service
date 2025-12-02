@@ -9,7 +9,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressRe
 import com.nhnacademy._vidiabookstoreservice.user.exception.AddressNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressCannotBeDeletedException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
@@ -32,7 +32,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressResponse createAddress(Long userId, CreateAddressRequest request){
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 회원입니다. 회원pk : " + userId));
+                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
 
         // 주소 개수 제한
         int addrCount = addressRepository.countByUser_userId(userId);
@@ -52,12 +52,12 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressResponse getAddress(Long userId, Long addressId){
         if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException("존재하지 않는 회원입니다. 회원pk : " + userId);
+            throw new UserNotFoundByUserIdException(userId);
         }
 
         Address address = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
         if(address == null){
-            throw new AddressNotFoundException("해당 회원의 주소를 찾을 수 없습니다. 주소pk : " + addressId);
+            throw new AddressNotFoundException(addressId);
         }
 
         return AddressResponse.fromEntity(address);
@@ -70,7 +70,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public List<AddressResponse> getUserAddresses(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException("존재하지 않는 회원입니다. 회원pk : " + userId);
+            throw new UserNotFoundByUserIdException(userId);
         }
 
         return addressRepository.findAllByUser_UserId(userId)
@@ -85,12 +85,12 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressResponse updateAddress(Long userId, Long addressId, AddressRequest request){
         if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException("존재하지 않는 회원입니다. 회원pk : " + userId);
+            throw new UserNotFoundByUserIdException(userId);
         }
 
         Address address = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
         if (address == null) {
-            throw new AddressNotFoundException("해당 회원의 주소를 찾을 수 없습니다.");
+            throw new AddressNotFoundException(addressId);
         }
 
         // 기존 객체 업데이트
@@ -110,18 +110,18 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void deleteAddress(Long userId, Long addressId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다. 회원pk : " + userId));
+                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
 
         // 주소가 등록되어있는지 체크
         Address address = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
         if (address == null) {
-            throw new AddressNotFoundException("해당 회원의 주소를 찾을 수 없습니다. 주소pk : " + addressId);
+            throw new AddressNotFoundException(addressId);
         }
 
         // 삭제하려고 하는 주소가 기본주소인지 체크
         Address defaultAddress = user.getAddress();
         if (defaultAddress != null && defaultAddress.getAddressId().equals(address.getAddressId())) {
-            throw new DefaultAddressCannotBeDeletedException("기본 주소는 삭제할 수 없습니다. 기본 주소를 변경 후 시도해주세요. 현재 기본 주소 별칭 : " + defaultAddress.getAlias());
+            throw new DefaultAddressCannotBeDeletedException(defaultAddress.getAlias());
         }
 
         addressRepository.deleteByUser_UserIdAndAddressId(userId, addressId);
@@ -134,11 +134,11 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void updateDefaultAddress(Long userId, Long addressId){
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 회원입니다. 회원pk : " + userId));
+                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
 
         Address selectedAddress = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
         if (selectedAddress == null) {
-            throw new AddressNotFoundException("해당 회원의 주소를 찾을 수 없습니다. 주소pk : " + addressId);
+            throw new AddressNotFoundException(addressId);
         }
 
         // 변경하려고하는 주소가 -> 이미 기본주소로 등록되있는지 체크 (참고 - 프론트에서는 기본주소 옆에 체크박스 없애놨음)
@@ -157,11 +157,11 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressResponse getDefaultAddress(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 회원입니다. 회원pk : " + userId));
+                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
 
         Address defaultAddress = user.getAddress();
         if (defaultAddress == null) {
-            throw new DefaultAddressNotFoundException("기본 주소가 설정되어 있지 않습니다.");
+            throw new DefaultAddressNotFoundException();
         }
 
         return AddressResponse.fromEntity(defaultAddress);

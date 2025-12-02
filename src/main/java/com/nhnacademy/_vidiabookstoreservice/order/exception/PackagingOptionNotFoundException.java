@@ -1,8 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.order.exception;
 
-public class PackagingOptionNotFoundException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
 
-    public PackagingOptionNotFoundException(String message) {
-        super(message);
+public class PackagingOptionNotFoundException extends NotFoundException {
+
+    public PackagingOptionNotFoundException(Long packagingOptionId) {
+        super("ID에 해당하는 포장을 찾을 수 없습니다. ID: %d".formatted(packagingOptionId));
     }
 }

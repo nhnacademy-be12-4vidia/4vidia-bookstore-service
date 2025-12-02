@@ -45,7 +45,7 @@ public class MinioService {
             return amazonS3.getUrl(bucket, fileName).toString();
 
         } catch (IOException e) {
-            throw new ImageUploadException("이미지 업로드 중 오류가 발생했습니다.");
+            throw new ImageUploadException();
         }
     }
 
@@ -73,7 +73,7 @@ public class MinioService {
                 throw new IllegalArgumentException("해당 버킷의 파일이 아닙니다.");
             }
         } catch (Exception e) {
-            throw new ImageCanNotDeleteException("이미지 삭제 중 오류가 발생했습니다.");
+            throw new ImageCanNotDeleteException();
         }
 
     }

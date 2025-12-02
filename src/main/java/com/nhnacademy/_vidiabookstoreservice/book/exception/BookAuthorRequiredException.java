@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.global.exception.RequiredException;
 
 public class BookAuthorRequiredException extends RequiredException {
 
-    public BookAuthorRequiredException(String message) {
-        super(message);
+    public BookAuthorRequiredException() {
+        super("작가는 최소 한 명 이상 필요합니다.");
     }
 }

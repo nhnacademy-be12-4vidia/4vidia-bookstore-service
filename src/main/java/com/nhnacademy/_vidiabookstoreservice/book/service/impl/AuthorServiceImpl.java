@@ -34,8 +34,7 @@ public class AuthorServiceImpl implements AuthorService {
         String cleanName = name.trim();
 
         if (authorRepository.existsByName(cleanName)) {
-            throw new AuthorAlreadyExistsException(
-                "해당하는 이름의 작가가 이미 존재합니다. 이름: %s".formatted(cleanName));
+            throw new AuthorAlreadyExistsException(cleanName);
         }
         Author author = authorRepository.save(new Author(cleanName));
         return new AuthorIdResponse(author.getId());
@@ -45,8 +44,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     public AuthorIdResponse getAuthorByName(String name) {
         Author author = authorRepository.findByName(name).orElseThrow(
-            () -> new AuthorNameNotFoundException(
-                "해당하는 이름의 작가를 찾을 수 없습니다. 이름: %s".formatted(name)));
+            () -> new AuthorNameNotFoundException(name));
         return new AuthorIdResponse(author.getId());
     }
 
@@ -68,7 +66,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     public AuthorResponse getAuthorById(Long id) {
         Author author = authorRepository.findById(id).orElseThrow(
-            () -> new AuthorIdNotFoundException("아이디에 해당하는 작가를 찾을 수 없습니다. 작가ID: %d".formatted(id)));
+            () -> new AuthorIdNotFoundException(id));
 
         return new AuthorResponse(author.getId(), author.getName());
     }
