@@ -58,4 +58,10 @@ public class TagServiceImpl implements TagService {
         Tag savedTag = tagRepository.save(new Tag(cleanName));
         return TagResponse.from(savedTag);
     }
+
+    @Override
+    public Tag getOrCreateTag(String name) {
+        String cleanName = name.trim();
+        return tagRepository.findByName(cleanName).orElseGet(() -> tagRepository.save(new Tag(cleanName)));
+    }
 }

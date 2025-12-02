@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.book.domain;
 import com.nhnacademy._vidiabookstoreservice.book.domain.converters.StockStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookStockNotEnoughException;
+import com.nhnacademy._vidiabookstoreservice.book.service.impl.BookServiceImpl.AuthorSyncData;
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -21,6 +22,8 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -68,7 +71,7 @@ public class Book extends BaseEntity {
     private Publisher publisher;
 
     @OneToMany(mappedBy = "book")
-    private List<BookAuthor> bookAuthors = new ArrayList<>();
+    private List<BookAuthor> bookAuthorList = new ArrayList<>();
 
     @Column(name = "published_date")
     
@@ -142,7 +145,7 @@ public class Book extends BaseEntity {
     }
 
     public void addBookAuthor(BookAuthor bookAuthor) {
-        this.bookAuthors.add(bookAuthor);
+        this.bookAuthorList.add(bookAuthor);
 
         if (bookAuthor.getBook() != this) {
             bookAuthor.setBook(this);
@@ -163,6 +166,14 @@ public class Book extends BaseEntity {
         if (bookTag.getBook() != this) {
             bookTag.setBook(this);
         }
+    }
+
+    public void addTag(Tag tag) {
+        BookTag bookTag = BookTag.builder()
+            .tag(tag)
+            .book(this)
+            .build();
+        this.addBookTag(bookTag);
     }
 
     public void decreaseStock(int quantity) {
@@ -206,7 +217,7 @@ public class Book extends BaseEntity {
     }
 
     public void updateBookAuthors(List<BookAuthor> newBookAuthors) {
-        this.bookAuthors.clear();
+        this.bookAuthorList.clear();
         for (BookAuthor newAuthor : newBookAuthors) {
             this.addBookAuthor(newAuthor);
         }
@@ -224,5 +235,57 @@ public class Book extends BaseEntity {
         for (BookImage newImage : newBookImages) {
             this.addBookImage(newImage);
         }
+    }
+
+    public void syncBookTags(List<Tag> newTags) {
+        Set<String> newTagNames = newTags.stream().map(Tag::getName).collect(Collectors.toSet());
+
+        List<BookTag> toRemove = this.bookTagList.stream()
+            .filter(old -> !newTagNames.contains(old.getTag().getName())).toList();
+
+        toRemove.forEach(this::removeBookTag);
+
+        Set<String> currentTagNames = this.bookTagList.stream().map(BookTag::getTag)
+            .map(Tag::getName).collect(
+                Collectors.toSet());
+
+        newTags.stream().filter(newTag -> !currentTagNames.contains(newTag.getName())).forEach(this::addTag);
+    }
+
+    private void removeBookTag(BookTag bookTag) {
+        this.bookTagList.remove(bookTag);
+        bookTag.setBook(null);
+    }
+
+    private String createBookAuthorCompositeKey(Author author, String role) {
+        return author.getName() + "::" + role;
+    }
+
+    public void syncBookAuthors(List<AuthorSyncData> newAuthorDataList) {
+        Set<String> newCompositeKeys = newAuthorDataList.stream()
+            .map(data -> createBookAuthorCompositeKey(data.author(),
+                data.role())).collect(Collectors.toSet());
+
+        List<BookAuthor> toRemove = this.bookAuthorList.stream().filter(old -> {
+                String oldKey = createBookAuthorCompositeKey(old.getAuthor(), old.getRole());
+                return !newCompositeKeys.contains(oldKey);
+            })
+            .toList();
+        toRemove.forEach(this::removeBookAuthor);
+
+        Set<String> currentCompositeKeys = this.bookAuthorList.stream()
+            .map(old -> createBookAuthorCompositeKey(old.getAuthor(),
+                old.getRole())).collect(Collectors.toSet());
+
+        newAuthorDataList.stream().filter(newData -> !currentCompositeKeys.contains(createBookAuthorCompositeKey(newData.author(),
+                newData.role())))
+            .map(newData -> new BookAuthor(this, newData.author(), newData.role()))
+            .forEach(this::addBookAuthor);
+
+    }
+
+    private void removeBookAuthor(BookAuthor bookAuthor) {
+        this.bookAuthorList.remove(bookAuthor);
+        bookAuthor.setBook(null);
     }
 }

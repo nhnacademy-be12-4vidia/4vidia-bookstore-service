@@ -14,4 +14,6 @@ public interface TagService {
 
     TagResponse createTag(String tagName);
 
+    Tag getOrCreateTag(String name);
+
 }

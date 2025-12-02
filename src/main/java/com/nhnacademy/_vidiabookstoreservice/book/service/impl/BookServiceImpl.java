@@ -7,6 +7,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookTag;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
+import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
@@ -17,6 +18,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailRe
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.BookAuthorRequiredException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
@@ -24,9 +26,12 @@ import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookTagService;
 import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.PublisherService;
+import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +57,8 @@ public class BookServiceImpl implements BookService {
     private final PublisherService publisherService;
     private final CategoryService categoryService;
     private final ApplicationEventPublisher eventPublisher;
+    private final TagService tagService;
+    private final BookTagService bookTagService;
 
     @Value("${image.default.thumbnail}")
     private String defaultThumbnailUrl;
@@ -260,12 +267,30 @@ public class BookServiceImpl implements BookService {
             request.getPackagingAvailable(), request.getStockStatus()
         );
 
-        book.getBookAuthors().clear();
+        List<AuthorSyncData> targetAuthorList = new ArrayList<>();
 
-//        List<BookTag> newTags = request.
+        if (StringUtils.hasText(request.getAuthorList())) {
+            getTargetAuthorList(targetAuthorList, request.getAuthorList(),
+                "지은이");
+        }
+        if (StringUtils.hasText(request.getContributorList())) {
+            getTargetAuthorList(targetAuthorList, request.getContributorList(), "기여자/역자");
+        }
+        if (!targetAuthorList.isEmpty()) {
+            book.syncBookAuthors(targetAuthorList);
+        } else {
+            book.syncBookAuthors(Collections.emptyList());
+        }
 
-
-
+        if (StringUtils.hasText(request.getTagList())) {
+            List<Tag> targetTagList = getTargetTagList(request.getTagList());
+            book.syncBookTags(targetTagList);
+        } else {
+            throw new BookAuthorRequiredException("작가는 최소 한 명 이상 필요합니다.");
+        }
+        if (!thumbnail.isEmpty()) {
+            bookImageService.replaceThumbnail(book, thumbnail);
+        }
 
     }
 
@@ -276,4 +301,33 @@ public class BookServiceImpl implements BookService {
             return null;
         }
     }
+
+    private List<AuthorSyncData> getTargetAuthorList(List<AuthorSyncData> targetAuthorList, String authorListString, String role) {
+
+        String[] authors = authorListString.split(",");
+        for (String s : authors) {
+            String name = s.trim();
+            if (name.isBlank()) continue;
+            Author author = authorService.getOrCreateAuthor(name);
+            targetAuthorList.add(new AuthorSyncData(author, role));
+        }
+
+        return targetAuthorList;
+    }
+
+    private List<Tag> getTargetTagList(String tagListString) {
+        List<Tag> targetTagList = new ArrayList<>();
+
+        String[] tags = tagListString.split(",");
+        for (String s : tags) {
+            String cleanName = s.trim();
+            if (cleanName.isBlank()) continue;
+            Tag tag = tagService.getOrCreateTag(cleanName);
+            targetTagList.add(tag);
+        }
+
+        return targetTagList;
+    }
+
+    public record AuthorSyncData(Author author, String role){}
 }

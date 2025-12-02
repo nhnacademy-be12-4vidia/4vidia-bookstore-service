@@ -55,8 +55,8 @@ public class BookAuthor {
 
     public void setBook(Book book) {
         this.book = book;
-        if (!book.getBookAuthors().contains(this)) {
-            book.getBookAuthors().add(this);
+        if (!book.getBookAuthorList().contains(this)) {
+            book.getBookAuthorList().add(this);
         }
     }
 
