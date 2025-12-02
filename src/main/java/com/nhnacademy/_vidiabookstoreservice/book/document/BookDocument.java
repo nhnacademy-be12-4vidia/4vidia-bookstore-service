@@ -42,7 +42,7 @@ public class BookDocument {
             .title(book.getTitle())
             .isbn(book.getIsbn())
             .description(book.getDescription())
-            .authors(book.getBookAuthors().stream().map(ba -> ba.getAuthor().getName()).toList())
+            .authors(book.getBookAuthorList().stream().map(ba -> ba.getAuthor().getName()).toList())
             .publisher(book.getPublisher().getName())
             .stock(book.getStock())
             .build();

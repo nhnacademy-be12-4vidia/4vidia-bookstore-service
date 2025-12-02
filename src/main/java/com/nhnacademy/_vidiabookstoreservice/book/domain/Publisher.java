@@ -24,7 +24,6 @@ public class Publisher extends BaseEntity {
     Long id;
 
     @Column(name = "publisher")
-    @Setter
     String name;
 
     @Builder

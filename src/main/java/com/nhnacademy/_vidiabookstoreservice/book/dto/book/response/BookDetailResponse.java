@@ -83,7 +83,7 @@ public class BookDetailResponse {
             .stock(book.getStock())
             .stockStatus(book.getStockStatus().name())
             .packagingAvailable(book.isPackagingAvailable())
-            .authors(book.getBookAuthors().stream().map(ba -> AuthorInfo.builder()
+            .authors(book.getBookAuthorList().stream().map(ba -> AuthorInfo.builder()
                 .id(ba.getAuthor().getId())
                 .name(ba.getAuthor().getName())
                 .role(ba.getRole())

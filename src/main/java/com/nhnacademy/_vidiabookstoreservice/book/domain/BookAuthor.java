@@ -39,11 +39,9 @@ public class BookAuthor {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false)
-    @Setter
     Author author;
 
     @Column(name = "author_role")
-    @Setter
     String role;
 
     @Builder

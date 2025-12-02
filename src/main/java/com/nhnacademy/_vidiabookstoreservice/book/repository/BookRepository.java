@@ -16,7 +16,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     boolean existsByIsbn(String isbn);
 
-    @Query("SELECT b FROM Book b JOIN FETCH b.bookAuthors ba JOIN FETCH ba.author WHERE b.id = :bookId")
+    @Query("SELECT b FROM Book b JOIN FETCH b.bookAuthorList ba JOIN FETCH ba.author WHERE b.id = :bookId")
     Optional<Book> findByIdWithAuthors(@Param("bookId") Long bookId);
 
     Page<Book> findByTitleContaining(String keyword, Pageable pageable);
@@ -27,7 +27,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findByPublisherId(Long publisherId, Pageable pageable);
 
-    @Query("SELECT b FROM Book b JOIN b.bookAuthors ba WHERE ba.author.id = :authorId")
+    @Query("SELECT b FROM Book b JOIN b.bookAuthorList ba WHERE ba.author.id = :authorId")
     Page<Book> findByAuthorId(@Param("authorId")Long authorId, Pageable pageable);
 
     @Query("SELECT b FROM Book b JOIN b.category c WHERE c.path LIKE :pathPattern%")
