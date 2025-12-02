@@ -36,20 +36,18 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
     }
 
-    @GetMapping("/{orderId}")
+    @GetMapping("/{orderId}") //주문내역 상세보기
     public ResponseEntity<OrderResponse> getOrder(@PathVariable long orderId) {
         OrderResponse orderResponse = orderService.getOrderResponse(orderId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
     }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                                      @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId) {
-        long userId = xUserId == null ? xGuestId : xUserId;
-        List<OrderPreviewResponse> OrderPreviewResponse = orderService.getOrdersByUserId(userId);
+    @GetMapping//주문내역 미리보기
+    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id") Long xUserId) {
+        List<OrderPreviewResponse> orderPreviewResponse = orderService.getOrdersByUserId(xUserId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(OrderPreviewResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderPreviewResponse);
     }
 
 
