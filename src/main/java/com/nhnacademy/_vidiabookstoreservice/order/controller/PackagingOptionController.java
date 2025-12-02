@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/packaging-options")
+@RequestMapping("/packaging-options")
 public class PackagingOptionController {
     private final PackagingOptionService packagingOptionService;
 
