@@ -10,7 +10,7 @@ import java.util.List;
 public record LikeResponse(
         Long bookId,
         String bookTitle, // 책 제목
-        List<BookAuthor> bookAuthors, // 저자
+        List<BookAuthor> bookAuthorList, // 저자
         Integer priceStandard, // 판매가
         Integer priceSales, // 할인가
         StockStatus stockStatus, // 재고상태(품절인지)
@@ -20,7 +20,7 @@ public record LikeResponse(
         return new LikeResponse(
                 like.getBook().getId(),
                 like.getBook().getTitle(),
-                like.getBook().getBookAuthors(),
+                like.getBook().getBookAuthorList(),
                 like.getBook().getPriceStandard(),
                 like.getBook().getPriceSales(),
                 like.getBook().getStockStatus(),

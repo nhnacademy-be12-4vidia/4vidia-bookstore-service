@@ -292,6 +292,8 @@ public class BookServiceImpl implements BookService {
             bookImageService.replaceThumbnail(book, thumbnail);
         }
 
+        eventPublisher.publishEvent(new BookSavedEvent(book.getId(), book.getTitle()));
+
     }
 
     private Integer parseIntegerSafe(String value) {
