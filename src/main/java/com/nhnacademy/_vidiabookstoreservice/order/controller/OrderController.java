@@ -14,10 +14,17 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/orders")
 public class OrderController {
 
     private final OrderService orderService;
+
+    @GetMapping//주문내역 미리보기
+    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id") Long xUserId) {
+        List<OrderPreviewResponse> orderPreviewResponse = orderService.getOrdersByUserId(xUserId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderPreviewResponse);
+    }
 
     @GetMapping("/delivery-dates")
     public ResponseEntity<List<DeliveryDateResponse>> getDeliveryDate() {
@@ -42,13 +49,5 @@ public class OrderController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
     }
-
-    @GetMapping//주문내역 미리보기
-    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id") Long xUserId) {
-        List<OrderPreviewResponse> orderPreviewResponse = orderService.getOrdersByUserId(xUserId);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderPreviewResponse);
-    }
-
 
 }
