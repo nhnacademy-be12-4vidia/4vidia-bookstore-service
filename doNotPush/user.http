@@ -1,0 +1,49 @@
+### 회원가입
+POST http://localhost:8080/users/signup
+Content-Type: application/json
+
+{
+  "email": "회원1@test.com",
+  "password": "회원1@naver.com",
+  "name": "고길동",
+  "phone": "01011112222",
+  "birthDate": "2000-01-21"
+}
+
+
+### 회원정보 조회 (마이페이지)
+GET http://localhost:8080/users
+Content-Type: application/json
+X-User-Id: 5
+
+
+### 회원정보 수정
+PATCH http://localhost:8080/users
+Content-Type: application/json
+X-User-Id: 5
+
+{
+  "name": "홍길동 이름수정",
+  "phone": "010-1111-2222"
+}
+
+
+### 회원 비밀번호 변경
+PATCH http://localhost:8080/users/change-password
+Content-Type: application/json
+X-User-Id: 5
+
+{
+  "currentPassword": "회원1@naver.com",
+  "newPassword": "회원1@naver.com2",
+  "confirmPassword": "회원1@naver.com2"
+}
+
+### 회원 탈퇴
+PATCH http://localhost:8080/users/delete
+Content-Type: application/json
+X-User-Id: 5
+
+{
+  "currentPassword": "회원1@naver.com2"
+}
