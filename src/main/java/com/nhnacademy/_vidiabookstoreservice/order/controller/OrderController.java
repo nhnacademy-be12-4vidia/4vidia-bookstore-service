@@ -44,10 +44,8 @@ public class OrderController {
     }
 
     @GetMapping//주문내역 미리보기
-    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                                      @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId) {
-        long userId = xUserId == null ? xGuestId : xUserId;
-        List<OrderPreviewResponse> orderPreviewResponse = orderService.getOrdersByUserId(userId);
+    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id") Long xUserId) {
+        List<OrderPreviewResponse> orderPreviewResponse = orderService.getOrdersByUserId(xUserId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderPreviewResponse);
     }
