@@ -3,8 +3,12 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.nhnacademy._vidiabookstoreservice.book.exception.ImageCanNotDeleteException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.ImageUploadException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +51,31 @@ public class MinioService {
 
     public String createFileName(String fileName) {
         return UUID.randomUUID().toString() + "_" + fileName;
+    }
+
+    public void delete(String url) {
+        String objectKey = extractKeyFromUrl(url);
+
+        amazonS3.deleteObject(bucket, objectKey);
+    }
+
+    private String extractKeyFromUrl(String imageUrl) {
+        try {
+            URI uri = new URI(imageUrl);
+
+            String path = uri.getPath();
+            String decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8);
+            String bucketPrefix = "/" + bucket + "/";
+
+            if (decodedPath.startsWith(bucketPrefix)) {
+                return decodedPath.substring(bucketPrefix.length());
+            } else {
+                throw new IllegalArgumentException("해당 버킷의 파일이 아닙니다.");
+            }
+        } catch (Exception e) {
+            throw new ImageCanNotDeleteException("이미지 삭제 중 오류가 발생했습니다.");
+        }
+
     }
 
 }

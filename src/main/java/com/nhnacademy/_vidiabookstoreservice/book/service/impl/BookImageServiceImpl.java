@@ -7,16 +7,19 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.BookImageAlreadyExis
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookImageRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class BookImageServiceImpl implements BookImageService {
 
     private final BookImageRepository bookImageRepository;
+    private final MinioService minioService;
 
     @Override
     @Transactional
@@ -63,5 +66,34 @@ public class BookImageServiceImpl implements BookImageService {
         if (!bookImageList.isEmpty()) {
             bookImageRepository.saveAll(bookImageList);
         }
+    }
+
+    @Override
+    @Transactional
+    public void replaceThumbnail(Book book, MultipartFile thumbnail) {
+
+        BookImage existingImage = book.getBookImageList().stream()
+            .filter(bi -> bi.getImageType().equals(ImageType.THUMBNAIL)).findFirst().orElse(null);
+
+        if (Objects.nonNull(existingImage)) {
+            minioService.delete(existingImage.getImageUrl());
+        }
+
+        String newUrl = minioService.upload(thumbnail);
+
+        if (Objects.nonNull(existingImage)) {
+            existingImage.updateImageUrl(newUrl);
+        } else {
+            BookImage newBookImage = BookImage.builder()
+                .book(book)
+                .imageUrl(newUrl)
+                .imageType(ImageType.THUMBNAIL)
+                .displayOrder(0)
+                .build();
+
+            bookImageRepository.save(newBookImage);
+            book.addBookImage(newBookImage);
+        }
+
     }
 }
