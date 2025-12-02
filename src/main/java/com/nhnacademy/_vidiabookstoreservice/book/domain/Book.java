@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.domain;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.converters.StockStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
+import com.nhnacademy._vidiabookstoreservice.book.exception.BookStockNotEnoughException;
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -24,7 +25,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 @Entity
@@ -90,14 +90,14 @@ public class Book extends BaseEntity {
     
     private Integer priceSales;
 
-    @Column(name = "stock", columnDefinition = "INT DEFAULT 0")
+    @Column(name = "stock", columnDefinition = "INT DEFAULT 10")
     
     private Integer stock;
 
     @Column(name = "stock_status")
     
     @Convert(converter = StockStatusConverter.class)
-    private StockStatus stockStatus = StockStatus.OUT_OF_STOCK;
+    private StockStatus stockStatus = StockStatus.IN_STOCK;
 
     @Column(name = "packaging_available")
     
@@ -110,6 +110,9 @@ public class Book extends BaseEntity {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC ")
     private List<BookImage> bookImageList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookTag> bookTagList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -151,6 +154,75 @@ public class Book extends BaseEntity {
 
         if (bookImage.getBook() != this) {
             bookImage.setBook(this);
+        }
+    }
+
+    public void addBookTag(BookTag bookTag) {
+        this.bookTagList.add(bookTag);
+
+        if (bookTag.getBook() != this) {
+            bookTag.setBook(this);
+        }
+    }
+
+    public void decreaseStock(int quantity) {
+        int restStock = this.stock - quantity;
+
+        if (restStock < 0) {
+            throw new BookStockNotEnoughException("현재 재고가 부족합니다.");
+        }
+        this.stock = restStock;
+
+        if (this.stock == 0) {
+            this.stockStatus = StockStatus.OUT_OF_STOCK;
+        }
+    }
+
+    public void updateBasicInfo(String title, String subtitle, String description, String bookIndex,
+        LocalDate publishedDate, Publisher publisher, Category category, String language,
+        Integer pageCount, Integer volumeNumber) {
+
+        this.title = title;
+        this.subtitle = subtitle;
+        this.description = description;
+        this.bookIndex = bookIndex;
+        this.publishedDate = publishedDate;
+        this.publisher = publisher;
+        this.category = category;
+        this.language = language;
+        this.pageCount = pageCount;
+        this.volumeNumber = volumeNumber;
+
+    }
+
+    public void updatePriceAndStock(Integer priceStandard, Integer priceSales, Integer stock,
+        boolean packagingAvailable, StockStatus stockStatus) {
+
+        this.priceStandard = priceStandard;
+        this.priceSales = priceSales;
+        this.stock = stock;
+        this.packagingAvailable = packagingAvailable;
+        this.stockStatus = stockStatus;
+    }
+
+    public void updateBookAuthors(List<BookAuthor> newBookAuthors) {
+        this.bookAuthors.clear();
+        for (BookAuthor newAuthor : newBookAuthors) {
+            this.addBookAuthor(newAuthor);
+        }
+    }
+
+    public void updateBookTag(List<BookTag> newBookTags) {
+        this.bookTagList.clear();
+        for (BookTag newTag : newBookTags) {
+            this.addBookTag(newTag);
+        }
+    }
+
+    public void updateBookImage(List<BookImage> newBookImages) {
+        this.bookImageList.clear();
+        for (BookImage newImage : newBookImages) {
+            this.addBookImage(newImage);
         }
     }
 }

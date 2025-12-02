@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.service;
 
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.LikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 
 import java.util.List;
 

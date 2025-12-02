@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.GradeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;

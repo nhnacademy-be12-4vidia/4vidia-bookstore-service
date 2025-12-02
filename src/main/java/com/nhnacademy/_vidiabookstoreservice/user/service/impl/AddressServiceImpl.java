@@ -3,9 +3,9 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
-import com.nhnacademy._vidiabookstoreservice.user.dto.request.AddressRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.request.CreateAddressRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.response.AddressResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AddressNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressCannotBeDeletedException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressNotFoundException;
@@ -57,7 +57,7 @@ public class AddressServiceImpl implements AddressService {
 
         Address address = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
         if(address == null){
-            throw new IllegalArgumentException("해당 회원의 주소를 찾을 수 없습니다. 주소pk : " + addressId);
+            throw new AddressNotFoundException("해당 회원의 주소를 찾을 수 없습니다. 주소pk : " + addressId);
         }
 
         return AddressResponse.fromEntity(address);

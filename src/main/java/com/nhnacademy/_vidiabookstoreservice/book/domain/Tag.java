@@ -29,6 +29,9 @@ public class Tag extends BaseEntity {
 
     @Builder
     public Tag(String name) {
-        this.name = name;
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("태그 이름은 필수입니다.");
+        }
+        this.name = name.trim();
     }
 }
