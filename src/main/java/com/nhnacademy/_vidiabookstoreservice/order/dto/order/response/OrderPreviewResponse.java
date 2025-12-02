@@ -30,8 +30,10 @@ public record OrderPreviewResponse(
                     orderItem.getOrderItemId(),
                     orderItem.getBook().getId(),
                     orderItem.getBook().getTitle(),
-                    orderItem.getBook().getBookAuthors().getFirst().getAuthor().getName(),
-                    orderItem.getBook().getBookImageList().getFirst().getImageUrl(),
+                    //orderItem.getBook().getBookAuthors().getFirst().getAuthor().getName(),
+                    "작가이름",
+                    //orderItem.getBook().getBookImageList().getFirst().getImageUrl(),
+                    null,
                     orderItem.getQuantity(),
                     orderItem.getSalePrice(),
                     orderItem.getConfirmStatus()
