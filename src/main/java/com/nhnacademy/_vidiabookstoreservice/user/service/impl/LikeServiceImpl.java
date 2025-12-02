@@ -56,7 +56,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public void addLike(Long userId, Long bookId) {
         if (isLiked(userId, bookId)) {
-            throw new AlreadyLikedException("이미 좋아요가 되어있습니다.");
+            throw new AlreadyLikedException();
         }
 
         User user = userService.getProxyById(userId);
@@ -76,7 +76,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public void removeLike(Long userId, Long bookId) {
         Like like = likeRepository.findByUser_UserIdAndBook_Id(userId, bookId)
-                .orElseThrow(() -> new LikeNotFoundException("좋아요를 찾을 수 없습니다."));
+                .orElseThrow(() -> new LikeNotFoundException());
 
         likeRepository.delete(like);
     }

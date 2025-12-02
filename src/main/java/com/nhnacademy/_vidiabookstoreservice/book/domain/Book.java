@@ -179,7 +179,7 @@ public class Book extends BaseEntity {
         int restStock = this.stock - quantity;
 
         if (restStock < 0) {
-            throw new BookStockNotEnoughException("현재 재고가 부족합니다.");
+            throw new BookStockNotEnoughException();
         }
         this.stock = restStock;
 

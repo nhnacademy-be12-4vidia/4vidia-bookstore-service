@@ -7,6 +7,9 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByEmailException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
@@ -35,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Long register(UserSignupRequest request) {
         if(userRepository.existsByEmail(request.email())){
-            throw new UserAlreadyExistsException("이미 존재하는 회원입니다. 이메일: %s".formatted(request.email()));
+            throw new UserAlreadyExistsException(request.email());
         }
 
         Grade defaultGrade = gradeRepository.findByGradeName(GradeName.WELCOME);
@@ -65,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByNameAndBirthDateAndPhone(
                         request.name(),birthday,request.phone()
                 )
-                .orElseThrow(()-> new IllegalArgumentException("일치하는 회원정보가 없습니다."));
+                .orElseThrow(()-> new UserNotFoundException());
         return user.getEmail();
     }
 
@@ -75,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
     public String restPasswordAndSendMail (FindPasswordRequest request) {
         User user = userRepository.findByEmailAndNameAndPhone(
                 request.email(),request.name(),request.phone()
-        ).orElseThrow(()-> new IllegalArgumentException("일치하는 회원젇보가 없습니다."));
+        ).orElseThrow(()-> new UserNotFoundByEmailException(request.email()));
 
         // 임시 비밀번호 생성
         String tempPassword = generateTempPassword(10);

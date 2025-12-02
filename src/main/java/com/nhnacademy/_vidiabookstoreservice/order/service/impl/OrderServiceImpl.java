@@ -12,6 +12,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreate
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundByUserIdException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
@@ -121,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderResponse getOrderResponse(Long orderId) {
         Order order = orderRepository.findByOrderId(orderId).orElseThrow(
-                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+                () -> new OrderNotFoundException(orderId)
         );
 
         return OrderResponse.from(order);
@@ -131,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
         Order order = orderRepository.findByOrderId(orderId).orElseThrow(
-                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+                () -> new OrderNotFoundException(orderId)
         );
 
         return order;
@@ -140,7 +141,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateOrderStatus(Long orderId, OrderStatus orderStatus) {
         Order order = orderRepository.findByOrderId(orderId).orElseThrow(
-                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+                () -> new OrderNotFoundException(orderId)
         );
 
         order.setOrderStatus(orderStatus);
@@ -152,7 +153,7 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
         if (orders.isEmpty()) {
-            throw new OrderNotFoundException("userId에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(userId));
+            throw new OrderNotFoundByUserIdException(userId);
         }
 
         return orders.stream().map(OrderPreviewResponse::from).toList();

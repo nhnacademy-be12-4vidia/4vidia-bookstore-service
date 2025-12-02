@@ -28,8 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public Category getCategory(Long categoryId) {
         return categoryRepository.findById(categoryId).orElseThrow(
-            () -> new CategoryNotFoundException(
-                "해당하는 아이디의 카테고리는 존재하지 않습니다. ID: %d".formatted(categoryId)));
+            () -> new CategoryNotFoundException(categoryId));
     }
 
     @Override

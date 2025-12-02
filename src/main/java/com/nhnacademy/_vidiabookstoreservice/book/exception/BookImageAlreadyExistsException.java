@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsExcep
 
 public class BookImageAlreadyExistsException extends AlreadyExistsException {
 
-    public BookImageAlreadyExistsException(String message) {
-        super(message);
+    public BookImageAlreadyExistsException(String bookTitle, String imgUrl) {
+        super("해당 Url은 이미 저장되어있습니다. 도서: %s, Url: %s".formatted(bookTitle, imgUrl));
     }
 }

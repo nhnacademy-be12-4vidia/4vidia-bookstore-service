@@ -68,8 +68,7 @@ public class BookServiceImpl implements BookService {
     public BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail, List<MultipartFile> detailImages) {
 
         if (bookRepository.existsByIsbn(request.getIsbn())) {
-            throw new BookAlreadyExistsException(
-                "이미 존재하는 도서입니다. ISBN : %s".formatted(request.getIsbn()));
+            throw new BookAlreadyExistsException(request.getIsbn());
         }
 
         Publisher publisher = publisherService.getOrCreateByName(request.getPublisherName());
@@ -95,7 +94,7 @@ public class BookServiceImpl implements BookService {
     public BookDetailResponse getBookDetail(Long id) {
 
         Book book = bookRepository.findByIdWithAuthors(id).orElseThrow(
-            () -> new BookNotFoundException("ID에 해당하는 도서를 찾을 수 없습니다. ID: %d".formatted(id)));
+            () -> new BookNotFoundException(id));
 
         return BookDetailResponse.from(book);
     }
@@ -224,7 +223,7 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     public Book getBookEntity(Long bookId) {
         return bookRepository.findById(bookId).orElseThrow(
-            () -> new BookNotFoundException("ID에 해당하는 도서를 찾을 수 없습니다. ID: %d".formatted(bookId)));
+            () -> new BookNotFoundException(bookId));
     }
 
     @Override
@@ -238,7 +237,7 @@ public class BookServiceImpl implements BookService {
     public void decreaseStock(Long bookId, Integer quantity) {
 
         Book book = bookRepository.findByIdWithLock(bookId).orElseThrow(
-            () -> new BookNotFoundException("ID에 해당하는 책을 찾을 수 없습니다. ID: %d".formatted(bookId)));
+            () -> new BookNotFoundException(bookId));
 
         book.decreaseStock(quantity);
 
@@ -250,7 +249,7 @@ public class BookServiceImpl implements BookService {
     public void updateBook(Long bookId, BookUpdateRequest request, MultipartFile thumbnail) {
 
         Book book = bookRepository.findById(bookId).orElseThrow(
-            () -> new BookNotFoundException("ID에 해당하는 책을 찾을 수 없습니다. ID: %d".formatted(bookId)));
+            () -> new BookNotFoundException(bookId));
 
         Publisher publisher = publisherService.getOrCreateByName(request.getPublisherName());
         Category category = categoryService.getCategoryProxy(request.getCategoryId());
@@ -286,7 +285,7 @@ public class BookServiceImpl implements BookService {
             List<Tag> targetTagList = getTargetTagList(request.getTagList());
             book.syncBookTags(targetTagList);
         } else {
-            throw new BookAuthorRequiredException("작가는 최소 한 명 이상 필요합니다.");
+            throw new BookAuthorRequiredException();
         }
         if (!thumbnail.isEmpty()) {
             bookImageService.replaceThumbnail(book, thumbnail);

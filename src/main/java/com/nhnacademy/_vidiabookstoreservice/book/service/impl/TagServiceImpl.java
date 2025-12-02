@@ -29,9 +29,7 @@ public class TagServiceImpl implements TagService {
     @Transactional(readOnly = true)
     public Tag getTag(Long tagId) {
         return tagRepository.findById(tagId).orElseThrow(
-            () -> new TagNotFoundException(
-                "해당하는 아이디의 태그는 존재하지 않습니다. ID: %d".formatted(tagId)
-            )
+            () -> new TagNotFoundException(tagId)
         );
     }
 
@@ -51,8 +49,7 @@ public class TagServiceImpl implements TagService {
         }
 
         if (tagRepository.existsByName(cleanName)) {
-            throw new TagNameAlreadyExistsException(
-                "이미 존재하는 태그입니다. 태그 이름: %s".formatted(cleanName));
+            throw new TagNameAlreadyExistsException(cleanName);
         }
 
         Tag savedTag = tagRepository.save(new Tag(cleanName));
