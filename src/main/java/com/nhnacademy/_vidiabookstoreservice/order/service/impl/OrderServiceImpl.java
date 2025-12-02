@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
@@ -147,13 +148,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getOrdersByUserId(Long userId) {
+    public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
         if (orders.isEmpty()) {
             throw new OrderNotFoundException("userId에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(userId));
         }
 
-        return orders.stream().map(OrderResponse::from).toList();
+        return orders.stream().map(OrderPreviewResponse::from).toList();
     }
 }
