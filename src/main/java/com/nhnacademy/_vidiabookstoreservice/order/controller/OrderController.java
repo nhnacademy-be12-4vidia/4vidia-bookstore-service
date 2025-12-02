@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,15 @@ public class OrderController {
         OrderResponse orderResponse = orderService.getOrderResponse(orderId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+                                                                      @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId) {
+        long userId = xUserId == null ? xGuestId : xUserId;
+        List<OrderPreviewResponse> OrderPreviewResponse = orderService.getOrdersByUserId(userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(OrderPreviewResponse);
     }
 
 
