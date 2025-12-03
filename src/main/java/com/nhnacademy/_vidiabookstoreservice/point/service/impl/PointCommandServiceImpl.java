@@ -83,7 +83,6 @@ public class PointCommandServiceImpl implements PointCommandService {
         }
         if(remaining>0){
             throw new IllegalArgumentException("보유포인트가 부족합니다.");
-
         }
     }
 
