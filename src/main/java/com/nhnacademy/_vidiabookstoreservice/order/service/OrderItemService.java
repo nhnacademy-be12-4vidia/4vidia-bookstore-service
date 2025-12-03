@@ -5,7 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemR
 
 public interface OrderItemService{
 
-    void addOrderItem(OrderItem orderItem);
+    OrderItem addOrderItem(OrderItem orderItem);
 
     void confirmOrderItem(OrderItem orderItem);
 

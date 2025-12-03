@@ -35,6 +35,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -293,6 +295,11 @@ public class BookServiceImpl implements BookService {
 
         eventPublisher.publishEvent(new BookSavedEvent(book.getId(), book.getTitle()));
 
+    }
+
+    @Override
+    public List<Book> getBookListByIds(List<Long> bookIds) {
+        return List.of();
     }
 
     private Integer parseIntegerSafe(String value) {

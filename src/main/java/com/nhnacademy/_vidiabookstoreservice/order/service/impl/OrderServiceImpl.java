@@ -2,24 +2,27 @@ package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartBookResponse;
+import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Packaging;
 import com.nhnacademy._vidiabookstoreservice.order.domain.PackagingOption;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.CouponRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCreateResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
-import com.nhnacademy._vidiabookstoreservice.order.repository.PackagingOptionRepository;
-import com.nhnacademy._vidiabookstoreservice.order.repository.PackagingRepository;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
+import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
+import com.nhnacademy._vidiabookstoreservice.order.service.PackagingService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,10 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,9 +42,10 @@ public class OrderServiceImpl implements OrderService {
     private final UserService userService;
     private final BookService bookService;
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
-    private final PackagingRepository packagingRepository;
-    private final PackagingOptionRepository packagingOptionRepository;
+    private final OrderItemService orderItemService;
+    private final PackagingService packagingService;
+    private final PackagingOptionService packagingOptionService;
+    private final CouponClient couponClient;
 
     @Override
     public List<DeliveryDateResponse> getDeliveryDates() {
@@ -95,12 +98,11 @@ public class OrderServiceImpl implements OrderService {
 
             savedOrder.getOrderItems().add(orderItem);
 
-            OrderItem savedOrderItem = orderItemRepository.save(orderItem);
+            OrderItem savedOrderItem = orderItemService.addOrderItem(orderItem);
 
             for (Long packagingOptionId : itemDto.packagingOptionIds()) {
                 if (packagingOptionId != 0) {
-                    PackagingOption packagingOption = packagingOptionRepository.findById(packagingOptionId)
-                            .orElseThrow(() -> new NoSuchElementException("Packaging Option not found: " + packagingOptionId));
+                    PackagingOption packagingOption = packagingOptionService.getByPackagingOptionId(packagingOptionId);
 
 
                     Packaging packaging = Packaging.builder()
@@ -108,11 +110,9 @@ public class OrderServiceImpl implements OrderService {
                             .packagingOption(packagingOption)
                             .build();
 
-                    packagingRepository.save(packaging);
+                    packagingService.addPacakging(packaging);
                 }
             }
-
-
         }
 
         return new OrderCreateResponse(savedOrder.getOrderId());
@@ -153,5 +153,57 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
         return orders.stream().map(OrderPreviewResponse::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true) //주문화면에 보낼 값
+    public OrderCheckoutResponse getOrderCheckoutResponse(Long userId, List<OrderCheckoutRequest> orderCheckoutRequests) {
+
+        OrderUserResponse orderUserResponse = userService.getOrderUser(userId);
+
+        List<Long> bookIds = orderCheckoutRequests.stream()
+                .map(OrderCheckoutRequest::bookId)
+                .toList();
+
+        List<Book> books = bookService.getBookListByIds(bookIds);
+
+        Map<Long, Book> bookMap = books.stream() //O(N) -> O(1)
+                .collect(Collectors.toMap(Book::getId, Function.identity()));
+
+        List<OrderBookResponse> bookItems = orderCheckoutRequests.stream()
+                .map(req -> {
+                    Book book = bookMap.get(req.bookId());
+
+                    return OrderBookResponse.from(book, req.quantity());
+                })
+                .toList();
+
+
+        //책 * 수량 최종 금액
+        int finalAmount = bookItems.stream()
+                .mapToInt(item -> item.salePrice() * item.quantity())
+                .sum();
+
+        //담은 책 종류에 따라 주문명 변경
+        String orderName = "";
+        if (bookItems.size() == 1) {
+            orderName = bookItems.getFirst().bookTitle();
+        }else {
+            orderName = bookItems.getFirst().bookTitle() + " 외 " + (bookItems.size() - 1) + "권";
+        }
+
+        List<Long> categoryIds = books.stream()
+                .map(book -> {
+                    return book.getCategory().getId();
+                })
+                .toList();
+
+        CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
+        List<OrderPageCouponResponse> orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
+
+        List<DeliveryDateResponse> deliveryDateResponses = getDeliveryDates();
+        List<PackagingOptionResponse> packagingOptions =  packagingOptionService.getPackagingOptions();
+
+        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, orderPageCouponResponses, deliveryDateResponses, packagingOptions);
     }
 }

@@ -18,8 +18,8 @@ public class OrderItemServiceImpl implements OrderItemService {
 
 
     @Override
-    public void addOrderItem(OrderItem orderItem) {
-        orderItemRepository.save(orderItem);
+    public OrderItem addOrderItem(OrderItem orderItem) {
+        return orderItemRepository.save(orderItem);
     }
 
     @Override

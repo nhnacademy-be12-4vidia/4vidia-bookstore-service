@@ -1,10 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCreateResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,24 +18,21 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @GetMapping//주문내역 미리보기
-    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id") Long xUserId) {
-        List<OrderPreviewResponse> orderPreviewResponse = orderService.getOrdersByUserId(xUserId);
+    @GetMapping//주문화면에 필요한 값
+    public ResponseEntity<OrderCheckoutResponse> getOrderCheckout(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+                                                                  @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
+                                                                  @RequestBody List<OrderCheckoutRequest> orderCheckoutRequests) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderPreviewResponse);
-    }
+        Long userId = xUserId == null ? xGuestId : xUserId;
+        OrderCheckoutResponse response = orderService.getOrderCheckoutResponse(userId, orderCheckoutRequests);
 
-    @GetMapping("/delivery-dates")
-    public ResponseEntity<List<DeliveryDateResponse>> getDeliveryDate() {
-        List<DeliveryDateResponse> deliveryDateResponses = orderService.getDeliveryDates();
-
-        return ResponseEntity.status(HttpStatus.OK).body(deliveryDateResponses);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping
     public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                            @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
-                                            @RequestBody OrderCreateRequest orderCreateRequest) {
+                                                           @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
+                                                           @RequestBody OrderCreateRequest orderCreateRequest) {
         long userId = xUserId == null ? xGuestId : xUserId;
         OrderCreateResponse orderId = orderService.saveOrder(userId, orderCreateRequest);
 
