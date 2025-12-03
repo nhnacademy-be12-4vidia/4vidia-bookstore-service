@@ -7,6 +7,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordR
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
@@ -50,6 +51,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId)
                 .map(User::getName)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+    }
+
+    @Override
+    public OrderUserResponse getOrderUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+        return OrderUserResponse.fromEntity(user);
     }
 
     /**
