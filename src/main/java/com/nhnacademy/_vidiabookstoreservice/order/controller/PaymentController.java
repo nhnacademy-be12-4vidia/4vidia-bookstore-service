@@ -1,10 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCancelRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import com.nhnacademy._vidiabookstoreservice.order.service.PaymentService;
@@ -25,29 +27,36 @@ public class PaymentController {
         this.orderService = orderService;
     }
 
+    @GetMapping("/pay/{orderId}")
+    public ResponseEntity<PaymentResponse> getPayment(@PathVariable long orderId) {
+        PaymentResponse paymentResponse = paymentService.getPayment(orderId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
+    }
+
     @PostMapping("/{orderId}/success")
-    public ResponseEntity<Void> savePaymentDetail(@PathVariable long orderId,
+    public ResponseEntity<PaymentResponse> savePaymentDetail(@PathVariable long orderId,
                                                   @RequestBody PaymentConfirmRequest confirmRequest) {
 
         TossPaymentResponse tossPaymentResponse = paymentService.confirmPayment(confirmRequest.paymentKey(), confirmRequest.orderId(), confirmRequest.amount());
-
+        //주문과정 5번
         Order order = orderService.getOrder(orderId);
 
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.totalAmount());
 
-        paymentService.savePayment(paymentCreateRequest);
+        PaymentResponse paymentResponse = paymentService.savePayment(paymentCreateRequest);
 
         orderService.updateOrderStatus(orderId, OrderStatus.PAID);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentResponse);
 
         //TODO orders 테이블 주문상태 수정해야하는데 가상계좌가 들어오니 status 뜯어보고 그거에 따라 바꿔줘야하나?
         // 가상계좌면 계좌정보 담아서 보내야함?. 근데 일단 pass
     }
 
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<Void> cancelPayment(@PathVariable long orderId,
-                                              @RequestBody PaymentCancelRequest cancelRequest) {
+    public ResponseEntity<PaymentResponse> cancelPayment(@PathVariable long orderId,
+                                                         @RequestBody PaymentCancelRequest cancelRequest) {
 
         TossPaymentResponse tossPaymentResponse = paymentService.cancelPayment(cancelRequest.paymentKey(), cancelRequest.reason(), cancelRequest.amount());
 
@@ -55,9 +64,9 @@ public class PaymentController {
 
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.cancels().getLast().cancelAmount());
 
-        paymentService.savePayment(paymentCreateRequest);
+        PaymentResponse paymentResponse = paymentService.savePayment(paymentCreateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentResponse);
     }
 
 }

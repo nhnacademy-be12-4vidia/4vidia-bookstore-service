@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
@@ -35,8 +36,15 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
     private static final String TOSS_URL = "https://api.tosspayments.com/v1/payments/";
 
+    @Override
+    public PaymentResponse getPayment(long orderId) {
+        Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId);
 
-    public void savePayment(PaymentCreateRequest paymentCreateRequest) {
+        return PaymentResponse.from(payment);
+    }
+
+    @Override
+    public PaymentResponse savePayment(PaymentCreateRequest paymentCreateRequest) {
         Payment payment = Payment.builder()
                 .order(paymentCreateRequest.order())
                 .payStatus(paymentCreateRequest.payStatus())
@@ -47,8 +55,11 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
                 .build();
 
         paymentRepository.save(payment);
+
+        return PaymentResponse.from(payment);
     }
 
+    @Override
     public TossPaymentResponse confirmPayment(String paymentKey, String orderId, long amount) {
         Map<String, Object> requestData = Map.of(
                 "paymentKey", paymentKey,
