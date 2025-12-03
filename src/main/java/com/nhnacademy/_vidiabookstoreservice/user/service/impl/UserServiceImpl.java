@@ -44,6 +44,14 @@ public class UserServiceImpl implements UserService {
         return UserInfoResponse.fromEntity(user);
     }
 
+    // 회원 이름 조회
+    @Override
+    public String getUserName(Long userId) {
+        return userRepository.findById(userId)
+                .map(User::getName)
+                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+    }
+
     /**
      * 회원정보 조회 (마이페이지)
      */

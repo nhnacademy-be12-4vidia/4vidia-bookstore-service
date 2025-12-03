@@ -15,6 +15,8 @@ public interface UserService {
     User getProxyById(Long userId);
     User getUserById(Long userId);
 
+    String getUserName(Long userId);
+
     UserProfileResponse getUserInfo(Long id);
     UserProfileResponse updateUserProfile(Long id, UpdateUserRequest request);
     void changePassword(Long id, ChangePasswordRequest request);
