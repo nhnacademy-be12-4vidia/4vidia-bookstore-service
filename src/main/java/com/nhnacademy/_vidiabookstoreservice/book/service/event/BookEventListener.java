@@ -1,11 +1,13 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.event;
 
+import com.nhnacademy._vidiabookstoreservice.book.client.OllamaFeignClient;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.repository.search.BookSearchRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -20,6 +22,7 @@ public class BookEventListener {
 
     private final BookSearchRepository bookSearchRepository;
     private final BookService bookService;
+    private final OllamaFeignClient ollamaClient;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -46,9 +49,42 @@ public class BookEventListener {
 
         Book savedBook = bookService.getBookEntity(event.bookId());
 
-        BookDocument document = BookDocument.from(savedBook);
+        String embeddingText = buildEmbeddingText(savedBook);
+
+        var request = new OllamaFeignClient.EmbeddingRequest("bge-m3", embeddingText);
+        var response = ollamaClient.generateEmbedding(request);
+
+        double[] vector = response.embedding();
+
+        BookDocument document = BookDocument.from(savedBook, vector);
 
         bookSearchRepository.save(document);
+        log.info("ES 인덱싱 완료: Book ID {}", savedBook.getId());
+    }
+
+    private String buildEmbeddingText(Book book) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("제목: ").append(book.getTitle()).append(" ");
+        sb.append("작가: ").append(
+            book.getBookAuthorList().stream()
+                .map(ba -> ba.getAuthor().getName())
+                .collect(Collectors.joining(", "))
+        ).append(" ");
+        sb.append("카테고리: ").append(book.getCategory().getCategoryName()).append(" ");
+        sb.append("태그: ").append(
+            book.getBookTagList().stream()
+                .map(bt -> bt.getTag().getName())
+                .collect(Collectors.joining(", "))
+        ).append(" ");
+
+        if (book.getDescription() != null) {
+            String desc = book.getDescription().length() > 1000
+                ? book.getDescription().substring(0, 1000)
+                : book.getDescription();
+            sb.append("설명: ").append(desc);
+        }
+
+        return sb.toString();
     }
 
 }
