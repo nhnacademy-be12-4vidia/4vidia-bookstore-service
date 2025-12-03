@@ -13,7 +13,6 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDa
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCreateResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
-import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundByUserIdException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
