@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.PackagingOption;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.PackagingOptionRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.PackagingOptionResponse;
 
@@ -11,6 +12,6 @@ public interface PackagingOptionService {
 
     List<PackagingOptionResponse> getPackagingOptions();
 
-    PackagingOptionResponse getByPackagingOptionId(Long packagingOptionId);
+    PackagingOption getByPackagingOptionId(Long packagingOptionId);
 
 }

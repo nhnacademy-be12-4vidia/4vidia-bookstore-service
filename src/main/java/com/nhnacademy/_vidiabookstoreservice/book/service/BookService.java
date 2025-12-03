@@ -8,6 +8,8 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailRe
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import java.util.List;
+
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,4 +38,5 @@ public interface BookService {
 
     void updateBook(Long bookId, BookUpdateRequest request, MultipartFile thumbnail);
 
+    List<Book> getBookListByIds(List<Long> bookIds);
 }

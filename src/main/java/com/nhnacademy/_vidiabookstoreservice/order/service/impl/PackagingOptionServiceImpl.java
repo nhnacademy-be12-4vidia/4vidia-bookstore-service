@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,12 +37,10 @@ public class PackagingOptionServiceImpl implements PackagingOptionService {
 
     @Override
     @Transactional(readOnly = true)
-    public PackagingOptionResponse getByPackagingOptionId(Long packagingOptionId) {
+    public PackagingOption getByPackagingOptionId(Long packagingOptionId) {
 
-        PackagingOption packagingOption = packagingOptionRepository.findByPackagingOptionId(packagingOptionId).orElseThrow(
-                () -> new PackagingOptionNotFoundException(packagingOptionId));
-
-        return PackagingOptionResponse.from(packagingOption);
+        return packagingOptionRepository.findByPackagingOptionId(packagingOptionId)
+                .orElseThrow(() -> new PackagingOptionNotFoundException(packagingOptionId));
     }
 
 }
