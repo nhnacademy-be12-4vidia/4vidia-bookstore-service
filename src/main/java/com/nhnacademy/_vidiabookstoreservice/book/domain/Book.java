@@ -101,9 +101,8 @@ public class Book extends BaseEntity {
     @Convert(converter = StockStatusConverter.class)
     private StockStatus stockStatus = StockStatus.IN_STOCK;
 
-    @Column(name = "packaging_available")
-    
-    private boolean packagingAvailable = false;
+    @Column(name = "packaging_available", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean packagingAvailable = true;
 
     @Column(name = "volume_number", columnDefinition = "INT DEFAULT 1")
     

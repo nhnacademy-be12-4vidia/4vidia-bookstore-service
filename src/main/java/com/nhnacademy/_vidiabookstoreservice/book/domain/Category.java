@@ -40,7 +40,7 @@ public class Category extends BaseEntity {
     @Column(name = "kdc_code", nullable = false, unique = true, length = 3)
     private String kdcCode;
 
-    @Column(name = "category_name")
+    @Column(name = "category_name", length = 70)
     private String categoryName;
 
     @Column(name = "path", nullable = false, length = 20)
