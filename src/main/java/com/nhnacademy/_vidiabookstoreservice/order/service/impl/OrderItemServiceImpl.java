@@ -25,7 +25,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Override
     public void confirmOrderItem(OrderItem orderItem) {
         OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItem.getOrderItemId()).orElseThrow(
-                () -> new OrderItemNotFoundException("ID에 해당하는 주문아이템을 찾을 수 없습니다. ID: %d".formatted(orderItem.getOrderItemId())));
+                () -> new OrderItemNotFoundException(orderItem.getOrderItemId()));
         findOrderItem.setConfirmStatus(ConfirmStatus.CONFIRMED);
     }
 
@@ -34,7 +34,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     public OrderItemResponse getByOrderItemId(Long orderItemId) {
 
         OrderItem orderItem = orderItemRepository.findByOrderItemId(orderItemId).orElseThrow(
-                () -> new OrderItemNotFoundException("ID에 해당하는 주문아이템을 찾을 수 없습니다. ID: %d".formatted(orderItemId)));
+                () -> new OrderItemNotFoundException(orderItemId));
 
         return OrderItemResponse.from(orderItem);
     }

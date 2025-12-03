@@ -1,11 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.user.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
 
-@ResponseStatus(HttpStatus.NOT_FOUND) // 404
-public class UserNotFoundException extends RuntimeException {
-    public UserNotFoundException(String message) {
-        super(message);
+public class UserNotFoundException extends NotFoundException {
+    public UserNotFoundException() {
+        super("일치하는 회원젇보가 없습니다.");
     }
 }

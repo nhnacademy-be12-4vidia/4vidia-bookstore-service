@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCreateResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
@@ -59,7 +60,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Long saveOrder(Long userId, OrderCreateRequest request) {
+    public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
         User user = userService.getUserById(userId);
 
         //TODO 재고 차감 구현 wow 어떻게하냐
@@ -114,14 +115,14 @@ public class OrderServiceImpl implements OrderService {
 
         }
 
-        return savedOrder.getOrderId();
+        return new OrderCreateResponse(savedOrder.getOrderId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderResponse(Long orderId) {
         Order order = orderRepository.findByOrderId(orderId).orElseThrow(
-                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+                () -> new OrderNotFoundException(orderId)
         );
 
         return OrderResponse.from(order);
@@ -131,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
         Order order = orderRepository.findByOrderId(orderId).orElseThrow(
-                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+                () -> new OrderNotFoundException(orderId)
         );
 
         return order;
@@ -140,7 +141,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateOrderStatus(Long orderId, OrderStatus orderStatus) {
         Order order = orderRepository.findByOrderId(orderId).orElseThrow(
-                () -> new OrderNotFoundException("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId))
+                () -> new OrderNotFoundException(orderId)
         );
 
         order.setOrderStatus(orderStatus);
@@ -150,10 +151,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
-
-        if (orders.isEmpty()) {
-            throw new OrderNotFoundException("userId에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(userId));
-        }
 
         return orders.stream().map(OrderPreviewResponse::from).toList();
     }

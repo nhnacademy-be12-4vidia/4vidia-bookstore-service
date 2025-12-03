@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsExcep
 
 public class TagNameAlreadyExistsException extends AlreadyExistsException {
 
-    public TagNameAlreadyExistsException(String message) {
-        super(message);
+    public TagNameAlreadyExistsException(String tagName) {
+        super("이미 존재하는 태그입니다. 태그 이름: %s".formatted(tagName));
     }
 }

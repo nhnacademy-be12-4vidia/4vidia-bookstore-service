@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.global.exception.NotEnoughException
 
 public class BookStockNotEnoughException extends NotEnoughException {
 
-    public BookStockNotEnoughException(String message) {
-        super(message);
+    public BookStockNotEnoughException() {
+        super("현재 재고가 부족합니다.");
     }
 }

@@ -39,9 +39,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfoResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundByEmailException(email));
 
         return UserInfoResponse.fromEntity(user);
+    }
+
+    // 회원 이름 조회
+    @Override
+    public String getUserName(Long userId) {
+        return userRepository.findById(userId)
+                .map(User::getName)
+                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
     }
 
     /**
@@ -51,7 +59,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserProfileResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다. "));
+                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
         log.info("user id({}) -> email : {}", userId, user.getEmail());
         return UserProfileResponse.fromEntity(user);
     }
@@ -62,7 +70,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserProfileResponse updateUserProfile(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
+                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
 
         if(request.name()!=null && !request.name().isBlank()){
             user.setName(request.name());
@@ -90,7 +98,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
     }
 
 
@@ -100,19 +108,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePassword(Long userId, ChangePasswordRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundException("해당하는 유저를 찾을 수 없습니다."));
+                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
         // 기존 비밀번호 확인
         if(!BCryptPasswordEncoder.matches(request.currentPassword(),user.getPassword())){
-            throw new IncorrectPasswordException("기존 비밀번호가 일치하지 않습니다.");
+            throw new IncorrectPasswordException();
         }
 
         // 새 비밀번호와 확인 비밀번호 일치 여부 확인
         if(!request.newPassword().equals(request.confirmPassword())){
-            throw new PasswordNotMatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+            throw new PasswordNotMatchException();
         }
         // 새 비밀번호가 현재 비밀번호와 동일한지 확인
         if(BCryptPasswordEncoder.matches(request.newPassword(),user.getPassword())){
-            throw new SameAsOldPasswordException("현재 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+            throw new SameAsOldPasswordException();
         }
 
         // 비밀번호 암호화 및 업데이트
@@ -126,10 +134,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long userId, DeleteUserRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
 
         if(!BCryptPasswordEncoder.matches(request.currentPassword(), user.getPassword())) { // 순서가 중요?
-            throw new IncorrectPasswordException("비밀번호가 일치하지 않습니다.");
+            throw new IncorrectPasswordException();
         }
 
         user.setStatus(UserStatus.DELETED); // status → DELETED 로 변경 등
@@ -144,7 +152,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByNameAndBirthDateAndPhone(
                         request.name(),birthday,request.phone()
                 )
-                .orElseThrow(()-> new IllegalArgumentException("일치하는 회원정보가 없습니다."));
+                .orElseThrow(()-> new UserNotFoundException());
         return user.getEmail();
     }
 
@@ -156,7 +164,7 @@ public class UserServiceImpl implements UserService {
     public String restPasswordAndSendMail (FindPasswordRequest request) {
         User user = userRepository.findByEmailAndNameAndPhone(
                 request.email(),request.name(),request.phone()
-        ).orElseThrow(()-> new IllegalArgumentException("일치하는 회원젇보가 없습니다."));
+        ).orElseThrow(()-> new UserNotFoundByEmailException(request.email()));
 
         // 임시 비밀번호 생성
         String tempPassword = generateTempPassword(10);

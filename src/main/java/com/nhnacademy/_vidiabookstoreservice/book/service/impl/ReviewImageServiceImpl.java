@@ -54,9 +54,7 @@ public class ReviewImageServiceImpl implements ReviewImageService {
 
         if (reviewImageRepository.existsByReview_IdAndImageUrl(reviewImage.getId(),
             reviewImage.getImageUrl())) {
-            throw new ReviewImageAlreadyExistsException(
-                "해당 이미지 Url은 이미 저장되어있습니다. 리뷰: %d, Url: %s".formatted(
-                    reviewImage.getReview().getId(), reviewImage.getImageUrl()));
+            throw new ReviewImageAlreadyExistsException(reviewImage.getReview().getId(), reviewImage.getImageUrl());
         }
         return reviewImageRepository.save(reviewImage);
     }

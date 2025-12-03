@@ -1,8 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.order.exception;
 
-public class OrderNotFoundException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
 
-    public OrderNotFoundException(String message) {
-        super(message);
+public class OrderNotFoundException extends NotFoundException {
+
+    public OrderNotFoundException(Long orderId) {
+        super("ID에 해당하는 주문내역을 찾을 수 없습니다. ID: %d".formatted(orderId));
     }
 }

@@ -1,12 +1,3 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
-
-### 포인트 조회
-GET http://localhost:8080/users/points
-Content-Type: application/json
-X-USER-ID: 5
-
 
 ### 포인트 적립 - 주문완료
 POST http://localhost:8080/points/reward
@@ -59,3 +50,25 @@ X-USER-ID: 5
   "amount": 2000
 }
 
+### 보유 포인트 조회
+GET http://localhost:8080/points/remain
+X-USER-ID: 5
+
+
+### 환불 테스트
+POST http://localhost:8080/points/refund
+X-USER-ID: 5
+Content-Type: application/json
+
+{
+  "orderId":2001,
+  "amount":500
+}
+
+### 포인트 만료 테스트
+GET http://localhost:8080/points/expire-soon
+X-USER-ID: 5
+
+### 포인트 전체 내역 조회
+GET http://localhost:8080/points/history
+X-USER-ID: 5

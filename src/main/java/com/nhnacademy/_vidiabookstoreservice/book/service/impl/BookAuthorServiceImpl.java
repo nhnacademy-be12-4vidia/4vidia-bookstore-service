@@ -36,8 +36,7 @@ public class BookAuthorServiceImpl implements BookAuthorService {
 
         if (bookAuthorRepository.existsByBookIdAndAuthorId(bookAuthor.getBook().getId(),
             bookAuthor.getAuthor().getId())) {
-            throw new BookAuthorAlreadyExistsException("이미 해당 도서에 등록된 작가입니다. (도서: %s, 작가: %s)"
-                .formatted(bookAuthor.getBook().getTitle(), bookAuthor.getAuthor().getName()));
+            throw new BookAuthorAlreadyExistsException(bookAuthor.getBook().getTitle(), bookAuthor.getAuthor().getName());
         }
 
         return bookAuthorRepository.save(bookAuthor);

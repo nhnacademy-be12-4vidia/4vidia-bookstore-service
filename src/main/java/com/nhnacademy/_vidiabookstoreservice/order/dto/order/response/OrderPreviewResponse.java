@@ -30,10 +30,8 @@ public record OrderPreviewResponse(
                     orderItem.getOrderItemId(),
                     orderItem.getBook().getId(),
                     orderItem.getBook().getTitle(),
-                    //orderItem.getBook().getBookAuthors().getFirst().getAuthor().getName(),
-                    "작가이름",
-                    //orderItem.getBook().getBookImageList().getFirst().getImageUrl(),
-                    null,
+                    orderItem.getBook().getBookAuthorList().stream().findFirst().map(author -> author.getAuthor().getName()).orElse("저자 미상"),
+                    orderItem.getBook().getBookImageList().stream().findFirst().map(image -> image.getImageUrl()).orElse(null),
                     orderItem.getQuantity(),
                     orderItem.getSalePrice(),
                     orderItem.getConfirmStatus()

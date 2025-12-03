@@ -34,9 +34,7 @@ public class BookTagServiceImpl implements BookTagService {
 
         if (bookTagRepository.existsByBook_IdAndTag_Id(bookTag.getBook().getId(),
             bookTag.getTag().getId())) {
-            throw new BookTagAlreadyExistsException(
-                "이미 해당 도서에 등록된 태그입니다. (도서: %s, 태그: %s)".formatted(bookTag.getBook().getTitle(),
-                    bookTag.getTag().getName()));
+            throw new BookTagAlreadyExistsException(bookTag.getBook().getTitle(), bookTag.getTag().getName());
         }
         return bookTagRepository.save(bookTag);
     }

@@ -39,7 +39,7 @@ public class PackagingOptionServiceImpl implements PackagingOptionService {
     public PackagingOptionResponse getByPackagingOptionId(Long packagingOptionId) {
 
         PackagingOption packagingOption = packagingOptionRepository.findByPackagingOptionId(packagingOptionId).orElseThrow(
-                () -> new PackagingOptionNotFoundException("ID에 해당하는 포장을 찾을 수 없습니다. ID: %d".formatted(packagingOptionId)));
+                () -> new PackagingOptionNotFoundException(packagingOptionId));
 
         return PackagingOptionResponse.from(packagingOption);
     }

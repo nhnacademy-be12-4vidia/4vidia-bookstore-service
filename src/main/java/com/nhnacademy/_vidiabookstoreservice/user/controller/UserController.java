@@ -33,6 +33,12 @@ public class UserController {
         return ResponseEntity.ok().body(user); // 200 OK + JSON
     }
 
+    // 회원 이름 조회
+    @GetMapping("/name")
+    public ResponseEntity<String> getUserName(@RequestHeader("X-User-Id") Long userId) {
+        String userName = userService.getUserName(userId);
+        return ResponseEntity.ok().body(userName);
+    }
 
     /**
      * 회원정보 조회 (마이페이지)

@@ -56,9 +56,7 @@ public class ReviewServiceImpl implements ReviewService {
         //TODO? 근데 이거 원래 Order 객체로 보내면 안되고 long값 보내줘야하는건가요? 근데 오더아이템에 유저아이디 없는데
 
         if (!orderedUserId.equals(userId)) {
-            throw new ReviewUserMismatchException(
-                "해당 상품을 주문한 사용자만 리뷰를 작성할 수 있습니다. 작성자 아이디 : %d, 주문자 아이디 : %d".formatted(userId,
-                    orderedUserId));
+            throw new ReviewUserMismatchException(userId, orderedUserId);
         }
         OrderItem orderItemProxy = orderItemService.getProxyById(orderItemResponse.orderItemId());
         Book reviewedBookProxy = bookService.getProxyById(orderItemResponse.bookId());
