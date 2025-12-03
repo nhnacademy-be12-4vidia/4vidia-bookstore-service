@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.point.service;
 
-import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;

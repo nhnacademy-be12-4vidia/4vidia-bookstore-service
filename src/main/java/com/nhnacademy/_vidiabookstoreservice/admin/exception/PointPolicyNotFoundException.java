@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.point.exception;
+package com.nhnacademy._vidiabookstoreservice.admin.exception;
 
 import com.nhnacademy._vidiabookstoreservice.global.exception.NotFoundException;
 

@@ -1,6 +1,6 @@
-package com.nhnacademy._vidiabookstoreservice.point.repository;
+package com.nhnacademy._vidiabookstoreservice.admin.repository;
 
-import com.nhnacademy._vidiabookstoreservice.point.domain.PointPolicy;
+import com.nhnacademy._vidiabookstoreservice.admin.domain.PointPolicy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

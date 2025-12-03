@@ -1,11 +1,11 @@
-package com.nhnacademy._vidiabookstoreservice.point.service.impl;
+package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.point.domain.PointPolicy;
-import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyUpdateRequest;
-import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointPolicyResponse;
-import com.nhnacademy._vidiabookstoreservice.point.exception.PointPolicyNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.point.repository.PointPolicyRepository;
-import com.nhnacademy._vidiabookstoreservice.point.service.PointPolicyService;
+import com.nhnacademy._vidiabookstoreservice.admin.domain.PointPolicy;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.request.PointPolicyUpdateRequest;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.response.PointPolicyResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.exception.PointPolicyNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.admin.repository.PointPolicyRepository;
+import com.nhnacademy._vidiabookstoreservice.admin.service.PointPolicyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,13 +52,11 @@ public class PointPolicyServiceImpl implements PointPolicyService {
      * @return PointPolicyResponse(pointPolicyId, pointPolicyName, price)
      */
     @Override
-    public PointPolicyResponse update(Long pointPolicyId, PointPolicyUpdateRequest request) {
+    public void update(Long pointPolicyId, PointPolicyUpdateRequest request) {
         PointPolicy policy = repository.findById(pointPolicyId)
                 .orElseThrow(() -> new PointPolicyNotFoundException(pointPolicyId));
 
         policy.updatePrice(request.price());
-
-        return PointPolicyResponse.from(policy);
     }
 
 }

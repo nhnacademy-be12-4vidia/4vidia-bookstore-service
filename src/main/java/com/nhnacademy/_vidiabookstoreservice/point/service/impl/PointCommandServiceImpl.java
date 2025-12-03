@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.point.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
-import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
@@ -11,7 +11,6 @@ import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailReposit
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

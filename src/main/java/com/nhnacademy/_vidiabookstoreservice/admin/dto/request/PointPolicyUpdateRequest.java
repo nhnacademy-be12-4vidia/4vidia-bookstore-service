@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.point.dto.request;
+package com.nhnacademy._vidiabookstoreservice.admin.dto.request;
 
 import jakarta.validation.constraints.Min;
 

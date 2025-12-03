@@ -4,7 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.cart.domain.CartOwner;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.request.AddCartItemRequest;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequest;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
-import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartUpdateBookResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.GuestCartStatusResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import jakarta.validation.Valid;
@@ -64,14 +63,14 @@ public class CartController {
     }
 
     @PutMapping("/items/{bookId}")
-    public ResponseEntity<CartUpdateBookResponse> updateCartBook(
+    public ResponseEntity<Void> updateCartBook(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
             @RequestHeader(value = "X-Guest-Id", required = false) String guestId,
             @PathVariable Long bookId,
             @RequestBody @Valid UpdateCartItemRequest updateCartItemRequest
     ) {
-        CartUpdateBookResponse updateBookResponse = cartService.updateItem(resolveOwner(userId, guestId), bookId, updateCartItemRequest);
-        return ResponseEntity.ok().body(updateBookResponse);
+        cartService.updateItem(resolveOwner(userId, guestId), bookId, updateCartItemRequest);
+        return ResponseEntity.ok().build();
     }
 
     // 장바구니 삭제

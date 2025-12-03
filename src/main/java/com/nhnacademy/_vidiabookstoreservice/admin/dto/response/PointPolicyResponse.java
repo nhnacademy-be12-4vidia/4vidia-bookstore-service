@@ -1,6 +1,6 @@
-package com.nhnacademy._vidiabookstoreservice.point.dto.response;
+package com.nhnacademy._vidiabookstoreservice.admin.dto.response;
 
-import com.nhnacademy._vidiabookstoreservice.point.domain.PointPolicy;
+import com.nhnacademy._vidiabookstoreservice.admin.domain.PointPolicy;
 
 public record PointPolicyResponse(
         Long pointPolicyId,

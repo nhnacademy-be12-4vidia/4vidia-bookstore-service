@@ -5,13 +5,12 @@ import com.nhnacademy._vidiabookstoreservice.cart.domain.CartOwner;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.request.AddCartItemRequest;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequest;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
-import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartUpdateBookResponse;
 
 public interface CartService {
     // 기본 장바구니
     CartResponse getCart(CartOwner cartOwner);
     void addItem(CartOwner owner, AddCartItemRequest addItemRequest);
-    CartUpdateBookResponse updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest);
+    void updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest);
     void removeItem(CartOwner owner, Long bookId);
     void clear(CartOwner owner);
     void deleteCart(Long userId);
