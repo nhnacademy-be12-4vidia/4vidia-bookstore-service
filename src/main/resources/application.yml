@@ -46,6 +46,18 @@ spring:
     password: nhnacademy123!
     socket-timeout: 30s
     connection-timeout: 5s
+  cloud:
+    openfeign:
+      client:
+        config:
+          ollama-client:
+            connect-timeout: 5000
+            read-timeout: 60000
+
+          reranker-client:
+            connect-timeout: 5000
+            read-timeout: 30000
+
 cloud:
   aws:
     s3:
@@ -59,9 +71,10 @@ cloud:
     stack:
       auto: false
 
+
 image:
   default:
-    thumbnail: http://storage.java21.net/browser/4vidia/default-book-cover.png
+    thumbnail: http://storage.java21.net:8000/4vidia/default-book-cover.png
 
 
 eureka:

@@ -36,15 +36,27 @@ public class BookDocument {
     @Field(type = FieldType.Integer)
     private Integer stock;
 
-    public static BookDocument from(Book book) {
+    @Field(type = FieldType.Integer)
+    private Integer priceSales;
+
+    @Field(type = FieldType.Text, analyzer = "nori")
+    private List<String> tags;
+
+    @Field(type = FieldType.Dense_Vector, dims = 1024)
+    private double[] embedding;
+
+    public static BookDocument from(Book book, double[] vector) {
         return BookDocument.builder()
             .id(String.valueOf(book.getId()))
             .title(book.getTitle())
             .isbn(book.getIsbn())
             .description(book.getDescription())
+            .priceSales(book.getPriceSales())
             .authors(book.getBookAuthorList().stream().map(ba -> ba.getAuthor().getName()).toList())
+            .tags(book.getBookTagList().stream().map(bt -> bt.getTag().getName()).toList())
             .publisher(book.getPublisher().getName())
             .stock(book.getStock())
+            .embedding(vector)
             .build();
     }
 
