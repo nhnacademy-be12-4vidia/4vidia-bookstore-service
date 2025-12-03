@@ -153,10 +153,6 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
-        if (orders.isEmpty()) {
-            throw new OrderNotFoundByUserIdException(userId);
-        }
-
         return orders.stream().map(OrderPreviewResponse::from).toList();
     }
 }
