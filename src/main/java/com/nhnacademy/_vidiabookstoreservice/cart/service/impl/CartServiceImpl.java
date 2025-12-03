@@ -10,7 +10,6 @@ import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequ
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.BookSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartBookResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
-import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartUpdateBookResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartBookRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.DirtyCartRepository;
@@ -98,7 +97,7 @@ public class CartServiceImpl implements CartService {
      * @param updateRequest : (bookId, quantity)
      */
     @Override
-    public CartUpdateBookResponse updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest) {
+    public void updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest) {
         if(!bookRepository.existsById(bookId)){
             throw new IllegalArgumentException("도서를 찾을 수 없습니다.");
         }
@@ -113,7 +112,6 @@ public class CartServiceImpl implements CartService {
         if (owner.isUser()) {
             dirtyCartRepository.markDirty(Long.valueOf(owner.id()));
         }
-        return new CartUpdateBookResponse(bookId, updateRequest.quantity());
     }
 
     /**

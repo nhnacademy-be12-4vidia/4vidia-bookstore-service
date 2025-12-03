@@ -1,8 +1,8 @@
-package com.nhnacademy._vidiabookstoreservice.point.controller;
+package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
-import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyUpdateRequest;
-import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointPolicyResponse;
-import com.nhnacademy._vidiabookstoreservice.point.service.impl.PointPolicyServiceImpl;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.request.PointPolicyUpdateRequest;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.response.PointPolicyResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.service.impl.PointPolicyServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,9 +29,10 @@ public class PointPolicyController {
     }
 
     @PatchMapping("/{policyId}")
-    public ResponseEntity<PointPolicyResponse> update(@PathVariable Long policyId,
+    public ResponseEntity<Void> update(@PathVariable Long policyId,
                                       @Valid @RequestBody PointPolicyUpdateRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.update(policyId, request));
+        service.update(policyId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 }

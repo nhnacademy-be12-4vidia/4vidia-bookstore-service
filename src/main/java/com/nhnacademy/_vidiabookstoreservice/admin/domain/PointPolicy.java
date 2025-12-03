@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.point.domain;
+package com.nhnacademy._vidiabookstoreservice.admin.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
