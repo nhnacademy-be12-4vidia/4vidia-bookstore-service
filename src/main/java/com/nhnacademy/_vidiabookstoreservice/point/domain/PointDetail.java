@@ -33,7 +33,7 @@ public class PointDetail {
     private Long pointPolicyId; // 객체 말고 ID만 저장
 
     @Column(name = "price", nullable = false)
-    private int price;
+    private Integer price;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
