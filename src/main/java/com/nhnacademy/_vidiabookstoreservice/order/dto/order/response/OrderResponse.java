@@ -25,19 +25,25 @@ public record OrderResponse(
         LocalDate actualDeliveryDate, //null값 가져올수도있음
         int totalPrice,
         int payPrice,
-        List<OrderItemResponse> orderItems
+        List<OrderBookResponse> orderItems
 ) {
-    public record OrderItemResponse(
+    public record OrderBookResponse(
             Long orderItemId,
             Long bookId,
+            String bookTitle,
+            String bookAuthor,
+            String bookImageUrl,
             Integer quantity,
             Integer salePrice,
             ConfirmStatus confirmStatus
     ) {
-        public static OrderItemResponse from(OrderItem orderItem) {
-            return new OrderItemResponse(
+        public static OrderBookResponse from(OrderItem orderItem) {
+            return new OrderBookResponse(
                     orderItem.getOrderItemId(),
                     orderItem.getBook().getId(),
+                    orderItem.getBook().getTitle(),
+                    orderItem.getBook().getBookAuthorList().stream().findFirst().map(author -> author.getAuthor().getName()).orElse("저자 미상"),
+                    orderItem.getBook().getBookImageList().stream().findFirst().map(image -> image.getImageUrl()).orElse(null),
                     orderItem.getQuantity(),
                     orderItem.getSalePrice(),
                     orderItem.getConfirmStatus()
@@ -46,8 +52,8 @@ public record OrderResponse(
     }
 
     public static OrderResponse from(Order order) {
-        List<OrderItemResponse> orderItems = order.getOrderItems().stream()
-                .map(OrderItemResponse::from)
+        List<OrderBookResponse> orderItems = order.getOrderItems().stream()
+                .map(OrderBookResponse::from)
                 .toList();
 
         return new OrderResponse(
