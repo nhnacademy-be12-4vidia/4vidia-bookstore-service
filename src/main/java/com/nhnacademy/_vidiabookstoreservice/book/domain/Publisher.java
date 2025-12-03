@@ -23,7 +23,7 @@ public class Publisher extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "publisher")
+    @Column(name = "publisher_name", nullable = false, unique = true, length = 255)
     String name;
 
     @Builder
