@@ -13,6 +13,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockDecreaseRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
@@ -249,14 +250,23 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public void decreaseStock(Long bookId, Integer quantity) {
+    public void decreaseStock(List<BookStockDecreaseRequest> bookStockDecreaseRequestList) {
 
-        Book book = bookRepository.findByIdWithLock(bookId).orElseThrow(
-            () -> new BookNotFoundException(bookId));
+        List<BookStockChangedEvent> stockChangedEventList = new ArrayList<>();
 
-        book.decreaseStock(quantity);
+        for (BookStockDecreaseRequest request : bookStockDecreaseRequestList) {
+            Book book = bookRepository.findByIdWithLock(request.getBookId()).orElseThrow(
+                () -> new BookNotFoundException(request.getBookId()));
 
-        eventPublisher.publishEvent(new BookStockChangedEvent(book.getId(), book.getStock()));
+            book.decreaseStock(request.getQuantity());
+
+            stockChangedEventList.add(new BookStockChangedEvent(book.getId(), book.getStock()));
+
+        }
+
+        for (BookStockChangedEvent event : stockChangedEventList) {
+            eventPublisher.publishEvent(event);
+        }
     }
 
     @Override

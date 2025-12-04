@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockDecreaseRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
@@ -35,7 +36,7 @@ public interface BookService {
 
     Book getProxyById(Long bookId);
 
-    void decreaseStock(Long bookId, Integer quantity);
+    void decreaseStock(List<BookStockDecreaseRequest> bookStockDecreaseRequestList);
 
     void updateBook(Long bookId, BookUpdateRequest request, MultipartFile thumbnail);
 
