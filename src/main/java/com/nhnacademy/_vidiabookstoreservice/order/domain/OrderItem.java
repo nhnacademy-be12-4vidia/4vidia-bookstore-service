@@ -5,6 +5,9 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -34,6 +37,9 @@ public class OrderItem {
 
     @Column(name = "confirm_status", nullable = false)
     ConfirmStatus confirmStatus = ConfirmStatus.UNCONFIRMED;
+
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Packaging> packagings = new ArrayList<>();
 
     @Builder
     public OrderItem(Order order, Book book, int quantity, int salePrice, ConfirmStatus confirmStatus) {

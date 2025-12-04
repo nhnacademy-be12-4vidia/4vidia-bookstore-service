@@ -4,8 +4,11 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.order.dto.packaging.response.PackagingResponse;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 public record OrderResponse(
@@ -23,9 +26,10 @@ public record OrderResponse(
         LocalDate deliveryDate,
         DeliveryStatus deliveryStatus,
         LocalDate actualDeliveryDate, //null값 가져올수도있음
-        int totalPrice,
-        int payPrice,
-        List<OrderBookResponse> orderItems
+        int totalPrice, //도서 + 포장 + 배송
+        int payPrice,   //도서 + 포장 + 배송 - 포인트 - 쿠폰
+        List<OrderBookResponse> orderItems,
+        int itemsPrice  //순수 도서 금액 (도서 * 수량)의 합
 ) {
     public record OrderBookResponse(
             Long orderItemId,
@@ -35,9 +39,18 @@ public record OrderResponse(
             String bookImageUrl,
             Integer quantity,
             Integer salePrice,
-            ConfirmStatus confirmStatus
+            ConfirmStatus confirmStatus,
+            List<PackagingResponse> packagingResponses,
+            int totalPackagingPrice
     ) {
         public static OrderBookResponse from(OrderItem orderItem) {
+            List<PackagingResponse> packagingOptions = (orderItem.getPackagings() != null) ?
+                    orderItem.getPackagings().stream()
+                            .map(PackagingResponse::from)
+                            .toList() : Collections.emptyList();
+
+            int packSum = packagingOptions.stream().mapToInt(PackagingResponse::price).sum();
+
             return new OrderBookResponse(
                     orderItem.getOrderItemId(),
                     orderItem.getBook().getId(),
@@ -46,7 +59,9 @@ public record OrderResponse(
                     orderItem.getBook().getBookImageList().stream().findFirst().map(image -> image.getImageUrl()).orElse(null),
                     orderItem.getQuantity(),
                     orderItem.getSalePrice(),
-                    orderItem.getConfirmStatus()
+                    orderItem.getConfirmStatus(),
+                    packagingOptions,
+                    packSum
             );
         }
     }
@@ -73,7 +88,8 @@ public record OrderResponse(
                 order.getActualDeliveryDate(),
                 order.getTotalPrice(),
                 order.getPayPrice(),
-                orderItems
+                orderItems,
+                orderItems.stream().mapToInt(item -> item.salePrice() * item.quantity()).sum()
         );
     }
 }

@@ -12,4 +12,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderId(Long orderId);
 
     List<Order> findAllByUser_UserId(Long userUserId);
+
+    @Query("select distinct o from Order o " +
+            "join fetch o.orderItems oi " +
+            "join fetch oi.book " +
+            "where o.orderId = :orderId")
+    Optional<Order> findByOrderIdWithAll(Long orderId);
 }
