@@ -87,7 +87,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
 
-            bookService.decreaseStock(itemDto.bookId(), itemDto.quantity());
+            bookService.decreaseStock(itemDto.bookId(), itemDto.quantity()); //TODO 도서 재고차감 오류
 
             Book book = bookService.getBookEntity(itemDto.bookId());
 
@@ -124,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderResponse(Long orderId) {
-        Order order = orderRepository.findByOrderId(orderId).orElseThrow(
+        Order order = orderRepository.findByOrderIdWithAll(orderId).orElseThrow(
                 () -> new OrderNotFoundException(orderId)
         );
 

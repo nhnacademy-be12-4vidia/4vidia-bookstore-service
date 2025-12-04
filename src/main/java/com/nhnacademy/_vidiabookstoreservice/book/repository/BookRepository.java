@@ -37,7 +37,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")})
-    @Query("SELECT b FROM Book b WHERE b.id = :id")
+    @Query("SELECT b FROM Book b WHERE b.id = :bookId")
     Optional<Book> findByIdWithLock(Long bookId);
 
     List<Book> findBookById(Long id);
