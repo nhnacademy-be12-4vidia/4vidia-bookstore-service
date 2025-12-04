@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutListRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
@@ -18,18 +19,18 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @GetMapping//주문화면에 필요한 값
+    @PostMapping//주문화면에 필요한 값
     public ResponseEntity<OrderCheckoutResponse> getOrderCheckout(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
                                                                   @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
-                                                                  @RequestBody List<OrderCheckoutRequest> orderCheckoutRequests) {
+                                                                  @RequestBody OrderCheckoutListRequest orderCheckoutListRequest) {
 
         Long userId = xUserId == null ? xGuestId : xUserId;
-        OrderCheckoutResponse response = orderService.getOrderCheckoutResponse(userId, orderCheckoutRequests);
+        OrderCheckoutResponse response = orderService.getOrderCheckoutResponse(userId, orderCheckoutListRequest.items()); //왜?
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
                                                            @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
                                                            @RequestBody OrderCreateRequest orderCreateRequest) {
