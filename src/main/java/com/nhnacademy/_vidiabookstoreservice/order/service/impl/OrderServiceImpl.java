@@ -62,9 +62,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
-        User user = userService.getUserById(userId);
 
-        //TODO 재고 차감 구현 wow 어떻게하냐
+        User user = null;
+        if (userId != null) {
+            user = userService.getUserById(userId);
+        }
 
         Order order = Order.builder()
                 .user(user)
@@ -84,6 +86,9 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
+
+            bookService.decreaseStock(itemDto.bookId(), itemDto.quantity());
+
             Book book = bookService.getBookEntity(itemDto.bookId());
 
             OrderItem orderItem = OrderItem.builder()
@@ -158,8 +163,14 @@ public class OrderServiceImpl implements OrderService {
     public OrderCheckoutResponse getOrderCheckoutResponse(Long userId, List<OrderCheckoutRequest> orderCheckoutRequests) {
 
         OrderUserResponse orderUserResponse = null;
-        if (userId != null) {
+        List<OrderPageCouponResponse> orderPageCouponResponses = null;
+        if (userId != null) { //회원인경우
             orderUserResponse = userService.getOrderUser(userId);
+
+            //TODO 쿠폰 연결하면 가져오기
+//        CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
+//        orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
+
         } else {
             orderUserResponse = new OrderUserResponse("", "", "", 0, null);
         }
@@ -199,14 +210,9 @@ public class OrderServiceImpl implements OrderService {
                 .map(BookOrderResponse::category)
                 .toList();
 
-//        CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
-//        List<OrderPageCouponResponse> orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
-
         List<DeliveryDateResponse> deliveryDateResponses = getDeliveryDates();
         List<PackagingOptionResponse> packagingOptions =  packagingOptionService.getPackagingOptions();
 
-
-
-        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, /*orderPageCouponResponses*/null, deliveryDateResponses, packagingOptions);
+        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, orderPageCouponResponses, deliveryDateResponses, packagingOptions);
     }
 }
