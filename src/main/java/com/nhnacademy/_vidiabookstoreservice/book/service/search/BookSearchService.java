@@ -36,7 +36,13 @@ public class BookSearchService {
             return Page.empty(pageable);
         }
 
-        float[] queryVector = embeddingService.embedOrNull(keyword);
+        boolean useSemantic = Boolean.FALSE.equals(request.getUseSemantic());
+
+        float[] queryVector = null;
+
+        if (useSemantic) {
+            queryVector = embeddingService.embedOrNull(keyword);
+        }
 
         List<BookDocument> initialDocs = searchClient.search(request, queryVector, MAX_RESULTS);
 
