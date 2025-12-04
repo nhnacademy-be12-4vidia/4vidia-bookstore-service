@@ -6,7 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
-import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRewardRequest;
+import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointOrderRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
@@ -31,7 +31,7 @@ public class PointCommandServiceImpl implements PointCommandService {
      *  1. 주문완료로 기본 적립
      */
     @Override
-    public void reward(PointRewardRequest request,Long userId
+    public void reward(PointOrderRewardRequest request, Long userId
                        ) {
         // 여기서 유효성 검증, 정책 조회, reason 결정, 저장까지 처리
         PointDetail detail = PointDetail.reward(
@@ -93,6 +93,7 @@ public class PointCommandServiceImpl implements PointCommandService {
                 .ifPresent(user-> user.subtractPoint(request.amount()));
     }
 
+    // TODO 결제 취소는 포인트로 들어오지 않는데 이건 refund를 말하는건지 결제 취소를 말하는건지..?
     /**
      * 3. 주문 취소 환불 시 포인트 적립
      */
