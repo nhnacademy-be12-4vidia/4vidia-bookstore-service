@@ -3,6 +3,8 @@ package com.nhnacademy._vidiabookstoreservice.book.repository;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
+
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,4 +40,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE b.id = :id")
     Optional<Book> findByIdWithLock(Long bookId);
 
+    List<Book> findBookById(Long id);
 }

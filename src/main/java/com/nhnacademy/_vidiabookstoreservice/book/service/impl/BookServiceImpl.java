@@ -224,8 +224,21 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public Book getBookEntity(Long bookId) {
-        return bookRepository.findById(bookId).orElseThrow(
-            () -> new BookNotFoundException(bookId));
+        return bookRepository.findByIdWithAuthors(bookId).orElseThrow(
+                () -> new BookNotFoundException(bookId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookOrderResponse> getOrderBookByBookIds(List<Long> bookIds) {
+        List<Book> books = bookIds.stream().map(bookId -> bookRepository.findById(bookId).orElse(null)).toList();
+
+        return books.stream()
+                .map(BookOrderResponse::from)
+                .toList();
+
+//        return bookRepository.findById(bookId).orElseThrow(
+//            () -> new BookNotFoundException(bookId));
     }
 
     @Override
@@ -295,11 +308,6 @@ public class BookServiceImpl implements BookService {
 
         eventPublisher.publishEvent(new BookSavedEvent(book.getId(), book.getTitle()));
 
-    }
-
-    @Override
-    public List<Book> getBookListByIds(List<Long> bookIds) {
-        return List.of();
     }
 
     private Integer parseIntegerSafe(String value) {

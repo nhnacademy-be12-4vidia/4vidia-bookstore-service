@@ -37,7 +37,8 @@ public record OrderCheckoutResponse(
                 orderUserResponse.point(),
                 orderUserResponse.addressResponses(),
                 deliveryDateResponses,
-                couponResponses,
+//                couponResponses,
+                null,
                 packagingOptions
         );
     }
