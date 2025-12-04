@@ -1,6 +1,13 @@
 spring:
   application:
     name: 4vidia-bookstore-service
+  data:
+    redis:
+      host: s4.java21.net
+      port: 6379
+      password: "*N2vya7H@muDTwdNMR!"
+      database: 385
+      timeout: 5000ms
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
