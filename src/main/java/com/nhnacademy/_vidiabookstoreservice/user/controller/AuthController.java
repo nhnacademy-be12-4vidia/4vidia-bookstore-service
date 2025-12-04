@@ -51,10 +51,11 @@ public class AuthController {
     }
 
     @GetMapping("/check-email")
-    public ResponseEntity<String> checkEmail(@RequestParam String email) {
+    @ResponseBody
+    public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
         String decodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        String string = authService.existsByEmail(decodedEmail).toString();
-        return ResponseEntity.ok().body(string);
+        Boolean existsByEmail = authService.existsByEmail(decodedEmail);
+        return ResponseEntity.ok().body(existsByEmail);
     }
 
 }
