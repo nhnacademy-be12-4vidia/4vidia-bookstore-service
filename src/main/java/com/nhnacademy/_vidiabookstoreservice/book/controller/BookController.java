@@ -30,12 +30,7 @@ public class BookController {
     ) {
         Page<BookListResponse> result = bookSearchService.searchBooks(request, pageable);
 
-        if (result.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
         return ResponseEntity.ok(PageResponse.from(result));
 
     }
 }
-

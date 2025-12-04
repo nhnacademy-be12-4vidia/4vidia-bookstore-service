@@ -12,7 +12,7 @@ public interface RerankerFeignClient {
     List<RerankResult> rerank(@RequestBody RerankRequest request);
 
 
-    record RerankRequest(String query, List<String> text){}
+    record RerankRequest(String query, List<String> texts){}
     record RerankResult(int index, double score) {}
 
 }
