@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
-import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartBookResponse;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
@@ -15,7 +14,6 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderChecko
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
@@ -159,22 +157,27 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true) //주문화면에 보낼 값
     public OrderCheckoutResponse getOrderCheckoutResponse(Long userId, List<OrderCheckoutRequest> orderCheckoutRequests) {
 
-        OrderUserResponse orderUserResponse = userService.getOrderUser(userId);
+        OrderUserResponse orderUserResponse = null;
+        if (userId != null) {
+            orderUserResponse = userService.getOrderUser(userId);
+        } else {
+            orderUserResponse = new OrderUserResponse("", "", "", 0, null);
+        }
 
         List<Long> bookIds = orderCheckoutRequests.stream()
                 .map(OrderCheckoutRequest::bookId)
                 .toList();
 
-        List<Book> books = bookService.getBookListByIds(bookIds);
+        List<BookOrderResponse> books = bookService.getOrderBookByBookIds(bookIds);
 
-        Map<Long, Book> bookMap = books.stream() //O(N) -> O(1)
-                .collect(Collectors.toMap(Book::getId, Function.identity()));
+        Map<Long, BookOrderResponse> bookMap = books.stream() //O(N) -> O(1)
+                .collect(Collectors.toMap(BookOrderResponse::id, Function.identity()));
 
         List<OrderBookResponse> bookItems = orderCheckoutRequests.stream()
                 .map(req -> {
-                    Book book = bookMap.get(req.bookId());
+                    BookOrderResponse bookOrderResponse = bookMap.get(req.bookId());
 
-                    return OrderBookResponse.from(book, req.quantity());
+                    return OrderBookResponse.from(bookOrderResponse, req.quantity());
                 })
                 .toList();
 
@@ -193,17 +196,17 @@ public class OrderServiceImpl implements OrderService {
         }
 
         List<Long> categoryIds = books.stream()
-                .map(book -> {
-                    return book.getCategory().getId();
-                })
+                .map(BookOrderResponse::category)
                 .toList();
 
-        CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
-        List<OrderPageCouponResponse> orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
+//        CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
+//        List<OrderPageCouponResponse> orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
 
         List<DeliveryDateResponse> deliveryDateResponses = getDeliveryDates();
         List<PackagingOptionResponse> packagingOptions =  packagingOptionService.getPackagingOptions();
 
-        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, orderPageCouponResponses, deliveryDateResponses, packagingOptions);
+
+
+        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, /*orderPageCouponResponses*/null, deliveryDateResponses, packagingOptions);
     }
 }

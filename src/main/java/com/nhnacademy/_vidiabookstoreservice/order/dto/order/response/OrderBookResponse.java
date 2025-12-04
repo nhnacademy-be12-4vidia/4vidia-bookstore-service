@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 
-import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 
 public record OrderBookResponse(
             Long bookId,
@@ -10,14 +9,14 @@ public record OrderBookResponse(
             Integer quantity,
             Integer salePrice
     ) {
-        public static OrderBookResponse from(Book book, int quantity) {
+        public static OrderBookResponse from(BookOrderResponse book, int quantity) {
             return new OrderBookResponse(
-                    book.getId(),
-                    book.getTitle(),
-                    book.getBookAuthorList().stream().findFirst().map(author -> author.getAuthor().getName()).orElse("저자 미상"),
-                    book.getBookImageList().stream().findFirst().map(image -> image.getImageUrl()).orElse(null),
+                    book.id(),
+                    book.title(),
+                    book.author(),
+                    book.imageUrl(),
                     quantity,
-                    book.getPriceSales()
+                    book.salePrice()
             );
         }
     }

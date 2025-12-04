@@ -21,11 +21,9 @@ public class OrderController {
 
     @PostMapping//주문화면에 필요한 값
     public ResponseEntity<OrderCheckoutResponse> getOrderCheckout(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                                  @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
                                                                   @RequestBody OrderCheckoutListRequest orderCheckoutListRequest) {
 
-        Long userId = xUserId == null ? xGuestId : xUserId;
-        OrderCheckoutResponse response = orderService.getOrderCheckoutResponse(userId, orderCheckoutListRequest.items()); //왜?
+        OrderCheckoutResponse response = orderService.getOrderCheckoutResponse(xUserId, orderCheckoutListRequest.items());
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -34,7 +32,7 @@ public class OrderController {
     public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
                                                            @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
                                                            @RequestBody OrderCreateRequest orderCreateRequest) {
-        long userId = xUserId == null ? xGuestId : xUserId;
+        Long userId = xUserId == null ? xGuestId : xUserId;
         OrderCreateResponse orderId = orderService.saveOrder(userId, orderCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
