@@ -8,4 +8,5 @@ public interface AuthService {
     Long register(UserSignupRequest request);
     String findUserId(FindIdRequest request);
     String restPasswordAndSendMail (FindPasswordRequest request);
+    Boolean existsByEmail(String email);
 }
