@@ -24,7 +24,7 @@ public class Order {
     Long orderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     User user;
 
     @Column(name = "recipient_name", length = 50, nullable = false)
