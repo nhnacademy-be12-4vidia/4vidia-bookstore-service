@@ -1,17 +1,13 @@
 package com.nhnacademy._vidiabookstoreservice.point.controller;
 
-
 import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointExpireSoon;
 import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointHistoryResponse;
 import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointTotalResponse;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointQueryService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
