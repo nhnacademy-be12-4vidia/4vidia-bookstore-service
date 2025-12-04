@@ -15,7 +15,7 @@ import java.util.List;
 
 @Repository
 public interface PointDetailRepository extends JpaRepository<PointDetail, Long> {
-
+// TODO 쿼리문 수정 필요
     /**
      * 사용 가능한 포인트 목록 조회
      * -특정 유저의 적립 포인트 중

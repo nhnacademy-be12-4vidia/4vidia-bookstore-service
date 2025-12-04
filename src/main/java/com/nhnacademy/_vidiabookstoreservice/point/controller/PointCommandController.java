@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.point.controller;
 
-import com.nhnacademy._vidiabookstoreservice.admin.dto.request.PointPolicyRewardRequest;
+import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/my/points")
+@RequestMapping("/points")
 public class PointCommandController {
 
     private final PointCommandServiceImpl pointCommandService;
@@ -53,10 +53,9 @@ public class PointCommandController {
     /** 4. 정책 기준 적립 — 이벤트/프로모션/등급/캠페인 */
     @PostMapping("/policy-reward")
     public ResponseEntity<Void> rewardByPolicy(
-            @Valid @RequestBody PointPolicyRewardRequest request,
-            @RequestHeader("X-USER-ID") Long userId
+            @Valid @RequestBody PointPolicyRewardRequest request
     ) {
-        pointCommandService.rewardByPolicy(request, userId);
+        pointCommandService.rewardByPolicy(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

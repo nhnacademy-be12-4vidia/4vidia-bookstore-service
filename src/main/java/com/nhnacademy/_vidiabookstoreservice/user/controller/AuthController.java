@@ -26,9 +26,9 @@ public class AuthController {
      * 회원가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<Void> singup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
-        authService.register(userSignupRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
+    public ResponseEntity<Long> singup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
+        Long userId = authService.register(userSignupRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userId); // 201 Created
     }
 
     /**

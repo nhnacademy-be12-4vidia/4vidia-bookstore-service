@@ -72,8 +72,6 @@ public class User extends BaseEntity {
     private Grade grade;
 
 
-
-
     @Builder
     public User(String email, String password, String name,
                 String phone,
@@ -96,11 +94,11 @@ public class User extends BaseEntity {
 
 
     // 비즈니스 로직 메소드
-
-    // 회원 정보 수정
-    public void updateProfile(String name, String phone){
-        this.name = name;
-        this.phone = phone;
+    public void addPoint(int amount){
+        this.point += amount;
+    }
+    public void subtractPoint(int amount){
+        this.point -= amount;
     }
 
 

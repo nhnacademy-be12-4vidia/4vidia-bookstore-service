@@ -1,14 +1,16 @@
 package com.nhnacademy._vidiabookstoreservice.point.service.impl;
 
 
+import com.nhnacademy._vidiabookstoreservice.admin.repository.PointPolicyRepository;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
-import com.nhnacademy._vidiabookstoreservice.admin.dto.request.PointPolicyRewardRequest;
+import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
+import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,8 @@ import java.util.List;
 public class PointCommandServiceImpl implements PointCommandService {
 
     private final PointDetailRepository pointDetailRepository;
+    private final PointPolicyRepository pointPolicyRepository;
+    private final UserRepository userRepository;
 
     /**
      *  1. 주문완료로 기본 적립
@@ -36,6 +40,8 @@ public class PointCommandServiceImpl implements PointCommandService {
                 request.amount()
         );
         pointDetailRepository.save(detail);
+        userRepository.findById(userId)
+                .ifPresent(user-> user.addPoint(request.amount()));
     }
 
 
@@ -45,7 +51,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     @Transactional
     @Override
     public void use(PointUseRequest request,Long userId) {
-        int remaining = request.amount(); // 사용해야 할 포인트 금액
+        int remaining = request.amount(); // 사용자가 작성한 포인트 사용 금액
         if(remaining <= 0) {
             throw new IllegalArgumentException("사용금액은 0보다 커야 합니다.");
         }
@@ -83,6 +89,8 @@ public class PointCommandServiceImpl implements PointCommandService {
         if(remaining>0){
             throw new IllegalArgumentException("보유포인트가 부족합니다.");
         }
+        userRepository.findById(userId)
+                .ifPresent(user-> user.subtractPoint(request.amount()));
     }
 
     /**
@@ -106,18 +114,18 @@ public class PointCommandServiceImpl implements PointCommandService {
                 refundAmount
         );
         pointDetailRepository.save(detail);
+        userRepository.findById(userId)
+                .ifPresent(user-> user.addPoint(request.amount()));
     }
 
     /**
      * 4. 포인트 정책에 따른 적립
      */
 
-    public void rewardByPolicy(PointPolicyRewardRequest request, Long userId) {
+    public void rewardByPolicy(PointPolicyRewardRequest request) {
         PointDetail detail = PointDetail.rewardByPolicy(
-                userId,
-                request.orderId(),
-                request.policyId(),
-                request.amount()
+                request.userId(),
+                pointPolicyRepository.findByPointPolicyId((request.policyId()))
         );
         pointDetailRepository.save(detail);
     }

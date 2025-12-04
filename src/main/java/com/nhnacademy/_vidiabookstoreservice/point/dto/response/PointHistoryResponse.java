@@ -6,7 +6,7 @@ public record PointHistoryResponse(
         LocalDateTime createdAt,
         Integer price,
         String reason,
-        Long orderId,
+        String policyName,
         LocalDateTime expiredAt
 ) {
 }

@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.point.scheduler;
 
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
+import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PointExpireScheduler {
     private final PointDetailRepository pointDetailRepository;
+    private final UserRepository userRepository;
 
     /**
      * 매일 새벽 03:00에 유효기간이 지난 적립 포인트 자동 소멸
@@ -41,6 +43,10 @@ public class PointExpireScheduler {
                     point.getExpiredAt()
             );
             point.expire();
+            userRepository.findById(point.getUserId()).ifPresent(user -> {
+                user.subtractPoint(point.getPrice());   // price 만큼 감소
+            });
+
         });
         log.info("[PointExpireScheduler] Total expired points count = {}", expireList.size());
     }

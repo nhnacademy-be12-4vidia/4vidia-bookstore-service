@@ -10,10 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +45,7 @@ public class PointQueryServiceImpl implements PointQueryService {
                         detail.getCreatedAt(),
                         detail.getPrice(),
                         detail.getReason().getTitle(),
-                        detail.getOrderId(),
+                        detail.getPointPolicy().getPointName(),
                         detail.getExpiredAt()
                 ));
     }
