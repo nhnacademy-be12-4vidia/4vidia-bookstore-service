@@ -62,12 +62,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
-        if (userId == null) {
 
+        User user = null;
+        if (userId != null) {
+            user = userService.getUserById(userId);
         }
-        User user = userService.getUserById(userId);
 
         //TODO 재고 차감 구현 wow 어떻게하냐
+
 
         Order order = Order.builder()
                 .user(user)
