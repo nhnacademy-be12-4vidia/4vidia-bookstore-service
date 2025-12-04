@@ -14,5 +14,6 @@ public class EsBookSearchRequest {
     private Long categoryId;
     private Integer minPrice;
     private Integer maxPrice;
+    private Boolean useSemantic;
 
 }
