@@ -5,6 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AlreadyLikedException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.LikeNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.LikeRepository;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Transactional
@@ -49,6 +51,20 @@ public class LikeServiceImpl implements LikeService {
                 // -> 해결: LikeRepository에서 fetch join 사용
                 .toList();
     }
+
+
+    /**
+     * 좋아요 아이디 리스트 조회
+     */
+    @Override
+    public List<UserLikeResponse> getLikeIdList(Long userId, List<Long> bookIds) {
+        List<Like> likes = likeRepository.findAllByUser_UserIdAndBook_IdIn(userId, bookIds);
+
+        return likes.stream()
+                .map(like -> UserLikeResponse.fromEntity(like))
+                .toList();
+    }
+
 
     /**
      * 좋아요 등록
