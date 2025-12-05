@@ -112,4 +112,14 @@ public class AuthServiceImpl implements AuthService {
         }
         return sb.toString();
     }
+
+    // 회원 상태 조회
+    @Override
+    public String getUserStatus(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundByEmailException(email));
+
+        return user.getStatus().name();
+    }
+
 }
