@@ -15,19 +15,18 @@ import java.util.List;
 
 @Repository
 public interface PointDetailRepository extends JpaRepository<PointDetail, Long> {
-// TODO 쿼리문 수정 필요
     /**
      * 사용 가능한 포인트 목록 조회
      * -특정 유저의 적립 포인트 중
-     * -price>0 (적입된 포인트)
+     * -price>0 (적립된 포인트)
      * -expiredAt> now (아직 소멸되지 않은)
-     * -createdAt ASC (먼저 적립된 것부터 사용하기 위해 오름차순)
+     * -expiredAt ASC (유효기간이 짧은 것부터 사용하기 위해 오름차순)
      */
     @Query("SELECT p FROM PointDetail p " +
             "WHERE p.userId = :userId " +
             "AND p.price > 0 " +
             "AND p.expiredAt > :now " +
-            "ORDER BY p.createdAt ASC")
+            "ORDER BY p.expiredAt ASC")
     List<PointDetail> findAvailablePointForUse(@Param("userId")Long userId,
                                                @Param("now")LocalDateTime now);
 
@@ -74,4 +73,5 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      */
     boolean existsByUserIdAndOrderIdAndReason(Long userId, Long orderId, PointReason reason);
 
+    List<PointDetail> findByOrderId(Long orderId);
 }

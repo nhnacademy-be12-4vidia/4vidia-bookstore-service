@@ -52,8 +52,8 @@ public class PointCommandServiceImpl implements PointCommandService {
     @Override
     public void use(PointUseRequest request,Long userId) {
         int remaining = request.amount(); // 사용자가 작성한 포인트 사용 금액
-        if(remaining <= 0) {
-            throw new IllegalArgumentException("사용금액은 0보다 커야 합니다.");
+        if(remaining < 0) {
+            throw new IllegalArgumentException("사용금액은 음수일 수 없습니다.");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -93,13 +93,34 @@ public class PointCommandServiceImpl implements PointCommandService {
                 .ifPresent(user-> user.subtractPoint(request.amount()));
     }
 
-    // TODO 결제 취소는 포인트로 들어오지 않는데 이건 refund를 말하는건지 결제 취소를 말하는건지..?
     /**
-     * 3. 주문 취소 환불 시 포인트 적립
+     * 3. 주문 처리 실패 || 결제 취소
      */
+    @Override
+    public void cancelUse(Long orderId, Long userId){
+        List<PointDetail> pointDetails = pointDetailRepository.findByOrderId(orderId);
+
+        if(pointDetails!=null){
+           for(PointDetail pointDetail : pointDetails){
+               pointDetailRepository.save(PointDetail.cancelUse(
+                       userId,
+                       orderId,
+                       pointDetail.getPrice(),
+                       pointDetail.getExpiredAt()
+               ));
+           }
+        }
+    }
+
+
+    /**
+     * 4. 반품 시 포인트 적립
+     */
+    @Override
     public void refund(PointRefundRequest request, Long userId) {
         boolean alreadyRefund = pointDetailRepository
                 .existsByUserIdAndOrderIdAndReason(userId,request.orderId(), PointReason.ORDER_CANCEL_REFUND);
+
         if(alreadyRefund) {
             throw new IllegalArgumentException("이미 환불 처리된 주문입니다.");
         }
@@ -120,9 +141,9 @@ public class PointCommandServiceImpl implements PointCommandService {
     }
 
     /**
-     * 4. 포인트 정책에 따른 적립
+     * 5. 포인트 정책에 따른 적립
      */
-
+    @Override
     public void rewardByPolicy(PointPolicyRewardRequest request) {
         PointDetail detail = PointDetail.rewardByPolicy(
                 request.userId(),
