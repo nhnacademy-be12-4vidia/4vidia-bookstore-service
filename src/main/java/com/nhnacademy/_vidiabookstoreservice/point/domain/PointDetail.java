@@ -70,6 +70,22 @@ public class PointDetail {
         return new PointDetail(userId, orderId, null, -useAmount, LocalDateTime.now(),null, PointReason.ORDER_USE);
     }
 
+    //4. 결제 취소 || 결제 실패
+    public static PointDetail cancelUse(Long userId, Long orderId, int price, LocalDateTime expiredAt){
+        return new PointDetail(userId, orderId, null, -price, LocalDateTime.now(), expiredAt, PointReason.ORDER_CANCEL_REFUND);
+    }
+
+    //5. 환불(환급) -> 반품했을 경우 포인트로 환불, 결제취소 시 포인트 환불
+    public static PointDetail refund(Long userId, Long orderId, int refundAmount) {
+        return new PointDetail(userId, orderId, null, refundAmount, LocalDateTime.now(),null, PointReason.ORDER_CANCEL_REFUND);
+    }
+
+    // 6. 소멸 처리
+    public void expire(){
+        this.price = 0;
+        this.reason = PointReason.POINT_EXPIRE;
+    }
+
     public void decrease(int amount){
         if(amount < 0) {
             throw new IllegalArgumentException("감소 금액은 양수여야 합니다.");
@@ -79,21 +95,4 @@ public class PointDetail {
         }
         this.price-=amount;
     }
-
-    //4. 환불(환급) -> 반품했을 경우 포인트로 환불, 결제취소 시 포인트 환불
-    public static PointDetail refund(Long userId, Long orderId, int refundAmount) {
-        return new PointDetail(userId, orderId, null, refundAmount, LocalDateTime.now(),null, PointReason.ORDER_CANCEL_REFUND);
-    }
-
-    // 5. 소멸 처리
-    public void expire(){
-        this.price = 0;
-        this.reason = PointReason.POINT_EXPIRE;
-    }
-
-
-
-
-
-
 }

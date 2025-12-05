@@ -21,7 +21,7 @@ public class PointCommandController {
     @PostMapping("/my/points/reward")
     public ResponseEntity<Void> reward(
             @Valid @RequestBody PointOrderRewardRequest request,
-            @RequestHeader("X-USER-ID") Long userId
+            @RequestHeader("X-User-Id") Long userId
     ) {
         pointCommandService.reward(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -32,18 +32,27 @@ public class PointCommandController {
     @PostMapping("/my/points/use")
     public ResponseEntity<Void> use(
             @Valid @RequestBody PointUseRequest request,
-            @RequestHeader("X-USER-ID") Long userId
+            @RequestHeader("X-User-Id") Long userId
     ) {
         pointCommandService.use(request, userId);
         return ResponseEntity.ok().build();
     }
 
+    /** 3. 결제 비정상 처리 || 결제 취소 */
+    @PostMapping("/my/points/cancel")
+    public ResponseEntity<Void> cancelUse(Long orderId,
+                                          @RequestHeader("X-User-Id") Long userId
+    ){
+        pointCommandService.cancelUse(orderId, userId);
+        return ResponseEntity.ok().build();
+    }
 
-    /** 3. 주문 취소 환불 — 차감되었던 포인트 복구 (적립) */
+
+    /** 3. 반품 — 차감되었던 포인트 복구 (적립) */
     @PostMapping("/my/points/refund")
     public ResponseEntity<Void> refund(
             @Valid @RequestBody PointRefundRequest request,
-            @RequestHeader("X-USER-ID") Long userId
+            @RequestHeader("X-User-Id") Long userId
     ) {
         pointCommandService.refund(request, userId);
         return ResponseEntity.ok().build();
