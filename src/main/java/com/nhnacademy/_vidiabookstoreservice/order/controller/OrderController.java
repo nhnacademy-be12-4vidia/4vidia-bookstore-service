@@ -4,6 +4,8 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderChecko
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,14 @@ public class OrderController {
         OrderCreateResponse orderId = orderService.saveOrder(userId, orderCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
+    }
+
+    @PostMapping("/{orderId}/success")
+    public ResponseEntity<PaymentResponse> savePaymentDetail(@PathVariable long orderId,
+                                                             @RequestBody PaymentConfirmRequest confirmRequest) {
+        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
 
     @GetMapping("/{orderId}") //주문내역 상세보기

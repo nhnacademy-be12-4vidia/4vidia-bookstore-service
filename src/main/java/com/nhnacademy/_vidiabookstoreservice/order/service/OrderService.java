@@ -1,10 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 
 import java.util.List;
 
@@ -16,9 +17,9 @@ public interface OrderService {
 
     OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request);
 
-    Order getOrder(Long orderId);
+    PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest);
 
-    void updateOrderStatus(Long orderId, OrderStatus orderStatus);
+    Order getOrder(Long orderId);
 
     List<OrderPreviewResponse> getOrdersByUserId(Long userId);
 

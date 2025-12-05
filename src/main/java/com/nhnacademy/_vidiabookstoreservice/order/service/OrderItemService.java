@@ -1,7 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderItemRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemResponse;
+
+import java.util.List;
 
 public interface OrderItemService{
 
@@ -13,4 +17,5 @@ public interface OrderItemService{
 
     OrderItem getProxyById(Long orderItemId);
 
+    List<OrderItemRequest> getOrderItemRequests(Order order);
 }

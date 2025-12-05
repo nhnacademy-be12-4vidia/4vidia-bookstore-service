@@ -20,7 +20,9 @@ public record OrderCreateRequest(
         int pointUsed,  //포인트사용금액
         int payPrice, //도서가격 + 배송비 + 포장비 - 할인/포인트
 
-        List<ItemRequestDto> orderItems
+        List<ItemRequestDto> orderItems,
+        //TODO 사용하는 쿠폰 아이디 리스트
+        List<Long> coupons
 ) {
     public record ItemRequestDto(
             long bookId,

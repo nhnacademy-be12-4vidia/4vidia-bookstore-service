@@ -17,14 +17,16 @@ public record OrderCheckoutResponse(
         List<AddressResponse> addressResponses,
 
         List<DeliveryDateResponse> deliveryDateResponses,
-        List<OrderPageCouponResponse> couponResponses,
+        List<OrderPageCouponResponse> possibleCoupons,
+        List<OrderPageCouponResponse> impossibleCoupons,
         List<PackagingOptionResponse> packagingOptions
 ) {
     public static OrderCheckoutResponse from(OrderUserResponse orderUserResponse,
                                          List<OrderBookResponse> bookItems,
                                          String orderName,
                                          int finalAmount,
-                                         List<OrderPageCouponResponse> couponResponses,
+                                         List<OrderPageCouponResponse> possibleCoupons,
+                                         List<OrderPageCouponResponse> impossibleCoupons,
                                          List<DeliveryDateResponse> deliveryDateResponses,
                                          List<PackagingOptionResponse> packagingOptions) {
         return new OrderCheckoutResponse(
@@ -37,7 +39,9 @@ public record OrderCheckoutResponse(
                 orderUserResponse.point(),
                 orderUserResponse.addressResponses(),
                 deliveryDateResponses,
-//                couponResponses,
+//                possibleCoupons,
+//                impossibleCoupons,
+                null,
                 null,
                 packagingOptions
         );
