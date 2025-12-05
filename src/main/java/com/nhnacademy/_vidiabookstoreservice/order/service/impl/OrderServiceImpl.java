@@ -101,6 +101,7 @@ public class OrderServiceImpl implements OrderService {
             useCouponAndDecreaseStockAndPoint(savedOrder, orderItemRequests, request.coupons(), request.pointUsed());
 
             for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
+//            bookService.decreaseStock(itemDto.bookId(), itemDto.quantity()); //TODO 도서 재고차감 오류
 
                 Book book = bookService.getBookEntity(itemDto.bookId());
 

@@ -8,7 +8,6 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordR
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByEmailException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
@@ -75,6 +74,7 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 비밀번호 찾기 ( 아이디 + 이름 + 전화번호) -> 임시 비밀번호 발급
      */
+    @Override
     public String restPasswordAndSendMail (FindPasswordRequest request) {
         User user = userRepository.findByEmailAndNameAndPhone(
                 request.email(),request.name(),request.phone()
@@ -93,6 +93,12 @@ public class AuthServiceImpl implements AuthService {
         mailService.sendTempPassword(user.getEmail(), tempPassword);
         return "임시 비밀번호가 이메일로 발송되었습니다.";
 
+    }
+
+    // 이메일 중복 체크
+    @Override
+    public Boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     // 임시 비밀번호 발급 로직

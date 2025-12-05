@@ -9,10 +9,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,6 +48,14 @@ public class AuthController {
     public ResponseEntity<String> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
         authService.restPasswordAndSendMail(findPasswordRequest);
         return ResponseEntity.ok("임시 비밀번호가 발급되었습니다.");
+    }
+
+    @GetMapping("/check-email")
+    @ResponseBody
+    public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
+        String decodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
+        Boolean existsByEmail = authService.existsByEmail(decodedEmail);
+        return ResponseEntity.ok().body(existsByEmail);
     }
 
 }
