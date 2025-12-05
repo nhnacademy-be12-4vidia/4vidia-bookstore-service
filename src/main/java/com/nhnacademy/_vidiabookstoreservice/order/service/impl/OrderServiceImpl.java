@@ -1,7 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockDecreaseRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
@@ -270,8 +270,8 @@ public class OrderServiceImpl implements OrderService {
         PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
         pointCommandService.use(pointUseRequest, order.getUser().getUserId());
 
-        List<BookStockDecreaseRequest> bookStockDecreaseRequestList = itemRequests.stream()
-                .map(item -> new BookStockDecreaseRequest(item.bookId(), item.quantity()))
+        List<BookStockChangeRequest> bookStockDecreaseRequestList = itemRequests.stream()
+                .map(item -> new BookStockChangeRequest(item.bookId(), item.quantity()))
                 .toList();
 
         bookService.decreaseStock(bookStockDecreaseRequestList);
@@ -287,8 +287,8 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderItemRequest> orderItemRequests = orderItemService.getOrderItemRequests(order);
 
-        List<BookStockDecreaseRequest> bookStockDecreaseRequestList = orderItemRequests.stream()
-                .map(item -> new BookStockDecreaseRequest(item.bookId(), item.quantity()))
+        List<BookStockChangeRequest> bookStockDecreaseRequestList = orderItemRequests.stream()
+                .map(item -> new BookStockChangeRequest(item.bookId(), item.quantity()))
                 .toList();
         //bookService.cancelDecreaseBook(bookStockDecreaseRequestList); decrease 취소 필요
 
