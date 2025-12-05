@@ -1,7 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.search;
 
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.embedding.EmbeddingService;
@@ -30,7 +30,7 @@ public class BookSearchService {
     private final BookDocumentReranker reranker;
     private final BookSearchResultAssembler resultAssembler;
 
-    public Page<BookListResponse> searchBooks(EsBookSearchRequest request, Pageable pageable) {
+    public Page<BookSearchListResponse> searchBooks(EsBookSearchRequest request, Pageable pageable, Long userId) {
         String keyword = request.getKeyword();
         if (!StringUtils.hasText(keyword)) {
             return Page.empty(pageable);
@@ -52,7 +52,7 @@ public class BookSearchService {
 
         List<BookDocument> rerankDocs = reranker.rerankSafely(keyword, initialDocs);
 
-        return resultAssembler.assemble(rerankDocs, pageable);
+        return resultAssembler.assemble(rerankDocs, userId, pageable);
     }
 
 }

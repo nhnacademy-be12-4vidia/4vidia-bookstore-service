@@ -3,10 +3,15 @@ package com.nhnacademy._vidiabookstoreservice.book.service.search.result;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +25,9 @@ import org.springframework.stereotype.Component;
 public class BookSearchResultAssembler {
 
     private final BookRepository bookRepository;
+    private final LikeService likeService;
 
-    public Page<BookListResponse> assemble(List<BookDocument> docs, Pageable pageable) {
+    public Page<BookSearchListResponse> assemble(List<BookDocument> docs, Long userId, Pageable pageable) {
         long total = docs.size();
 
         if (total == 0) {
@@ -42,10 +48,19 @@ public class BookSearchResultAssembler {
         Map<Long, Book> bookMap = bookList.stream()
             .collect(Collectors.toMap(Book::getId, Function.identity()));
 
-        List<BookListResponse> responseList = bookIdList.stream()
+        Set<Long> likedBookIds;
+        if (userId != null && !bookIdList.isEmpty()) {
+            likedBookIds = likeService.getLikeIdList(userId, bookIdList).stream().map(UserLikeResponse::bookId).collect(Collectors.toSet());
+        } else {
+            likedBookIds = Collections.emptySet();
+        }
+
+        List<BookSearchListResponse> responseList = bookIdList.stream()
             .map(bookMap::get)
             .filter(Objects::nonNull)
-            .map(BookListResponse::from)
+            .map(b -> BookSearchListResponse.from(
+                b, likedBookIds.contains(b.getId())
+            ))
             .toList();
 
         return new PageImpl<>(responseList, pageable, total);
