@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.cart.repository.redis;
 import com.nhnacademy._vidiabookstoreservice.cart.domain.CartOwner;
 import com.nhnacademy._vidiabookstoreservice.cart.domain.enums.CartOwnerType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -14,10 +15,13 @@ import java.util.Map;
  * 회원/비회원 장바구니 내용을 Redis에 저장하는 창고
  */
 @Repository
-@RequiredArgsConstructor
 public class RedisCartRepository {
-
     private final StringRedisTemplate redisTemplate;
+    public RedisCartRepository(
+            @Qualifier("cartRedisTemplate") StringRedisTemplate redisTemplate
+    ) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String USER_PREFIX = "cart:user:";
     private static final String GUEST_PREFIX = "cart:guest:";
