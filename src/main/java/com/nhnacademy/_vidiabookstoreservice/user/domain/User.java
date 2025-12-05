@@ -121,7 +121,12 @@ public class User extends BaseEntity {
     }
     // 휴먼상태인지 확인 (마지막 로그인이 3개월 전이면 )
     public boolean isDormant(){
-        if(lastLoginAt == null){return false;}
+        // todo : 회원가입하고 로그인을 안하면 -> 몇년이 지나도 휴먼이 안되요?
+        if(lastLoginAt == null){
+            return false;
+        }
+
+        // 마지막 로그인 시간이 현재 시간보다 3개월 이전이면 -> true(휴먼ㅇㅇ)
         return lastLoginAt.isBefore(LocalDateTime.now().minusMonths(3));
     }
     // 비밀번호 변경

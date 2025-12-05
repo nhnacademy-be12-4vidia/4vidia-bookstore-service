@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.LoginRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
 import jakarta.validation.Valid;
@@ -59,14 +60,11 @@ public class AuthController {
     }
 
 
-    // 로그인할때 이메일로 회원상태 조회
-    @GetMapping("/find-email")
-    public ResponseEntity<String> findStatusByEmail(@RequestParam String email) {
-        String decodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        return ResponseEntity.ok().body(authService.getUserStatus(decodedEmail));
+    // 로그인시 휴먼상태 여부 확인 후 마지막로그인 시간 업데이트 (리턴은 휴먼여부)
+    @PostMapping("/check-dormant")
+    public ResponseEntity<Boolean> checkDormant(@Valid @RequestBody LoginRequest loginRequest) {
+        return ResponseEntity.ok().body(authService.isDormant(loginRequest));
     }
 
-    // 비밀번호 체크
-//    @PostMapping
 
 }
