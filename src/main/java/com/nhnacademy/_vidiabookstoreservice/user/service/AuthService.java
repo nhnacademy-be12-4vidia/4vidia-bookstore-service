@@ -9,4 +9,5 @@ public interface AuthService {
     String findUserId(FindIdRequest request);
     String restPasswordAndSendMail (FindPasswordRequest request);
     Boolean existsByEmail(String email);
+    String getUserStatus(String email);
 }

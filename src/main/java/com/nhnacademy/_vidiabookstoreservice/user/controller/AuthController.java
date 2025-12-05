@@ -58,4 +58,15 @@ public class AuthController {
         return ResponseEntity.ok().body(existsByEmail);
     }
 
+
+    // 로그인할때 이메일로 회원상태 조회
+    @GetMapping("/find-email")
+    public ResponseEntity<String> findStatusByEmail(@RequestParam String email) {
+        String decodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
+        return ResponseEntity.ok().body(authService.getUserStatus(decodedEmail));
+    }
+
+    // 비밀번호 체크
+//    @PostMapping
+
 }

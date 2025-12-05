@@ -17,3 +17,5 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 }
+
+// todo 비회원 좋아요 버튼 어떻게 처리? (영재님 요청)
