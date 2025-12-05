@@ -101,7 +101,6 @@ public class OrderServiceImpl implements OrderService {
             useCouponAndDecreaseStockAndPoint(savedOrder, orderItemRequests, request.coupons(), request.pointUsed());
 
             for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
-//            bookService.decreaseStock(itemDto.bookId(), itemDto.quantity()); //TODO 도서 재고차감 오류
 
                 Book book = bookService.getBookEntity(itemDto.bookId());
 
@@ -242,14 +241,13 @@ public class OrderServiceImpl implements OrderService {
         if (userId != null) { //회원인경우
             orderUserResponse = userService.getOrderUser(userId);
 
-            //TODO 쿠폰 연결하면 가져오기, 가져와서 사용 가능 불가능 나누기
             CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
-//            orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
-//            Map<Boolean, List<OrderPageCouponResponse>> partition = orderPageCouponResponses.stream() //우와 이런 좋은 방법이?
-//                    .collect(Collectors.partitioningBy(OrderPageCouponResponse::available));
-//
-//            possibleCoupons = partition.get(true);
-//            impossibleCoupons = partition.get(false);
+            orderPageCouponResponses = couponClient.getUserCoupons(userId,couponRequest);
+            Map<Boolean, List<OrderPageCouponResponse>> partition = orderPageCouponResponses.stream() //우와 이런 좋은 방법이?
+                    .collect(Collectors.partitioningBy(OrderPageCouponResponse::available));
+
+            possibleCoupons = partition.get(true);
+            impossibleCoupons = partition.get(false);
 
         } else { //비회원인경우
             orderUserResponse = new OrderUserResponse("", "", "", 0, null);
@@ -263,18 +261,18 @@ public class OrderServiceImpl implements OrderService {
 
     //쿠폰 사용, 포인트 사용, 도서 차감
     private void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, List<Long> couponIds, int pointUsed) {
-        // TODO 쿠폰 사용 처리
+
         CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponIds);
-        //couponClient.useCoupon(couponUseRequest);
+        couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
 
         PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
-        pointCommandService.use(pointUseRequest, order.getUser().getUserId());
+        //pointCommandService.use(pointUseRequest, order.getUser().getUserId());
 
         List<BookStockChangeRequest> bookStockDecreaseRequestList = itemRequests.stream()
                 .map(item -> new BookStockChangeRequest(item.bookId(), item.quantity()))
                 .toList();
 
-        bookService.decreaseStock(bookStockDecreaseRequestList);
+        bookService.decreaseStock(bookStockDecreaseRequestList); //재고 차감 오류
     }
 
     //쿠폰 상태 복구, 포인트 사용 복구, 도서 차감 복구, 주문 상태변경, 결제실패 요청
@@ -290,7 +288,7 @@ public class OrderServiceImpl implements OrderService {
         List<BookStockChangeRequest> bookStockDecreaseRequestList = orderItemRequests.stream()
                 .map(item -> new BookStockChangeRequest(item.bookId(), item.quantity()))
                 .toList();
-        //bookService.cancelDecreaseBook(bookStockDecreaseRequestList); decrease 취소 필요
+        bookService.increaseStock(bookStockDecreaseRequestList);
 
         paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
 
@@ -298,6 +296,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void sendRollBackCoupon(Long orderId) {
-        rabbitTemplate.convertAndSend("coupon4-exchange", "coupon4.issue.dlq", orderId);
+        rabbitTemplate.convertAndSend("coupon4.exchange", "coupon4.use.rollback", orderId);
     }
 }
