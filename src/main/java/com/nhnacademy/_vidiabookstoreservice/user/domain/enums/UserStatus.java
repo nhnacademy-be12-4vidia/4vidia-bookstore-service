@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum UserStatus {
-    ACTIVE(1), //정상
-    DORMANT(2), //휴면
-    DELETED(3) ;
+    ACTIVE(0), //정상
+    DORMANT(1), //휴면
+    DELETED(2) ;
 
     private final int code;
 
