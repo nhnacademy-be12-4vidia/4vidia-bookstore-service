@@ -19,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,9 @@ public class Book extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "book_id")
     private Long id;
+
+    @Version
+    private Long version;
 
     @Column(name = "isbn_13", length = 13)
     
@@ -185,6 +189,10 @@ public class Book extends BaseEntity {
         if (this.stock == 0) {
             this.stockStatus = StockStatus.OUT_OF_STOCK;
         }
+    }
+
+    public void increaseStock(int quantity) {
+        this.stock += quantity;
     }
 
     public void updateBasicInfo(String title, String subtitle, String description, String bookIndex,
