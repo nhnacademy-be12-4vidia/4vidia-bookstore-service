@@ -4,7 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
-import com.nhnacademy._vidiabookstoreservice.book.domain.BookTag;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
@@ -13,7 +12,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockDecreaseRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
@@ -22,7 +21,6 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsExc
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAuthorRequiredException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
-import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
@@ -250,15 +248,35 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public void decreaseStock(List<BookStockDecreaseRequest> bookStockDecreaseRequestList) {
+    public void decreaseStock(List<BookStockChangeRequest> bookStockChangeRequestList) {
 
         List<BookStockChangedEvent> stockChangedEventList = new ArrayList<>();
 
-        for (BookStockDecreaseRequest request : bookStockDecreaseRequestList) {
+        for (BookStockChangeRequest request : bookStockChangeRequestList) {
             Book book = bookRepository.findByIdWithLock(request.getBookId()).orElseThrow(
                 () -> new BookNotFoundException(request.getBookId()));
 
             book.decreaseStock(request.getQuantity());
+
+            stockChangedEventList.add(new BookStockChangedEvent(book.getId(), book.getStock()));
+
+        }
+
+        for (BookStockChangedEvent event : stockChangedEventList) {
+            eventPublisher.publishEvent(event);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void increaseStock(List<BookStockChangeRequest> bookStockChangeRequestList) {
+        List<BookStockChangedEvent> stockChangedEventList = new ArrayList<>();
+
+        for (BookStockChangeRequest request : bookStockChangeRequestList) {
+            Book book = bookRepository.findByIdWithLock(request.getBookId()).orElseThrow(
+                () -> new BookNotFoundException(request.getBookId()));
+
+            book.increaseStock(request.getQuantity());
 
             stockChangedEventList.add(new BookStockChangedEvent(book.getId(), book.getStock()));
 
