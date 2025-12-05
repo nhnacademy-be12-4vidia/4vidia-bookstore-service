@@ -45,7 +45,7 @@ public class PointQueryServiceImpl implements PointQueryService {
                         detail.getCreatedAt(),
                         detail.getPrice(),
                         detail.getReason().getTitle(),
-                        detail.getPointPolicy().getPointName(),
+                        detail.getPointPolicy() != null ? detail.getPointPolicy().getPointName() : null,
                         detail.getExpiredAt()
                 ));
     }

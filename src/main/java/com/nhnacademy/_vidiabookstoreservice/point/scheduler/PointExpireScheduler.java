@@ -23,6 +23,7 @@ public class PointExpireScheduler {
     /**
      * 매일 새벽 03:00에 유효기간이 지난 적립 포인트 자동 소멸
      */
+    // TODO pointDetail에 소멸 기록 하는 코드가 있나?
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void expirePoints(){
