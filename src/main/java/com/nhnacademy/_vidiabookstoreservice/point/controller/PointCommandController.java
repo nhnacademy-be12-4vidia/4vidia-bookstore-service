@@ -59,4 +59,6 @@ public class PointCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+
+
 }
