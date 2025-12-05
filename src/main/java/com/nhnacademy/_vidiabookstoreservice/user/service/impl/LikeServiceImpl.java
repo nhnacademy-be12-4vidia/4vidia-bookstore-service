@@ -61,7 +61,7 @@ public class LikeServiceImpl implements LikeService {
         List<Like> likes = likeRepository.findAllByUser_UserIdAndBook_IdIn(userId, bookIds);
 
         return likes.stream()
-                .map(like -> UserLikeResponse.fromEntity(like))
+                .map(UserLikeResponse::fromEntity)
                 .toList();
     }
 

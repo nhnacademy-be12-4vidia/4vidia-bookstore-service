@@ -46,9 +46,6 @@ public class Book extends BaseEntity {
     @Column(name = "book_id")
     private Long id;
 
-    @Version
-    private Long version;
-
     @Column(name = "isbn_13", length = 13)
     
     private String isbn;

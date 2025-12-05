@@ -67,7 +67,7 @@ public class OrderServiceImpl implements OrderService {
         return deliveryDateResponseList;
     }
 
-    @Override //주문화면에서 넘어온 값
+    @Override//주문화면에서 넘어온 값
     public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
 
         User user = null;
@@ -260,7 +260,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     //쿠폰 사용, 포인트 사용, 도서 차감
-    private void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, List<Long> couponIds, int pointUsed) {
+    public void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, List<Long> couponIds, int pointUsed) {
 
         CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponIds);
         couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
