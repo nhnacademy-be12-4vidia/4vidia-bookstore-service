@@ -25,4 +25,6 @@ public interface UserService {
 
     String findUserId(FindIdRequest request);
     String restPasswordAndSendMail (FindPasswordRequest request);
+
+    void updateLastLoginAt(String email);
 }

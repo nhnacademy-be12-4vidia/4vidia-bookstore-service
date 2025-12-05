@@ -117,37 +117,30 @@ public class AuthServiceImpl implements AuthService {
 
     // 로그인 아이디,비번 체크 -> 맞으면 -> 회원상태 확인 후 휴먼상태 여부 보내기
     @Override
-    public Boolean isDormant(LoginRequest request) {
+    public Boolean isDormant(String email) {
+
         // 1. 이메일로 회원 찾기
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UserNotFoundByEmailException(request.email()));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundByEmailException(email));
 
-        // 2? 비밀번호 확인
-        if (!BCryptPasswordEncoder.matches(request.password(), user.getPassword())) {
-            throw new IncorrectPasswordException();
-        }
-
-        // 3? 회원탈퇴한 이메일은 -> 예외 던짐
+        // 2. 회원탈퇴한 이메일은 -> 예외 던짐
         if (user.getStatus().equals(UserStatus.DELETED)) {
-            throw new UserNotFoundException();
+            throw new AlreadyResignedUserException(email);
         }
 
-        // 이미 휴먼일때
+        // 3. 이미 휴먼일때 (dormant 상태일때)
         if (user.getStatus().equals(UserStatus.DORMANT)) {
             // 마지막 로그인 업데이트 안하고 바로 리턴
             return true;
         }
 
-        // 장기 미접속때 -> 업데이트해줘야함
+        // 4. 장기 미접속때 -> 업데이트해줘야함 // todo : 스케줄러 사용해야함 -> 배치...?
         if (user.isDormant()) {
             user.setStatus(UserStatus.DORMANT);
             userRepository.save(user);
             return true; // 휴먼 ㅇㅇ (이때도 마지막로그인 업데이트 안함)
         }
 
-        // 정상? 마지막로그인 시간 업데이트
-        user.setLastLoginAt(LocalDateTime.now()); // 마지막 로그인 업데이트
-        userRepository.save(user);
         return false; // 휴먼 ㄴㄴ
     }
 
