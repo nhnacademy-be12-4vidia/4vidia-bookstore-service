@@ -31,7 +31,7 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
 
-    @PostMapping("/{orderId}/cancel")
+    @PostMapping("/{orderId}/cancel") //배송 전 전액취소 상황
     public ResponseEntity<PaymentResponse> cancelPayment(@PathVariable long orderId,
                                                          @RequestBody PaymentCancelRequest cancelRequest) {
 
