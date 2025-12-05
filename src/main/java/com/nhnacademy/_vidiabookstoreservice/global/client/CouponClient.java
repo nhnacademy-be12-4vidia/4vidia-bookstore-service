@@ -6,19 +6,21 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPageC
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
 @FeignClient(name = "4vidia-coupon-service")
 public interface CouponClient {
 
-    //TODO 주소매핑 확인
-    @PostMapping("/coupons") //주문전 적용가능한 쿠폰 받아오기
-    List<OrderPageCouponResponse> getUserCoupons(@RequestBody CouponRequest couponRequest);
+    @PostMapping("/coupons/validate") //주문전 적용가능한 쿠폰 받아오기
+    List<OrderPageCouponResponse> getUserCoupons(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestBody CouponRequest couponRequest);
 
     @PostMapping("/coupons/use")
-    void useCoupon(@RequestBody CouponUseRequest couponUseRequest);
+    void useCoupon(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestBody CouponUseRequest couponUseRequest);
 
-//    @PostMapping("/coupons/cancel")
-//    void cancelCoupon()
 }

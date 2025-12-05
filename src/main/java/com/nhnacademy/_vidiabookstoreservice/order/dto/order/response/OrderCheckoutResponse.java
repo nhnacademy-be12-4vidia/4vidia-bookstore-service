@@ -39,10 +39,8 @@ public record OrderCheckoutResponse(
                 orderUserResponse.point(),
                 orderUserResponse.addressResponses(),
                 deliveryDateResponses,
-//                possibleCoupons,
-//                impossibleCoupons,
-                null,
-                null,
+                possibleCoupons,
+                impossibleCoupons,
                 packagingOptions
         );
     }
