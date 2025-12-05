@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockDecreaseRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
@@ -9,20 +10,23 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.Packaging;
 import com.nhnacademy._vidiabookstoreservice.order.domain.PackagingOption;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.CouponRequest;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.OrderFailedException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
-import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
-import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
-import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
-import com.nhnacademy._vidiabookstoreservice.order.service.PackagingService;
+import com.nhnacademy._vidiabookstoreservice.order.service.*;
+import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
+import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +45,12 @@ public class OrderServiceImpl implements OrderService {
     private final BookService bookService;
     private final OrderRepository orderRepository;
     private final OrderItemService orderItemService;
+    private final PaymentService<TossPaymentResponse> paymentService;
     private final PackagingService packagingService;
     private final PackagingOptionService packagingOptionService;
+    private final PointCommandService pointCommandService;
     private final CouponClient couponClient;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public List<DeliveryDateResponse> getDeliveryDates() {
@@ -60,7 +67,7 @@ public class OrderServiceImpl implements OrderService {
         return deliveryDateResponseList;
     }
 
-    @Override
+    @Override //주문화면에서 넘어온 값
     public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
 
         User user = null;
@@ -85,40 +92,79 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
+        try {
+            //주문 저장후 도서/쿠폰/포인트 차감
+            List<OrderItemRequest> orderItemRequests = request.orderItems().stream()
+                    .map(OrderItemRequest::from)
+                    .toList();
 
+            useCouponAndDecreaseStockAndPoint(savedOrder, orderItemRequests, request.coupons(), request.pointUsed());
+
+            for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
 //            bookService.decreaseStock(itemDto.bookId(), itemDto.quantity()); //TODO 도서 재고차감 오류
 
-            Book book = bookService.getBookEntity(itemDto.bookId());
+                Book book = bookService.getBookEntity(itemDto.bookId());
 
-            OrderItem orderItem = OrderItem.builder()
-                    .order(savedOrder)
-                    .book(book)
-                    .quantity(itemDto.quantity())
-                    .salePrice(itemDto.salePrice())
-                    .confirmStatus(ConfirmStatus.UNCONFIRMED)
-                    .build();
+                OrderItem orderItem = OrderItem.builder()
+                        .order(savedOrder)
+                        .book(book)
+                        .quantity(itemDto.quantity())
+                        .salePrice(itemDto.salePrice())
+                        .confirmStatus(ConfirmStatus.UNCONFIRMED)
+                        .build();
 
-            savedOrder.getOrderItems().add(orderItem);
+                savedOrder.getOrderItems().add(orderItem);
 
-            OrderItem savedOrderItem = orderItemService.addOrderItem(orderItem);
+                OrderItem savedOrderItem = orderItemService.addOrderItem(orderItem);
 
-            for (Long packagingOptionId : itemDto.packagingOptionIds()) {
-                if (packagingOptionId != 0) {
-                    PackagingOption packagingOption = packagingOptionService.getByPackagingOptionId(packagingOptionId);
+                for (Long packagingOptionId : itemDto.packagingOptionIds()) {
+                    if (packagingOptionId != 0) {
+                        PackagingOption packagingOption = packagingOptionService.getByPackagingOptionId(packagingOptionId);
 
 
-                    Packaging packaging = Packaging.builder()
-                            .orderItem(savedOrderItem)
-                            .packagingOption(packagingOption)
-                            .build();
+                        Packaging packaging = Packaging.builder()
+                                .orderItem(savedOrderItem)
+                                .packagingOption(packagingOption)
+                                .build();
 
-                    packagingService.addPacakging(packaging);
+                        packagingService.addPacakging(packaging);
+
+                    }
                 }
             }
+            return new OrderCreateResponse(savedOrder.getOrderId());
+
+        } catch (Exception e) {
+            // 주문아이템/포장 저장 과정에서 실패시 한 트랜잭션에 연결된 도서, 포인트는 자동 롤백. But 쿠폰은 롤백요청 필요
+            sendRollBackCoupon(savedOrder.getOrderId());
+            throw new  OrderFailedException(e.getMessage());
+        }
+    }
+
+    @Override
+    public PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest) {
+        Order order = getOrder(orderId);
+
+        try {
+            TossPaymentResponse tossPaymentResponse = paymentService.confirmPayment(confirmRequest.paymentKey(), confirmRequest.orderId(), confirmRequest.amount());
+
+            PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.totalAmount());
+
+            PaymentResponse paymentResponse = paymentService.savePayment(paymentCreateRequest);
+
+            order.setOrderStatus(OrderStatus.PAID);
+
+            return paymentResponse;
+
+        } catch (Exception e) {
+            // 결제 실패시 재고/쿠폰/포인트 복구, 결제취소
+            cancelCouponAndDecreaseStockAndPoint(order, confirmRequest);
+
+            throw new OrderFailedException("결제실패" + e.getMessage());
         }
 
-        return new OrderCreateResponse(savedOrder.getOrderId());
+        //TODO orders 테이블 주문상태 수정해야하는데 가상계좌가 들어오니 status 뜯어보고 그거에 따라 바꿔줘야하나?
+        // 가상계좌면 계좌정보 담아서 보내야함?. 근데 일단 pass
     }
 
     @Override
@@ -142,15 +188,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateOrderStatus(Long orderId, OrderStatus orderStatus) {
-        Order order = orderRepository.findByOrderId(orderId).orElseThrow(
-                () -> new OrderNotFoundException(orderId)
-        );
-
-        order.setOrderStatus(orderStatus);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
@@ -164,16 +201,8 @@ public class OrderServiceImpl implements OrderService {
 
         OrderUserResponse orderUserResponse = null;
         List<OrderPageCouponResponse> orderPageCouponResponses = null;
-        if (userId != null) { //회원인경우
-            orderUserResponse = userService.getOrderUser(userId);
-
-            //TODO 쿠폰 연결하면 가져오기
-//        CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
-//        orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
-
-        } else {
-            orderUserResponse = new OrderUserResponse("", "", "", 0, null);
-        }
+        List<OrderPageCouponResponse> possibleCoupons = null;
+        List<OrderPageCouponResponse> impossibleCoupons = null;
 
         List<Long> bookIds = orderCheckoutRequests.stream()
                 .map(OrderCheckoutRequest::bookId)
@@ -210,9 +239,65 @@ public class OrderServiceImpl implements OrderService {
                 .map(BookOrderResponse::category)
                 .toList();
 
+        if (userId != null) { //회원인경우
+            orderUserResponse = userService.getOrderUser(userId);
+
+            //TODO 쿠폰 연결하면 가져오기, 가져와서 사용 가능 불가능 나누기
+            CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
+//            orderPageCouponResponses = couponClient.getUserCoupons(couponRequest);
+//            Map<Boolean, List<OrderPageCouponResponse>> partition = orderPageCouponResponses.stream() //우와 이런 좋은 방법이?
+//                    .collect(Collectors.partitioningBy(OrderPageCouponResponse::available));
+//
+//            possibleCoupons = partition.get(true);
+//            impossibleCoupons = partition.get(false);
+
+        } else { //비회원인경우
+            orderUserResponse = new OrderUserResponse("", "", "", 0, null);
+        }
+
         List<DeliveryDateResponse> deliveryDateResponses = getDeliveryDates();
         List<PackagingOptionResponse> packagingOptions =  packagingOptionService.getPackagingOptions();
 
-        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, orderPageCouponResponses, deliveryDateResponses, packagingOptions);
+        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, possibleCoupons, impossibleCoupons, deliveryDateResponses, packagingOptions);
+    }
+
+    //쿠폰 사용, 포인트 사용, 도서 차감
+    private void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, List<Long> couponIds, int pointUsed) {
+        // TODO 쿠폰 사용 처리
+        CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponIds);
+        //couponClient.useCoupon(couponUseRequest);
+
+        PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
+        pointCommandService.use(pointUseRequest, order.getUser().getUserId());
+
+        List<BookStockDecreaseRequest> bookStockDecreaseRequestList = itemRequests.stream()
+                .map(item -> new BookStockDecreaseRequest(item.bookId(), item.quantity()))
+                .toList();
+
+        bookService.decreaseStock(bookStockDecreaseRequestList);
+    }
+
+    //쿠폰 상태 복구, 포인트 사용 복구, 도서 차감 복구, 주문 상태변경, 결제실패 요청
+    private void cancelCouponAndDecreaseStockAndPoint(Order order, PaymentConfirmRequest confirmRequest) {
+        sendRollBackCoupon(order.getOrderId());
+
+        //포인트도 주문아이디만 주면 복구 가능?
+        //pointCommandService. recovery?
+
+
+        List<OrderItemRequest> orderItemRequests = orderItemService.getOrderItemRequests(order);
+
+        List<BookStockDecreaseRequest> bookStockDecreaseRequestList = orderItemRequests.stream()
+                .map(item -> new BookStockDecreaseRequest(item.bookId(), item.quantity()))
+                .toList();
+        //bookService.cancelDecreaseBook(bookStockDecreaseRequestList); decrease 취소 필요
+
+        paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
+
+        order.setOrderStatus(OrderStatus.CANCELED);
+    }
+
+    private void sendRollBackCoupon(Long orderId) {
+        rabbitTemplate.convertAndSend("coupon4-exchange", "coupon4.issue.dlq", orderId);
     }
 }

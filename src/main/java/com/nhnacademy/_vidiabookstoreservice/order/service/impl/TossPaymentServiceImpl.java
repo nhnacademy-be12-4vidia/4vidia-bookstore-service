@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.PaymentService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -19,12 +20,14 @@ import java.util.Base64;
 import java.util.Map;
 
 @Service
+@Transactional
 public class TossPaymentServiceImpl implements PaymentService<TossPaymentResponse> {
 
     @Value("${toss.secretKey}")
     private String API_SECRET_KEY;
 
     private final ObjectMapper objectMapper;
+
 
     private final PaymentRepository paymentRepository;
 
@@ -37,6 +40,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     private static final String TOSS_URL = "https://api.tosspayments.com/v1/payments/";
 
     @Override
+    @Transactional(readOnly = true)
     public PaymentResponse getPayment(long orderId) {
         Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId);
 
