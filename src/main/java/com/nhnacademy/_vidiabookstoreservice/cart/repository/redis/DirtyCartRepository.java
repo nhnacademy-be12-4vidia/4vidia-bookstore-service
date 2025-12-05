@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.cart.repository.redis;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -11,10 +12,13 @@ import java.util.stream.Collectors;
  * 장바구니 수정 한 회원 userId만 모아두는 저장소
  */
 @Repository
-@RequiredArgsConstructor
 public class DirtyCartRepository {
-
     private final StringRedisTemplate redisTemplate;
+    public DirtyCartRepository(
+            @Qualifier("cartRedisTemplate") StringRedisTemplate redisTemplate
+    ) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String DIRTY_USERS_KEY = "cart:dirty:users";
 
