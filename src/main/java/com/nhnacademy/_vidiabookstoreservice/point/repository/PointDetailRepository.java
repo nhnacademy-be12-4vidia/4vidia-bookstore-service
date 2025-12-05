@@ -35,7 +35,7 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      * 현재 보유 포인트 총합 조회
      */
     @Query("SELECT COALESCE(SUM(p.price), 0) FROM PointDetail p " +
-            "WHERE p.userId = :userId AND p.price > 0")
+            "WHERE p.userId = :userId")
     int getRemainPoint(@Param("userId") Long userId);
 
     /**
