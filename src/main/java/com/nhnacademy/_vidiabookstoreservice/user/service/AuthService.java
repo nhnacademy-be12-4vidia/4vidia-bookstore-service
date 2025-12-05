@@ -10,5 +10,5 @@ public interface AuthService {
     String findUserId(FindIdRequest request);
     String restPasswordAndSendMail (FindPasswordRequest request);
     Boolean existsByEmail(String email);
-    Boolean isDormant(LoginRequest loginRequest);
+    Boolean isDormant(String email);
 }

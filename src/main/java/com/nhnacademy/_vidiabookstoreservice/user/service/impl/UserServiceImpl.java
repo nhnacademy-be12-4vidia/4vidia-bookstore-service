@@ -22,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 @Slf4j
@@ -202,5 +203,11 @@ public class UserServiceImpl implements UserService {
         return sb.toString();
     }
 
+    @Override
+    public void updateLastLoginAt(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundByEmailException(email));
 
+        user.setLastLoginAt(LocalDateTime.now());
+    }
 }

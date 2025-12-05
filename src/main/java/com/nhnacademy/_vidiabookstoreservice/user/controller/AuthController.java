@@ -3,8 +3,10 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.LoginRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateLastLoginRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
+import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
 
     /**
      * 회원가입
@@ -61,10 +64,16 @@ public class AuthController {
 
 
     // 로그인시 휴먼상태 여부 확인 후 마지막로그인 시간 업데이트 (리턴은 휴먼여부)
-    @PostMapping("/check-dormant")
-    public ResponseEntity<Boolean> checkDormant(@Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok().body(authService.isDormant(loginRequest));
+    @GetMapping("/check-dormant")
+    public ResponseEntity<Boolean> checkDormant(@RequestParam String email) {
+        return ResponseEntity.ok().body(authService.isDormant(email));
     }
 
 
+    // 마지막로그인시간 업데이트하기
+    @PutMapping("/update-time")
+    public ResponseEntity<Void> updateLastLoginAt(@RequestBody UpdateLastLoginRequest updateLastLoginRequest) {
+        userService.updateLastLoginAt(updateLastLoginRequest.email());
+        return ResponseEntity.noContent().build();
+    }
 }

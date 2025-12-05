@@ -1,6 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.global.exception.handler;
 
 import com.nhnacademy._vidiabookstoreservice.global.exception.*;
+import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.AlreadyResignedUserException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -23,7 +25,7 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler({AlreadyExistsException.class, NotEnoughException.class})
+    @ExceptionHandler({AlreadyExistsException.class, NotEnoughException.class, AlreadyResignedUserException.class})
     public ProblemDetail handleBadRequest(RuntimeException e) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT, // 409
