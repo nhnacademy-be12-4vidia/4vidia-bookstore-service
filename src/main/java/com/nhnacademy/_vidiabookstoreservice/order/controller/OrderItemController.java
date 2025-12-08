@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
-import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
