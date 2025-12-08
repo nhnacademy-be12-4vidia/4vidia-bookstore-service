@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/point-policies")
+@RequestMapping("/admin/point-policies")
 public class PointPolicyController {
 
     private final PointPolicyServiceImpl service;
@@ -28,7 +28,7 @@ public class PointPolicyController {
         return ResponseEntity.ok().body(service.get(policyId));
     }
 
-    @PatchMapping("/{policyId}")
+    @PutMapping("/{policyId}")
     public ResponseEntity<Void> update(@PathVariable Long policyId,
                                       @Valid @RequestBody PointPolicyUpdateRequest request){
         service.update(policyId, request);
