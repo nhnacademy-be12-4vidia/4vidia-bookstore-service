@@ -3,12 +3,18 @@ spring:
     name: 4vidia-bookstore-service
   data:
     redis:
-      host: s4.java21.net
-      port: 6379
-      password: "*N2vya7H@muDTwdNMR!"
-      database: 385
-      timeout: 5000ms
-
+      cart:
+        host: s4.java21.net
+        port: 6379
+        password: "*N2vya7H@muDTwdNMR!"
+        database: 384 # local 장바구니 아이템 저장용
+        timeout: 5000ms
+      dormant:
+        host: s4.java21.net
+        port: 6379
+        password: "*N2vya7H@muDTwdNMR!"
+        database: 383
+        timeout: 5000ms
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://s4.java21.net:13306/project_be12_team4
