@@ -15,15 +15,22 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 public class DoorayMessageSender {
-    private static final String HOOK_URL =
-            "https://nhnacademy.dooray.com/services/3204376758577275363/4188019264024021000/-8rBawZ_RuKrQqeTs3Qnpw";
 
     private final Gson gson = new Gson();
 
-    public void send(String title, String message) {
+    /**
+     * @param hookUrl Dooray Webhook URL (사용자가 입력한 값)
+     * @param title   메시지 제목
+     * @param message 메시지 내용
+     */
+    public void send(String hookUrl, String title, String message) {
+        if (hookUrl == null || hookUrl.isBlank()) {
+            throw new IllegalArgumentException("Dooray Webhook URL 이 비어있습니다.");
+        }
+
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
-            HttpPost httpPost = new HttpPost(HOOK_URL);
+            HttpPost httpPost = new HttpPost(hookUrl);   // 고정 URL 제거, 파라미터 사용
             httpPost.addHeader("Content-Type", "application/json; charset=UTF-8");
 
             HookBody hookBody = new HookBody(title, message);
@@ -39,6 +46,7 @@ public class DoorayMessageSender {
             e.printStackTrace();
         }
     }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

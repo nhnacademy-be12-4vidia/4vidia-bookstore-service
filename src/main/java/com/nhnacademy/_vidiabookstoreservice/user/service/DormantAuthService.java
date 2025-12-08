@@ -1,7 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.user.service;
 
 public interface DormantAuthService {
-    void sendDormantCode(String email);
-    boolean verifyAuthCode(String email, String inputCode);
-    void activateUser(String email);
+    void sendAuthCode(String email, String webhookUrl);
+    void verifyAuthCode(String email, String code);
+    void sendAuthCodeByEmail(String email, String sendToEmail);
+
 }
