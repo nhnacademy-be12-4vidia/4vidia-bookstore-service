@@ -266,22 +266,20 @@ public class OrderServiceImpl implements OrderService {
         couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
 
         PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
-        //pointCommandService.use(pointUseRequest, order.getUser().getUserId());
+        pointCommandService.use(pointUseRequest, order.getUser().getUserId());
 
         List<BookStockChangeRequest> bookStockDecreaseRequestList = itemRequests.stream()
                 .map(item -> new BookStockChangeRequest(item.bookId(), item.quantity()))
                 .toList();
 
-        bookService.decreaseStock(bookStockDecreaseRequestList); //재고 차감 오류
+        bookService.decreaseStock(bookStockDecreaseRequestList);
     }
 
     //쿠폰 상태 복구, 포인트 사용 복구, 도서 차감 복구, 주문 상태변경, 결제실패 요청
     private void cancelCouponAndDecreaseStockAndPoint(Order order, PaymentConfirmRequest confirmRequest) {
         sendRollBackCoupon(order.getOrderId());
 
-        //포인트도 주문아이디만 주면 복구 가능?
-        //pointCommandService. recovery?
-
+        pointCommandService.cancelUse(order.getOrderId(), order.getUser().getUserId());
 
         List<OrderItemRequest> orderItemRequests = orderItemService.getOrderItemRequests(order);
 
