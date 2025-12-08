@@ -128,8 +128,6 @@ public class PointCommandServiceImpl implements PointCommandService {
         if(refundAmount <= 0) {
             throw new IllegalArgumentException("환불 금액은 0보다 커야 합니다.");
         }
-
-        // 환불  = 사용 취소이므로 환불 내역만 추가하면 된다.
         PointDetail detail = PointDetail.refund(
                 userId,
                 request.orderId(),
