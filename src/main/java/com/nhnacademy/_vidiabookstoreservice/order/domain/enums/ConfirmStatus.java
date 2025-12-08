@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ConfirmStatus {
     UNCONFIRMED(0),
-    CONFIRMED(1);
+    CONFIRMED(1),
+    RETURNED(2);
 
     private final int code;
 

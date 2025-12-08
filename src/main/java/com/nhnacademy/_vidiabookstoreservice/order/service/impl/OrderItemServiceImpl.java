@@ -28,10 +28,11 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     @Override
-    public void confirmOrderItem(OrderItem orderItem) {
-        OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItem.getOrderItemId()).orElseThrow(
-                () -> new OrderItemNotFoundException(orderItem.getOrderItemId()));
-        findOrderItem.setConfirmStatus(ConfirmStatus.CONFIRMED);
+    public void changeStatusOrderItem(Long orderItemId, ConfirmStatus confirmStatus) {
+        OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItemId).orElseThrow(
+                () -> new OrderItemNotFoundException(orderItemId));
+
+        findOrderItem.setConfirmStatus(confirmStatus);
     }
 
     @Override
