@@ -23,5 +23,18 @@ public class EmailService {
     }
 
 
-
+    //  추가: 휴면 인증코드 전송 메소드
+    public void sendDormantAuthCode(String toEmail, String authCode) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("[4VIDIA] 휴면 계정 인증코드 안내");
+        message.setText("안녕하세요.\n\n"
+                + "휴면 계정 인증코드는 다음과 같습니다:\n\n"
+                + authCode + "\n\n"
+                + "인증 유효시간: 5분\n"
+                + "5분 이내에 인증을 완료해주세요.\n");
+        mailSender.send(message);
+    }
 }
+
+

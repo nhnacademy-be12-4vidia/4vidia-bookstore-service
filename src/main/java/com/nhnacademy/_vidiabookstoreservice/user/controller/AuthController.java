@@ -2,14 +2,18 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.LoginRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeByEmailRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantVerifyRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateLastLoginRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
+import com.nhnacademy._vidiabookstoreservice.user.service.DormantAuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,12 +29,13 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
+    private final DormantAuthService dormantAuthService;
 
     /**
      * 회원가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<Long> singup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
+    public ResponseEntity<Long> signup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
         Long userId = authService.register(userSignupRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(userId); // 201 Created
     }
@@ -76,4 +81,30 @@ public class AuthController {
         userService.updateLastLoginAt(updateLastLoginRequest.email());
         return ResponseEntity.noContent().build();
     }
+
+
+    // 휴면 인증
+    @PostMapping("/dormant/send-code")
+    public ResponseEntity<Void> send(@RequestBody DormantSendCodeRequest req){
+        dormantAuthService.sendAuthCode(req.email(),req.webhookUrl());
+        return ResponseEntity.ok().build();
+    }
+
+    // 인증
+    @PostMapping("/dormant/verify")
+    public ResponseEntity<Void> verify(@RequestBody DormantVerifyRequest req){
+        String email = URLDecoder.decode(req.email(), StandardCharsets.UTF_8);
+        dormantAuthService.verifyAuthCode(email, req.code());
+        return ResponseEntity.ok().build();
+    }
+
+
+    // 메일로 인증
+    @PostMapping("/dormant/send-code/email")
+    public ResponseEntity<Void> sendCodeByEmail(@RequestBody DormantSendCodeByEmailRequest req) {
+        dormantAuthService.sendAuthCodeByEmail(req.email(), req.contactEmail());
+        return ResponseEntity.ok().build();
+    }
+
+
 }
