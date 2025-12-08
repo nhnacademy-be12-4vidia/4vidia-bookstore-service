@@ -7,13 +7,18 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
 @Getter
 @NoArgsConstructor
+@Setter
 public class ReviewCreateRequest {
 
     private String content;
+
+    @NotNull
+    private Long bookId;
 
     @NotNull
     private Long orderItemId;
