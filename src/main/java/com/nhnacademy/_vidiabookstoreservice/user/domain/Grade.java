@@ -25,12 +25,19 @@ public class Grade {
     @Column(name = "point_rate", nullable = false)
     private Integer pointRate;
 
-
-
-
     @Builder
     public Grade(GradeName gradeName, Integer pointRate) {
         this.gradeName = gradeName;
         this.pointRate = pointRate;
+    }
+
+    public void updateGrade(Integer newRate){
+        if(newRate == null){
+            throw new IllegalArgumentException("등급 비율 입력은 필수입니다.");
+        }
+        if(newRate < 0){
+            throw new IllegalArgumentException("등급 비율은 음수일 수 없습니다.");
+        }
+        this.pointRate = newRate;
     }
 }

@@ -26,7 +26,7 @@ public class PointPolicy {
             // 400 BAD_REQUEST
             throw new IllegalArgumentException("price는 필수 입력");
         }
-        if(price < 0){
+        if(newPrice < 0){
             throw new IllegalArgumentException("price는 음수일 수 없음");
         }
         this.price = newPrice;
