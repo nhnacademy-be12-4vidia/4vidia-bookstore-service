@@ -65,7 +65,8 @@ public class UserController {
      */
     @PutMapping("/change-password")
     public ResponseEntity<Void> changePassword(@RequestHeader("X-User-Id") Long id,
-                                               @Valid @RequestBody ChangePasswordRequest changePasswordRequest, BindingResult bindingResult) {
+                                               @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+
         userService.changePassword(id, changePasswordRequest);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
