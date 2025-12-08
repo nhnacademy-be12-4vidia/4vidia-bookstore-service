@@ -1,8 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.global.exception.handler;
 
+import com.netflix.discovery.converters.Auto;
 import com.nhnacademy._vidiabookstoreservice.global.exception.*;
 import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AlreadyResignedUserException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.AuthCodeExpiredException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.InvalidAuthCodeException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -52,29 +55,6 @@ public class GlobalExceptionHandler {
                 e.getMessage()
         );
         detail.setTitle("RequiredException");
-        return detail;
-    }
-
-    /**
-     * 휴면 인증: 인증코드 만료 / 인증코드 불일치 처리
-     */
-    @ExceptionHandler(IllegalStateException.class)
-    public ProblemDetail handleExpired(IllegalStateException e) {
-        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                "인증 코드가 만료되었습니다. 다시 발송해주세요."
-        );
-        detail.setTitle("AuthCode Expired");
-        return detail;
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ProblemDetail handleInvalid(IllegalArgumentException e) {
-        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                "잘못된 인증 코드입니다. 다시 입력해주세요."
-        );
-        detail.setTitle("Invalid AuthCode");
         return detail;
     }
 
