@@ -11,6 +11,6 @@ public interface ReviewImageRepository extends JpaRepository<ReviewImage, Long> 
 
     boolean existsByReview_IdAndImageUrl(Long reviewId, String imageUrl);
 
-    @Query("SELECT ri FROM ReviewImage ri WHERE ri.imageUrl IN :urls")
+    @Query("SELECT ri.imageUrl FROM ReviewImage ri WHERE ri.imageUrl IN :urls")
     Set<String> findExistingUrls(@Param("urls") List<String> urls);
 }

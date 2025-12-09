@@ -44,7 +44,7 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
                 .field("embedding")
                 .queryVector(toFloatList(queryVector))
                 .k(maxResult)
-                .numCandidates(maxResult * 2)
+                .numCandidates(maxResult * 5)
             );
             queryBuilder.withKnnSearches(Collections.singletonList(knnSearch));
         }
