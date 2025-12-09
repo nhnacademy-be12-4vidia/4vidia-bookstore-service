@@ -11,7 +11,8 @@ public record OrderItemResponse(
         Long bookId,
         Integer quantity,
         Integer salePrice,
-        ConfirmStatus confirmStatus
+        ConfirmStatus confirmStatus,
+        Boolean isReviewed
 ) {
     public static OrderItemResponse from(OrderItem orderItem) {
         return new OrderItemResponse(
@@ -20,7 +21,8 @@ public record OrderItemResponse(
                 orderItem.getBook().getId(),
                 orderItem.getQuantity(),
                 orderItem.getSalePrice(),
-                orderItem.getConfirmStatus()
+                orderItem.getConfirmStatus(),
+                Boolean.FALSE
         );
     }
 }

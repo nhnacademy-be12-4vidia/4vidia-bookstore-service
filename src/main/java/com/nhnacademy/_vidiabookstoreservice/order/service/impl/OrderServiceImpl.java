@@ -191,6 +191,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
+
         return orders.stream().map(OrderPreviewResponse::from).toList();
     }
 
