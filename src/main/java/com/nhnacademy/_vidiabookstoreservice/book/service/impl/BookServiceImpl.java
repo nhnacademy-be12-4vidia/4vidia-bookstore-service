@@ -338,6 +338,15 @@ public class BookServiceImpl implements BookService {
 
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList) {
+        List<Book> bookList = bookRepository.findAllById(bookIdList);
+
+        return bookList.stream().map(BookListResponse::from)
+            .toList();
+    }
+
     private Integer parseIntegerSafe(String value) {
         try {
             return value != null && !value.isBlank() ? Integer.parseInt(value) : null;

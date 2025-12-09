@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.controller;
 
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookBestRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailWithReviewResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
@@ -11,6 +12,7 @@ import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +39,8 @@ public class BookController {
         @PageableDefault(size = 20) Pageable pageable,
         @RequestHeader(name = "X-User-Id", required = false) Long userId
     ) {
-        Page<BookSearchListResponse> result = bookSearchService.searchBooks(request, pageable, userId);
+        Page<BookSearchListResponse> result = bookSearchService.searchBooks(request, pageable,
+            userId);
 
         return ResponseEntity.ok(PageResponse.from(result));
     }
@@ -53,5 +56,13 @@ public class BookController {
         BookDetailResponse bookDetailResponse = bookService.getBookDetail(bookId);
 
         return ResponseEntity.ok(BookDetailWithReviewResponse.of(bookDetailResponse, reviewList));
+    }
+
+    @GetMapping("/best-seller")
+    public ResponseEntity<List<BookListResponse>> getBestSellers(BookBestRequest request) {
+        List<Long> bookIdList = request.getBookIdList();
+        List<BookListResponse> bestSellerList = bookService.getBookListResponseByIdList(bookIdList);
+
+        return ResponseEntity.ok().body(bestSellerList);
     }
 }
