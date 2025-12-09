@@ -100,6 +100,8 @@ public class PointCommandServiceImpl implements PointCommandService {
             throw new IllegalArgumentException("보유포인트가 부족합니다.");
         }else if(usePrice < 0) {
             throw new IllegalArgumentException("사용금액은 음수일 수 없습니다.");
+        }else if(usePrice == 0){
+            return;
         }
 
         int remainingToUse = usePrice;
