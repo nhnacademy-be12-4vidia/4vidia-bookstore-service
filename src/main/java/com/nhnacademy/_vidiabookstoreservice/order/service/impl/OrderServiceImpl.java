@@ -38,8 +38,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.Boolean.FALSE;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -140,7 +138,6 @@ public class OrderServiceImpl implements OrderService {
             return new OrderCreateResponse(savedOrder.getOrderId());
 
         } catch (Exception e) {
-            // 주문아이템/포장 저장 과정에서 실패시 한 트랜잭션에 연결된 도서, 포인트는 자동 롤백. But 쿠폰은 롤백요청 필요
             sendRollBackCoupon(savedOrder.getOrderId());
             throw new  OrderFailedException(e.getMessage());
         }
@@ -169,7 +166,6 @@ public class OrderServiceImpl implements OrderService {
             return paymentResponse;
 
         } catch (Exception e) {
-            // 결제 실패시 재고/쿠폰/포인트 복구, 결제취소
             cancelCouponAndDecreaseStockAndPoint(order, confirmRequest);
 
             throw new OrderFailedException("결제실패" + e.getMessage());
@@ -252,10 +248,11 @@ public class OrderServiceImpl implements OrderService {
 
         //담은 책 종류에 따라 주문명 변경
         String orderName = "";
-        if (bookItems.size() == 1) {
+        if (bookItems.getFirst().quantity() == 1) {
             orderName = bookItems.getFirst().bookTitle();
         }else {
-            orderName = bookItems.getFirst().bookTitle() + " 외 " + (bookItems.size() - 1) + "권";
+            int num = bookItems.stream().mapToInt(OrderBookResponse::quantity).sum() - 1;
+            orderName = bookItems.getFirst().bookTitle() + " 외 " + num + "권";
         }
 
         List<Long> categoryIds = books.stream()
