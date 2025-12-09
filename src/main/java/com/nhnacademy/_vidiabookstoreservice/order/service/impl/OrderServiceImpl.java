@@ -162,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderStatus(OrderStatus.PAID);
 
             List<Long> orderBooks = order.getOrderItems().stream().map(OrderItem::getBook).map(Book::getId).toList();
-            //cartService.removeItem(userId, orderBooks);
+            cartService.removeItemByOrder(userId, orderBooks);
             return paymentResponse;
 
         } catch (Exception e) {
