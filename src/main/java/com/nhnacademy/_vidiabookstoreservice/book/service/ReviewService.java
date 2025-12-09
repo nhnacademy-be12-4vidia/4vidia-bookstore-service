@@ -13,4 +13,6 @@ public interface ReviewService {
 
     void createReview(ReviewCreateRequest request, Long userId, List<MultipartFile> reviewImageList);
 
+    List<Long> getReviewedOrderItemIdList(List<Long> orderItemIdList);
+
 }
