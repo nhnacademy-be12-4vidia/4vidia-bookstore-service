@@ -42,4 +42,6 @@ public interface BookService {
     void updateBook(Long bookId, BookUpdateRequest request, MultipartFile thumbnail);
 
     List<BookOrderResponse> getOrderBookByBookIds(List<Long> bookIds);
+
+    List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList);
 }

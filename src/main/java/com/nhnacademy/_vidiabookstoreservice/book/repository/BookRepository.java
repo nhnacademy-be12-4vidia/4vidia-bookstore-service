@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -41,4 +42,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findByIdWithLock(Long bookId);
 
     List<Book> findBookById(Long id);
+
+    List<Book> findAllByIdIn(List<Long> bookIdList);
 }
