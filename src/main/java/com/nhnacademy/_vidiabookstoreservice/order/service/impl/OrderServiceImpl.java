@@ -195,14 +195,17 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
-        List<Long> ordersIds = orders.stream().map(Order::getOrderId).toList();
+        List<Long> ordersIds = orders.stream()
+                .flatMap(order -> order.getOrderItems().stream()) // 모든 주문의 OrderItem 리스트를 하나의 스트림으로 합치고
+                .map(OrderItem::getOrderItemId) // OrderItem에서 ID만 추출
+                .toList();
 
         List<Long> writtenReview = reviewService.getReviewedOrderItemIdList(ordersIds);
 
-        Set<Long> reviewdItemIds = new HashSet<>();
+        Set<Long> reviewedItemIds = new HashSet<>(writtenReview);
 
         return orders.stream().map(
-                order -> OrderPreviewResponse.from(order, reviewdItemIds))
+                order -> OrderPreviewResponse.from(order, reviewedItemIds))
                 .toList();
     }
 
