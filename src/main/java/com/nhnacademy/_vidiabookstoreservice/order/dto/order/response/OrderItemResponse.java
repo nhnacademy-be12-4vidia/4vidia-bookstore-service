@@ -12,7 +12,7 @@ public record OrderItemResponse(
         Integer quantity,
         Integer salePrice,
         ConfirmStatus confirmStatus,
-        Boolean ReviewStatus
+        Boolean isReviewed
 ) {
     public static OrderItemResponse from(OrderItem orderItem) {
         return new OrderItemResponse(
