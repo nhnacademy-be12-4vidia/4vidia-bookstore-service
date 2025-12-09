@@ -10,7 +10,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
 @Configuration
 @EnableConfigurationProperties(MultiRedisProperties.class)
@@ -62,6 +65,34 @@ public class MultiRedisConfig {
     @Bean
     public StringRedisTemplate humanRedisTemplate(
             @Qualifier("humanRedisConnectionFactory") LettuceConnectionFactory cf
+    ) {
+        return new StringRedisTemplate(cf);
+    }
+
+
+
+    /**
+     * 베스트셀러 저장용
+     * */
+    @Bean
+    public LettuceConnectionFactory bestsellerRedisConnectionFactory() {
+        MultiRedisProperties.RedisNode h = props.getBestseller();
+        if (h == null) {
+            throw new IllegalStateException("data.redis.bestseller 설정이 없습니다.");
+        }
+
+        RedisStandaloneConfiguration config =
+                new RedisStandaloneConfiguration(h.getHost(), h.getPort());
+        config.setDatabase(h.getDatabase());
+        if (h.getPassword() != null && !h.getPassword().isBlank()) {
+            config.setPassword(RedisPassword.of(h.getPassword()));
+        }
+        return new LettuceConnectionFactory(config);
+    }
+
+     @Bean
+     public StringRedisTemplate bestsellerRedisTemplate(
+     @Qualifier("bestsellerRedisConnectionFactory") LettuceConnectionFactory cf
     ) {
         return new StringRedisTemplate(cf);
     }

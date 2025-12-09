@@ -34,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 회원가입
+     * todo : 쿠폰 api 에 웰컴쿠폰 달라고 하기? CouponClient (global)
      */
     @Override
     public Long register(UserSignupRequest request) {
