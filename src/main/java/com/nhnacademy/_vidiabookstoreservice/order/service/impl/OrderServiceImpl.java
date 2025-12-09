@@ -36,6 +36,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.FALSE;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -191,8 +193,9 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
-
-        return orders.stream().map(OrderPreviewResponse::from).toList();
+        return orders.stream().map(
+                order -> OrderPreviewResponse.from(order, false))
+                .toList();
     }
 
     @Override
