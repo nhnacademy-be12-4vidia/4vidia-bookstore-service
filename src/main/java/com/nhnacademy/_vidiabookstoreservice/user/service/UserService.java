@@ -15,6 +15,7 @@ public interface UserService {
     UserInfoResponse getUserByEmail(String email);
     User getProxyById(Long userId);
     User getUserById(Long userId);
+    Integer getUserByPoint(Long userId);
 
     String getUserName(Long userId);
     UserProfileResponse getUserInfo(Long id);

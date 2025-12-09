@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyReward
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointOrderRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
-import com.nhnacademy._vidiabookstoreservice.point.service.impl.PointCommandServiceImpl;
+import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PointCommandController {
 
-    private final PointCommandServiceImpl pointCommandService;
+    private final PointCommandService pointCommandService;
 
     /** 1. 주문 완료 기본 적립 */
     @PostMapping("/my/points/reward")
@@ -40,7 +40,7 @@ public class PointCommandController {
 
     /** 3. 결제 비정상 처리 || 결제 취소 */
     @PostMapping("/my/points/cancel")
-    public ResponseEntity<Void> cancelUse(Long orderId,
+    public ResponseEntity<Void> cancelUse(@RequestBody Long orderId,
                                           @RequestHeader("X-User-Id") Long userId
     ){
         pointCommandService.cancelUse(orderId, userId);

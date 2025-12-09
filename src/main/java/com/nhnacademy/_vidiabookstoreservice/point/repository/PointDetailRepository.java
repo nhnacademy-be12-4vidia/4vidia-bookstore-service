@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -24,47 +24,45 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      */
     @Query("SELECT p FROM PointDetail p " +
             "WHERE p.userId = :userId " +
-            "AND p.price > 0 " +
-            "AND p.expiredAt > :now " +
-            "ORDER BY p.expiredAt ASC")
+            "AND p.remainingPrice > 0 " +
+            "AND p.expiredDate > :now " +
+            "ORDER BY p.expiredDate ASC")
     List<PointDetail> findAvailablePointForUse(@Param("userId")Long userId,
-                                               @Param("now")LocalDateTime now);
+                                               @Param("now")LocalDate now);
 
     /**
      * 현재 보유 포인트 총합 조회
+     * COALESCE : sum()이 조회 대상이 없을 때 null을 반환 -> null을 0으로 바꿔줘
      */
-    @Query("SELECT COALESCE(SUM(p.price), 0) FROM PointDetail p " +
-            "WHERE p.userId = :userId")
+    @Query("SELECT COALESCE(SUM(p.remainingPrice), 0) FROM PointDetail p " +
+            "WHERE p.userId = :userId AND p.remainingPrice > 0")
     int getRemainPoint(@Param("userId") Long userId);
 
     /**
-     * 소멸 대상 포인트 조회 ( 배치 스케줄러용)
+     * 소멸 대상 포인트 조회 (배치 스케줄러용)
      */
     @Query("SELECT p FROM PointDetail p " +
-            "WHERE p.price > 0 " +
-            "AND p.expiredAt < :now")
-    List<PointDetail> findExpiredPoints(@Param("now") LocalDateTime now);
+            "WHERE p.remainingPrice > 0 " +
+            "AND p.expiredDate < :now")
+    List<PointDetail> findExpiredPoints(@Param("now") LocalDate now);
 
     /**
      *곧 소멸 예정인 포인트 조회
      * now < expiredAt <= limit
      */
-    @Query("SELECT COALESCE(SUM(p.price), 0) FROM PointDetail p " +
+    @Query("SELECT COALESCE(SUM(p.remainingPrice), 0) FROM PointDetail p " +
             "WHERE p.userId = :userId " +
-            "AND p.price > 0 " +
-            "AND p.expiredAt > :now " +
-            "AND p.expiredAt <= :limit")
+            "AND p.remainingPrice > 0 " +
+            "AND p.expiredDate > :now " +
+            "AND p.expiredDate <= :limit")
     int getExpiringSoon(@Param("userId") Long userId,
-                        @Param("now") LocalDateTime now,
-                        @Param("limit") LocalDateTime limit);
+                        @Param("now") LocalDate now,
+                        @Param("limit") LocalDate limit);
 
     /**
      * 포인트 내역 최신 순 조회
      */
-
     Page<PointDetail> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
-
-
 
     /**
      * 중복 환불 방지 체크
@@ -72,6 +70,5 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      * 환불 API 호출 시 중복 환불 차단에 필수
      */
     boolean existsByUserIdAndOrderIdAndReason(Long userId, Long orderId, PointReason reason);
-
-    List<PointDetail> findByOrderId(Long orderId);
+    PointDetail findByOrderIdAndReason(Long orderId, PointReason reason);
 }

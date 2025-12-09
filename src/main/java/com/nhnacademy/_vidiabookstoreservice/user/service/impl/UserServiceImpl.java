@@ -47,6 +47,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 회원 포인트 반환
+     */
+    @Override
+    public Integer getUserByPoint(Long userId){
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+        return user.getPoint();
+    }
+
+    /**
      * 회원 이름 조회
      */
     @Override

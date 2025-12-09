@@ -4,8 +4,12 @@ import com.nhnacademy._vidiabookstoreservice.admin.domain.PointPolicy;
 import com.nhnacademy._vidiabookstoreservice.point.domain.converters.PointReasonConverter;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,60 +43,131 @@ public class PointDetail {
     @Convert(converter = PointReasonConverter.class)
     private PointReason reason;
 
+    @Column(name = "expired_date")
+    private LocalDate expiredDate;
 
-    @Column(name = "expired_at")
-    private LocalDateTime expiredAt;
+    @Setter
+    @Column(name = "remaining_price", nullable = false)
+    private Integer remainingPrice;
 
-
-    public PointDetail(Long userId, Long orderId, PointPolicy pointPolicy, int price, LocalDateTime createdDate,LocalDateTime expiredAt, PointReason reason) {
+    @Builder
+    public PointDetail(Long userId, Long orderId, PointPolicy pointPolicy, int price,
+                       LocalDateTime createdAt,LocalDate expiredDate, PointReason reason, Integer remainingPrice) {
         this.userId = userId;
         this.orderId = orderId;
         this.pointPolicy = pointPolicy;
         this.price = price;
-        this.createdAt=createdDate;
-        this.expiredAt=expiredAt;
+        this.createdAt=createdAt;
+        this.expiredDate=expiredDate;
         this.reason = reason;
+        this.remainingPrice = (remainingPrice == null) ? 0 : remainingPrice;
     }
 
 
-    //1. 적립
+    /**
+     * 주문확정 버튼 -> 적립 (userId, orderId, price)
+     */
     public static PointDetail reward(Long userId, Long orderId, int price) {
-        return new PointDetail(userId, orderId, null, price, LocalDateTime.now(),LocalDateTime.now().plusYears(1), PointReason.ORDER_REWARD);
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .price(price)
+                .createdAt(ldt)
+                .expiredDate(ldt.plusYears(1).toLocalDate())
+                .reason(PointReason.ORDER_REWARD)
+                .remainingPrice(price)
+                .build();
     }
 
-    //2. 정책 적립
+    /**
+     * 정책 -> 적립 (userId, pointPolicy) - 회원가입, 리뷰, 포토리뷰
+     */
     public static PointDetail rewardByPolicy(Long userId, PointPolicy pointPolicy) {
-        return new PointDetail(userId, null, pointPolicy, pointPolicy.getPrice(), LocalDateTime.now(),LocalDateTime.now().plusYears(1), PointReason.POLICY_REWARD);
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .pointPolicy(pointPolicy)
+                .price(pointPolicy.getPrice())
+                .createdAt(ldt)
+                .expiredDate(ldt.plusYears(1).toLocalDate())
+                .reason(PointReason.POLICY_REWARD)
+                .remainingPrice(pointPolicy.getPrice())
+                .build();
     }
 
-    //3. 포인트 사용(차감)
-    public static PointDetail use(Long userId, Long orderId, int useAmount) {
-        return new PointDetail(userId, orderId, null, -useAmount, LocalDateTime.now(),null, PointReason.ORDER_USE);
+
+    /**
+     * 포인트 사용 -> 차감 (userId, orderId, usePrice)
+     */
+    public static PointDetail use(Long userId, Long orderId, int price) {
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .price(-price)
+                .createdAt(ldt)
+                .reason(PointReason.ORDER_USE)
+                .build();
     }
 
-    //4. 결제 취소 || 결제 실패
-    public static PointDetail cancelUse(Long userId, Long orderId, int price, LocalDateTime expiredAt){
-        return new PointDetail(userId, orderId, null, -price, LocalDateTime.now(), expiredAt, PointReason.ORDER_CANCEL_REFUND);
+    /**
+     * 결제 취소 || 결제 실패 || 반품 -> 포인트 환불
+     */
+    public static PointDetail cancelUse(Long userId, Long orderId, int price, LocalDate expiredDate, Integer remaining){
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .price(-price)
+                .createdAt(ldt)
+                .expiredDate(expiredDate)
+                .reason(PointReason.ORDER_CANCEL_REFUND)
+                .remainingPrice(-remaining)
+                .build();
     }
 
-    //5. 환불(환급) -> 반품했을 경우 포인트로 환불, 결제취소 시 포인트 환불
-    public static PointDetail refund(Long userId, Long orderId, int refundAmount) {
-        return new PointDetail(userId, orderId, null, refundAmount, LocalDateTime.now(),null, PointReason.ORDER_CANCEL_REFUND);
+    /**
+     * 반품금액 포인트로 환불 (만료일 없음)
+     */
+    public static PointDetail refund(Long userId, Long orderId, int price) {
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .price(price)
+                .createdAt(ldt)
+                .reason(PointReason.ORDER_CANCEL_REFUND)
+                .remainingPrice(price)
+                .build();
     }
 
-    // 6. 소멸 처리
-    public void expire(){
-        this.price = 0;
-        this.reason = PointReason.POINT_EXPIRE;
+    /**
+     * 만료일 지남 -> 소멸
+     */
+    public static PointDetail expired(Long userId){
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .price(0)
+                .createdAt(ldt)
+                .reason(PointReason.POINT_EXPIRE)
+                .build();
     }
 
     public void decrease(int amount){
         if(amount < 0) {
             throw new IllegalArgumentException("감소 금액은 양수여야 합니다.");
         }
-        if(this.price<amount){
+        if(this.remainingPrice<amount){
             throw new IllegalArgumentException("차감 금액이 적립 금액보다 큽니다.");
         }
-        this.price-=amount;
+        this.remainingPrice-=amount;
     }
 }
