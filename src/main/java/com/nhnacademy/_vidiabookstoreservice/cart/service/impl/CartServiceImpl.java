@@ -15,6 +15,7 @@ import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.DirtyCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.RedisCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
+import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class CartServiceImpl implements CartService {
     private final RedisCartRepository redisCartRepository;
     private final DirtyCartRepository dirtyCartRepository;
     private final CartBookRepository cartBookRepository;
+    private final UserRepository userRepository;
 
     /**
      * 장바구니 조회 (모든 아이템)
@@ -130,8 +132,19 @@ public class CartServiceImpl implements CartService {
 
         redisCartRepository.removeItem(owner,bookId);
         if (owner.isUser()) {
-            dirtyCartRepository.markDirty(Long.valueOf(owner.id()));
+            dirtyCartRepository.markDirty(owner.id());
         }
+    }
+
+    @Override
+    public void removeItemByOrder(Long userId, List<Long> orderBooks){
+        CartOwner owner;
+        if(userRepository.existsById(userId)){
+            owner = CartOwner.user(userId);
+        }else{
+            owner = CartOwner.guest(userId);
+        }
+        orderBooks.forEach(bookId -> removeItem(owner, bookId));
     }
 
     /**
@@ -164,7 +177,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public int countGuestCartItems(String guestId) {
+    public int countGuestCartItems(Long guestId) {
         CartOwner guest = CartOwner.guest(guestId);
         Map<Long, Integer> items = redisCartRepository.getCartItems(guest);
 
@@ -191,7 +204,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void mergeGuestCartToUser(String guestId, Long userId){
+    public void mergeGuestCartToUser(Long guestId, Long userId){
         CartOwner guest = CartOwner.guest(guestId);
         CartOwner user = CartOwner.user(userId);
 

@@ -21,7 +21,7 @@ public class CartController {
     /**
      * 회원,비회원 판단 -> CartOwner 객체 만들어주는 도우미 메서드
      */
-    private CartOwner resolveOwner(Long userId, String guestId) {
+    private CartOwner resolveOwner(Long userId, Long guestId) {
         if (userId != null) {
             return CartOwner.user(userId);
         }
@@ -34,7 +34,7 @@ public class CartController {
     @GetMapping
     public ResponseEntity<CartResponse> getCart(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) String guestId
+            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId
     ) {
         return ResponseEntity.ok(cartService.getCart(resolveOwner(userId, guestId)));
     }
@@ -42,8 +42,7 @@ public class CartController {
     // 비회원 장바구니 상태 확인용
     @GetMapping("/guest/status")
     public ResponseEntity<GuestCartStatusResponse> guestCartStatus(
-            @RequestHeader(value = "X-Guest-Id", required = false) String guestId,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId
+            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId
     ) {
         int itemCount = cartService.countGuestCartItems(guestId);
         boolean hasGuestCart = itemCount > 0;
@@ -55,7 +54,7 @@ public class CartController {
     @PostMapping("/items")
     public ResponseEntity<Void> addItem(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) String guestId,
+            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
             @RequestBody @Valid AddCartItemRequest addItemRequest
     ) {
         cartService.addItem(resolveOwner(userId, guestId), addItemRequest);
@@ -65,7 +64,7 @@ public class CartController {
     @PutMapping("/items/{bookId}")
     public ResponseEntity<Void> updateCartBook(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) String guestId,
+            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
             @PathVariable Long bookId,
             @RequestBody @Valid UpdateCartItemRequest updateCartItemRequest
     ) {
@@ -84,7 +83,7 @@ public class CartController {
     @DeleteMapping("/items")
     public ResponseEntity<Void> clearCart(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) String guestId
+            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId
     ) {
         cartService.clear(resolveOwner(userId, guestId));
         return ResponseEntity.noContent().build();
@@ -94,7 +93,7 @@ public class CartController {
     @DeleteMapping("/items/{bookId}")
     public ResponseEntity<Void> deleteItem(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) String guestId,
+            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
             @PathVariable Long bookId
     ) {
         cartService.removeItem(resolveOwner(userId, guestId), bookId);
@@ -105,7 +104,7 @@ public class CartController {
     @PostMapping("/merge-guest")
     public ResponseEntity<Void> mergeGuestToMember(
             @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-Guest-Id") String guestId
+            @RequestHeader("X-Guest-Id") Long guestId
     ) {
         cartService.mergeGuestCartToUser(guestId, userId);
         return ResponseEntity.ok().build();
@@ -128,7 +127,7 @@ public class CartController {
     // 비회원 장바구니만 삭제 (팝업에서 "아니오" 선택 시)
     @DeleteMapping("/guest")
     public ResponseEntity<Void> clearGuestCart(
-            @RequestHeader("X-Guest-Id") String guestId
+            @RequestHeader("X-Guest-Id") Long guestId
     ) {
         cartService.clear(CartOwner.guest(guestId));
         return ResponseEntity.noContent().build();
