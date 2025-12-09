@@ -38,9 +38,12 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/success")
-    public ResponseEntity<PaymentResponse> savePaymentDetail(@PathVariable long orderId,
+    public ResponseEntity<PaymentResponse> savePaymentDetail(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+                                                             @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
+                                                             @PathVariable long orderId,
                                                              @RequestBody PaymentConfirmRequest confirmRequest) {
-        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest);
+        Long userId = xUserId == null ? xGuestId : xUserId;
+        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest, userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
