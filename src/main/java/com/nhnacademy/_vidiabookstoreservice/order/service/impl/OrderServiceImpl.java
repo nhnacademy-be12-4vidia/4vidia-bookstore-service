@@ -6,20 +6,19 @@ import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
-import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.order.domain.Packaging;
-import com.nhnacademy._vidiabookstoreservice.order.domain.PackagingOption;
+import com.nhnacademy._vidiabookstoreservice.order.domain.*;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderFailedException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProducer;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.*;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
@@ -30,7 +29,6 @@ import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +40,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
@@ -57,39 +55,9 @@ public class OrderServiceImpl implements OrderService {
     private final ReviewService reviewService;
     private final CouponClient couponClient;
     private final RabbitTemplate rabbitTemplate;
+    private final OrderMessageProducer orderMessageProducer;
     private final CartService cartService;
-    private final StringRedisTemplate redisTemplate;
-    public OrderServiceImpl(
-            UserService userService,
-            BookService bookService,
-            OrderRepository orderRepository,
-            OrderItemService orderItemService,
-            PaymentService<TossPaymentResponse> paymentService,
-            PackagingService packagingService,
-            PackagingOptionService packagingOptionService,
-            PointCommandService pointCommandService,
-            ReviewService reviewService,
-            CouponClient couponClient,
-            RabbitTemplate rabbitTemplate,
-            CartService cartService,
-
-            // 🚨 RedisTemplate 인수에 @Qualifier를 명시적으로 붙여줍니다.
-            @Qualifier("bestsellerRedisTemplate") StringRedisTemplate redisTemplate
-    ) {
-        this.userService = userService;
-        this.bookService = bookService;
-        this.orderRepository = orderRepository;
-        this.orderItemService = orderItemService;
-        this.paymentService = paymentService;
-        this.packagingService = packagingService;
-        this.packagingOptionService = packagingOptionService;
-        this.pointCommandService = pointCommandService;
-        this.reviewService = reviewService;
-        this.couponClient = couponClient;
-        this.cartService = cartService;
-        this.rabbitTemplate = rabbitTemplate;
-        this.redisTemplate = redisTemplate; // 주입된 빈을 필드에 할당
-    }
+    private final StringRedisTemplate bestsellerRedisTemplate;
 
 
     @Override
@@ -109,9 +77,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override//주문화면에서 넘어온 값
     public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
-
+        //TODO 비회원이면 (userId가 null이면)
         User user = null;
-        if (userId != null) {
+        if (userId != null) { //회원이면 회원 정보 조회
             user = userService.getUserById(userId);
         }
 
@@ -133,7 +101,6 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         try {
-            //주문 저장후 도서/쿠폰/포인트 차감
             List<OrderItemRequest> orderItemRequests = request.orderItems().stream()
                     .map(OrderItemRequest::from)
                     .toList();
@@ -170,18 +137,22 @@ public class OrderServiceImpl implements OrderService {
 
                     }
                 }
+                orderMessageProducer.sendDelayedCancelMessage(savedOrder.getOrderId());
             }
             return new OrderCreateResponse(savedOrder.getOrderId());
 
         } catch (Exception e) {
-            sendRollBackCoupon(savedOrder.getOrderId());
+            if (user != null) {
+                sendRollBackCoupon(savedOrder.getOrderId());
+            }
+
             throw new  OrderFailedException(e.getMessage());
         }
     }
 
     /**
-    결제 확정 및 결제 저장, 주문상태 완료로 변경, 장바구니에서 주문아이템 삭제
-     **/
+     결제 확정 및 결제 저장, 주문상태 완료로 변경, 장바구니에서 주문아이템 삭제
+     */
     @Override
     public PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest, Long userId) {
 
@@ -200,6 +171,7 @@ public class OrderServiceImpl implements OrderService {
             List<Long> orderBooks = order.getOrderItems().stream().map(OrderItem::getBook).map(Book::getId).toList();
             cartService.removeItemByOrder(userId, orderBooks);
 
+
             // todo : 주문완료된 오더에서 아이템가져오기(id, quantity) -> redis에 저장
             List<OrderItem> orderItems = order.getOrderItems();
 //            List<Long> orderItemIds = orderItems.stream().map(OrderItem::getOrderItemId).toList();
@@ -209,7 +181,7 @@ public class OrderServiceImpl implements OrderService {
 //                    -> redisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getOrderItemId().toString(), orderItem.getQuantity()).toString());
 
             orderItems.stream().forEach(orderItem ->
-                    redisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getBook().getId().toString(), orderItem.getQuantity())
+                    bestsellerRedisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getBook().getId().toString(), orderItem.getQuantity())
             );
 
             return paymentResponse;
@@ -331,12 +303,13 @@ public class OrderServiceImpl implements OrderService {
 
     //쿠폰 사용, 포인트 사용, 도서 차감
     public void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, List<Long> couponIds, int pointUsed) {
+        if (order.getUser() != null) {
+            CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponIds);
+            couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
 
-        CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponIds);
-        couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
-
-        PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
-        pointCommandService.use(pointUseRequest, order.getUser().getUserId());
+            PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
+            pointCommandService.use(pointUseRequest, order.getUser().getUserId());
+        }
 
         List<BookStockChangeRequest> bookStockDecreaseRequestList = itemRequests.stream()
                 .map(item -> new BookStockChangeRequest(item.bookId(), item.quantity()))
@@ -345,11 +318,13 @@ public class OrderServiceImpl implements OrderService {
         bookService.decreaseStock(bookStockDecreaseRequestList);
     }
 
-    //쿠폰 상태 복구, 포인트 사용 복구, 도서 차감 복구, 주문 상태변경, 결제실패 요청
+    //쿠폰 상태 복구, 포인트 사용 복구, 도서 차감 복구, 결제실패 요청, 주문 상태변경
     private void cancelCouponAndDecreaseStockAndPoint(Order order, PaymentConfirmRequest confirmRequest) {
-        sendRollBackCoupon(order.getOrderId());
+        if (order.getUser() != null) {
+            sendRollBackCoupon(order.getOrderId());
 
-        pointCommandService.cancelUse(order.getOrderId(), order.getUser().getUserId());
+            pointCommandService.cancelUse(order.getOrderId(), order.getUser().getUserId());
+        }
 
         List<OrderItemRequest> orderItemRequests = orderItemService.getOrderItemRequests(order);
 
@@ -358,6 +333,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
         bookService.increaseStock(bookStockDecreaseRequestList);
 
+        // 멱등성 있어서 취소할 결제가 없어도 안전하게 무시되니 부르는게 안전성 굳
         paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
 
         order.setOrderStatus(OrderStatus.CANCELED);
@@ -365,5 +341,15 @@ public class OrderServiceImpl implements OrderService {
 
     private void sendRollBackCoupon(Long orderId) {
         rabbitTemplate.convertAndSend("coupon4.exchange", "coupon4.use.rollback", orderId);
+    }
+
+    public void cancelOrderIfPending(Long orderId) {
+        Order order = getOrder(orderId);
+
+        if (order.getOrderStatus() == OrderStatus.PENDING) {
+            PaymentCancelResponse paymentKey = paymentService.getPaymentKey(order.getOrderId());
+            PaymentConfirmRequest confirmRequest = new PaymentConfirmRequest(paymentKey.paymentKey(), paymentKey.orderId(), paymentKey.amount());
+            cancelCouponAndDecreaseStockAndPoint(order, confirmRequest);
+        }
     }
 }

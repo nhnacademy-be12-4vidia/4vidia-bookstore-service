@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
@@ -61,6 +62,13 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
         paymentRepository.save(payment);
 
         return PaymentResponse.from(payment);
+    }
+
+    @Override
+    public PaymentCancelResponse getPaymentKey(long orderId) {
+        Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId);
+
+        return PaymentCancelResponse.from(payment);
     }
 
     @Override

@@ -71,6 +71,21 @@ spring:
             connect-timeout: 5000
             read-timeout: 30000
 
+  rabbitmq:
+    host: s4.java21.net
+    port: 5672
+    username: admin
+    password: nhnacademy123!
+    virtual-host: /4vidia
+    listener:
+      simple:
+        retry: # 재시도
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+          multiplier: 2.0 # 바로하면 실패할 확률 높으니 실패시 2배 시간 대기
+          max-interval: 10000ms
+
 cloud:
   aws:
     s3:
