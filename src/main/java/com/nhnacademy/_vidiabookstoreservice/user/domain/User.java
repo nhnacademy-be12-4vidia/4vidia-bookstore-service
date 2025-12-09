@@ -30,11 +30,11 @@ public class User extends BaseEntity {
     private String password;
 
     @Setter
-    @Column(name = "name", nullable = false, length = 50)
+    @Column(name = "name", nullable = false, length = 30)
     private String name;
 
     @Setter
-    @Column(name = "phone", nullable = false, length = 50)
+    @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
     // Todo  user쪽에서 쿠폰 요청하기 (매월 1일마다)
@@ -58,7 +58,7 @@ public class User extends BaseEntity {
     private String provider; // PAYCO등
 
     @Column(name = "point")
-    private Integer point = 0; // todo : Integer로 수정해야함
+    private Integer point = 0;
 
     // 대표주소 (기본주소) FK
     @OneToOne
