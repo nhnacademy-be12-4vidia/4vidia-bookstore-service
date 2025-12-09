@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
+import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
@@ -55,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
     private final ReviewService reviewService;
     private final CouponClient couponClient;
     private final RabbitTemplate rabbitTemplate;
+    private final CartService cartService;
 
     @Override
     public List<DeliveryDateResponse> getDeliveryDates() {
@@ -144,8 +146,13 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+    결제 확정 및 결제 저장, 주문상태 완료로 변경, 장바구니에서 주문아이템 삭제
+     **/
     @Override
-    public PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest) {
+    public PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest, Long userId) {
+
+
         Order order = getOrder(orderId);
 
         try {
@@ -157,6 +164,8 @@ public class OrderServiceImpl implements OrderService {
 
             order.setOrderStatus(OrderStatus.PAID);
 
+            List<Long> orderBooks = order.getOrderItems().stream().map(OrderItem::getBook).map(Book::getId).toList();
+            //cartService.removeItem(userId, orderBooks);
             return paymentResponse;
 
         } catch (Exception e) {

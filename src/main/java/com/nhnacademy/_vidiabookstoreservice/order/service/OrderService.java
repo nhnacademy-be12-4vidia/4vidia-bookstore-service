@@ -17,7 +17,7 @@ public interface OrderService {
 
     OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request);
 
-    PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest);
+    PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest, Long userId);
 
     Order getOrder(Long orderId);
 
