@@ -111,4 +111,10 @@ public class ReviewServiceImpl implements ReviewService {
         }
         reviewImageService.saveAll(reviewImageList);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getReviewedOrderItemIdList(List<Long> orderItemIdList) {
+        return reviewRepository.findReviewedOrderItemIdList(orderItemIdList);
+    }
 }
