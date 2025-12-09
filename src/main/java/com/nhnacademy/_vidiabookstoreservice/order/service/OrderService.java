@@ -24,4 +24,6 @@ public interface OrderService {
     List<OrderPreviewResponse> getOrdersByUserId(Long userId);
 
     OrderCheckoutResponse getOrderCheckoutResponse(Long userId, List<OrderCheckoutRequest> orderCheckoutRequests);
+
+    void cancelOrderIfPending(Long orderId);
 }

@@ -29,10 +29,9 @@ public class OrderController {
 
     @PostMapping("/create")
     public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                           @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
                                                            @RequestBody OrderCreateRequest orderCreateRequest) {
-        Long userId = xUserId == null ? xGuestId : xUserId;
-        OrderCreateResponse orderId = orderService.saveOrder(userId, orderCreateRequest);
+         //ArgumentResolver찾아보기
+        OrderCreateResponse orderId = orderService.saveOrder(xUserId, orderCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
     }
