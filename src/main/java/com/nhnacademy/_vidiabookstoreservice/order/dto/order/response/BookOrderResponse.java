@@ -2,6 +2,8 @@ package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 
+import java.util.Optional;
+
 public record BookOrderResponse(
         Long id,
         String title,
@@ -17,7 +19,9 @@ public record BookOrderResponse(
             book.getBookAuthorList().stream().findFirst().map(author -> author.getAuthor().getName()).orElse("저자 미상"),
             book.getBookImageList().stream().findFirst().map(bookImage -> bookImage.getImageUrl().toString()).orElse("null"),
             book.getPriceSales(),
-            book.getCategory().getId()
+            Optional.ofNullable(book.getCategory())
+                        .map(category -> category.getId())
+                        .orElse(null)
         );
     }
 }
