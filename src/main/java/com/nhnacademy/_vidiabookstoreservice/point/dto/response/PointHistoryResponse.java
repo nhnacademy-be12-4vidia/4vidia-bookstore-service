@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.point.dto.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record PointHistoryResponse(
@@ -7,6 +8,6 @@ public record PointHistoryResponse(
         Integer price,
         String reason,
         String policyName,
-        LocalDateTime expiredAt
+        LocalDate expiredDate
 ) {
 }

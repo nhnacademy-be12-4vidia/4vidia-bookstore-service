@@ -10,7 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,8 @@ public class PointQueryServiceImpl implements PointQueryService {
     @Override
     @Transactional(readOnly = true)
     public int getExpiringPointWithinDays(Long userId, int days) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime limit = now.plusDays(days);
+        LocalDate now = LocalDate.now();
+        LocalDate limit = now.plusDays(days);
         return pointDetailRepository.getExpiringSoon(userId,now,limit);
     }
 
@@ -46,10 +47,8 @@ public class PointQueryServiceImpl implements PointQueryService {
                         detail.getPrice(),
                         detail.getReason().getTitle(),
                         detail.getPointPolicy() != null ? detail.getPointPolicy().getPointName() : null,
-                        detail.getExpiredAt()
+                        detail.getExpiredDate()
                 ));
     }
-
-
 
 }
