@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
@@ -51,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
     private final PackagingService packagingService;
     private final PackagingOptionService packagingOptionService;
     private final PointCommandService pointCommandService;
+    private final ReviewService reviewService;
     private final CouponClient couponClient;
     private final RabbitTemplate rabbitTemplate;
 
@@ -193,8 +195,14 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
+        List<Long> ordersIds = orders.stream().map(Order::getOrderId).toList();
+
+        List<Long> writtenReview = reviewService.getReviewedOrderItemIdList(ordersIds);
+
+        Set<Long> reviewdItemIds = new HashSet<>();
+
         return orders.stream().map(
-                order -> OrderPreviewResponse.from(order, false))
+                order -> OrderPreviewResponse.from(order, reviewdItemIds))
                 .toList();
     }
 
