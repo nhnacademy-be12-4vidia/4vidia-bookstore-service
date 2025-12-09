@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.controller;
 
+import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookBestRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailWithReviewResponse;
@@ -13,9 +14,14 @@ import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchServi
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,12 +32,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/books")
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class BookController {
 
     private final BookService bookService;
     private final BookSearchService bookSearchService;
     private final ReviewService reviewService;
+    private final StringRedisTemplate redisTemplate;
+
+    public BookController(BookService bookService,
+                          BookSearchService bookSearchService,
+                          ReviewService reviewService,
+                          @Qualifier("bestsellerRedisTemplate") StringRedisTemplate redisTemplate) {
+        this.bookService = bookService;
+        this.bookSearchService = bookSearchService;
+        this.reviewService = reviewService;
+        this.redisTemplate = redisTemplate;
+    }
 
     @GetMapping("/search")
     public ResponseEntity<PageResponse<BookSearchListResponse>> searchBooks(
@@ -59,8 +76,13 @@ public class BookController {
     }
 
     @GetMapping("/best-seller")
-    public ResponseEntity<List<BookListResponse>> getBestSellers(BookBestRequest request) {
-        List<Long> bookIdList = request.getBookIdList();
+    public ResponseEntity<List<BookListResponse>> getBestSellers() {
+        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        Set<ZSetOperations.TypedTuple<String>> savedTop10 = zSetOps.reverseRangeWithScores("top10", 0, -1);
+        List<Long> bookIdList = savedTop10.stream()
+                .map(top10 -> Long.parseLong(top10.getValue()))
+                .toList();
+
         List<BookListResponse> bestSellerList = bookService.getBookListResponseByIdList(bookIdList);
 
         return ResponseEntity.ok().body(bestSellerList);
