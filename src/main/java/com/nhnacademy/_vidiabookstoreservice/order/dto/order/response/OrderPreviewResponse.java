@@ -13,7 +13,8 @@ public record OrderPreviewResponse(
         long userId,
         LocalDateTime createdAt,
         DeliveryStatus deliveryStatus,
-        List<OrderBookResponse> orderItems
+        List<OrderBookResponse> orderItems,
+        Boolean isReviewed
 ) {
     public record OrderBookResponse(
             Long orderItemId,
@@ -39,7 +40,7 @@ public record OrderPreviewResponse(
         }
     }
 
-    public static OrderPreviewResponse from(Order order) {
+    public static OrderPreviewResponse from(Order order, Boolean isReviewed) {
         List<OrderBookResponse> orderItems = order.getOrderItems().stream()
                 .map(OrderBookResponse::from)
                 .toList();
@@ -49,7 +50,8 @@ public record OrderPreviewResponse(
                 order.getUser().getUserId(),
                 order.getCreatedAt(),
                 order.getDeliveryStatus(),
-                orderItems
+                orderItems,
+                isReviewed
         );
     }
 }
