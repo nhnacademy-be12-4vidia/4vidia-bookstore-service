@@ -2,6 +2,8 @@ package com.nhnacademy._vidiabookstoreservice.cart.dto.response;
 
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 
 public record BookSummaryResponse(
         Long id,
@@ -16,8 +18,8 @@ public record BookSummaryResponse(
                 book.getTitle(),
                 book.getPriceStandard(),
                 book.getPriceSales(),
-               null
-                // TODO 표지 가져오기
+                (book.getBookImageList().stream().filter(i -> i.getImageType().equals(
+                        ImageType.THUMBNAIL)).findFirst().map(BookImage::getImageUrl).orElse(null))
         );
     }
 }
