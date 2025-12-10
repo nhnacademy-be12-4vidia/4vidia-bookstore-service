@@ -50,7 +50,7 @@ jobs:
           username: be12-team4
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 8822
-          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD
+          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,MINIO_SECRET_KEY
           script_stop: true
           script: |
             echo $GH_TOKEN | docker login ghcr.io -u baejongto --password-stdin
