@@ -8,6 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.*;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
@@ -367,6 +368,9 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() == OrderStatus.PAID) {
             Payment payment = paymentService.getPaymentEntity(orderId);
             paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+
+            order.setOrderStatus(OrderStatus.CANCELED);
+            order.setDeliveryStatus(DeliveryStatus.CANCELED);
         }
     }
 

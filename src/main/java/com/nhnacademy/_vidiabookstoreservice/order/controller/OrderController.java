@@ -40,9 +40,11 @@ public class OrderController {
 
     @PostMapping("/{orderId}/success")
     public ResponseEntity<PaymentResponse> savePaymentDetail(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+                                                             @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
                                                              @PathVariable long orderId,
                                                              @RequestBody PaymentConfirmRequest confirmRequest) {
-        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest, xUserId);
+        Long userId = xUserId == null ? xGuestId : xUserId; //비회원이면 장바구니 때문에 필요함
+        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest, userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
