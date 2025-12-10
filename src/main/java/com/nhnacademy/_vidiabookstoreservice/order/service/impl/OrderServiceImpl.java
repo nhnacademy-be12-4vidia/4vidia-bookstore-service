@@ -361,13 +361,15 @@ public class OrderServiceImpl implements OrderService {
     public void cancelOrderStatus(Long orderId) {
         Order order = getOrder(orderId);
 
+        // OrderStatus -> PAID(1) 일때는 결제 취소해야함
         if (order.getOrderStatus() == OrderStatus.PAID) {
             Payment payment = paymentService.getPaymentEntity(orderId);
             paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
-
-            order.setOrderStatus(OrderStatus.CANCELED);
-            order.setDeliveryStatus(DeliveryStatus.CANCELED);
         }
+
+        // OrderStatus -> PENDING(0)에도 상태 변경 해줘야함 (if문 밖으로 뺌)
+        order.setOrderStatus(OrderStatus.CANCELED); // 취소로 변경
+        order.setDeliveryStatus(DeliveryStatus.CANCELED); // 취소로 변경
     }
 
     @Override
