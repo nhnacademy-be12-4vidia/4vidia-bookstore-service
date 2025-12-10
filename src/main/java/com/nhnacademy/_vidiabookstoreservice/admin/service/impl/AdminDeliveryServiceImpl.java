@@ -1,0 +1,53 @@
+package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
+
+import com.nhnacademy._vidiabookstoreservice.admin.exception.InvalidOrderStateException;
+import com.nhnacademy._vidiabookstoreservice.admin.service.AdminDeliveryService;
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class AdminDeliveryServiceImpl implements AdminDeliveryService {
+    private final OrderRepository orderRepository;
+
+    @Override
+    public Page<Order> listByDeliveryStatus(DeliveryStatus status, Pageable pageable) {
+        return orderRepository.findByDeliveryStatus(status, pageable);
+    }
+
+    @Override
+    public Order startDelivery(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
+
+        if (order.getDeliveryStatus() != DeliveryStatus.WAITING) {
+            throw new RuntimeException("배송 시작은 WAITING 상태에서만 가능합니다. 현재: " + order.getDeliveryStatus());
+        }
+
+        order.setDeliveryStatus(DeliveryStatus.SHIPPING);
+        return order;
+    }
+
+    @Override
+    public Order completeDelivery(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
+
+        if (order.getDeliveryStatus() != DeliveryStatus.SHIPPING) {
+            throw new InvalidOrderStateException("배송 완료는 SHIPPING 상태에서만 가능합니다. 현재: " + order.getDeliveryStatus());
+        }
+
+        order.setDeliveryStatus(DeliveryStatus.DELIVERED);
+        order.setActualDeliveryDate(LocalDate.now());
+        return order;
+    }
+}
