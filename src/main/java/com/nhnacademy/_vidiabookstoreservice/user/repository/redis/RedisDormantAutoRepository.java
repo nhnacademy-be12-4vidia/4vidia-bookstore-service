@@ -26,7 +26,6 @@ public class RedisDormantAutoRepository {
         return PREFIX + email;
     }
 
-
     /**
      * 인증코드 저장
      */

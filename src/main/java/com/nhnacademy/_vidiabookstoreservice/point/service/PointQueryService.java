@@ -10,5 +10,5 @@ public interface PointQueryService {
 
     int getExpiringPointWithinDays(Long userId, int days);
 
-    Page<PointHistoryResponse> getHistory(Long userId, int page, int size);
+    Page<PointHistoryResponse> getHistory(Long userId,String category, int page, int size);
 }

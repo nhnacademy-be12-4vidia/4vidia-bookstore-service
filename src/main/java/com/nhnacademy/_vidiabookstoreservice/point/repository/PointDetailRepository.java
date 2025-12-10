@@ -63,6 +63,15 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      * 포인트 내역 최신 순 조회
      */
     Page<PointDetail> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    /**
+     * 포인트 내역 중 '적립' 내역만 (price > 0)
+     */
+    Page<PointDetail> findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(Long userId, int price, Pageable pageable);
+
+    /**
+     * 포인트 내역 중 '사용' 내역만 (price < 0)
+     */
+    Page<PointDetail> findByUserIdAndPriceLessThanOrderByCreatedAtDesc(Long userId, int price, Pageable pageable);
 
     /**
      * 중복 환불 방지 체크

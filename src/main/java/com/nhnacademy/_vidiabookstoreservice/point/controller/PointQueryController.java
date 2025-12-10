@@ -42,9 +42,10 @@ public class PointQueryController {
     @GetMapping("/history")
     public ResponseEntity<Page<PointHistoryResponse>> getHistory(
             @RequestHeader("X-User-Id") Long userId,
+            @RequestParam(defaultValue = "ALL") String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        return ResponseEntity.ok(queryService.getHistory(userId, page, size));
+        return ResponseEntity.ok(queryService.getHistory(userId, category,page, size));
     }
 }
