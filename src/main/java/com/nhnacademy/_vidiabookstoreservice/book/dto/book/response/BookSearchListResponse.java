@@ -33,7 +33,7 @@ public class BookSearchListResponse {
             .priceSales(book.getPriceSales())
             .authorNames(book.getBookAuthorList().stream().map(BookAuthor::getAuthor).map(
                 Author::getName).toList())
-            .publisherName(book.getPublisher().getName())
+            .publisherName(book.getPublisher() != null ? book.getPublisher().getName() : "출판사 정보 없음")
             .imageUrl(book.getBookImageList().stream().filter(i -> i.getImageType().equals(
                 ImageType.THUMBNAIL)).findFirst().map(BookImage::getImageUrl).orElse(null))
             .liked(liked)
