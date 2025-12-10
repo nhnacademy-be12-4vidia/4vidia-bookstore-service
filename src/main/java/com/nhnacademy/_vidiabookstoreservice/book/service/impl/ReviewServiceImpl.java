@@ -13,6 +13,8 @@ import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
+import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
+import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final BookService bookService;
     private final MinioService minioService;
     private final ReviewImageService reviewImageService;
+    private final PointCommandService pointCommandService;
 
 
     @Override
@@ -72,6 +75,12 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         savedReview.updateHasPhotoStatus();
+
+        if (savedReview.isHasPhoto()) {
+            pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 3l));
+        } else {
+            pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 2l));
+        }
     }
 
     @Transactional
