@@ -85,7 +85,7 @@ public class Order {
 
     @Builder
     public Order(User user, String recipientName, String addressRoadname, String addressDetail, String zipCode,
-                 String recipientPhone, String deliveryRequest, int couponDiscount, int pointUsed,
+                 String recipientPhone, String deliveryRequest, String orderPassword, int couponDiscount, int pointUsed,
                  LocalDate deliveryDate, int totalPrice, int payPrice) {
         this.user = user;
         this.recipientName = recipientName;
@@ -94,6 +94,7 @@ public class Order {
         this.zipCode = zipCode;
         this.recipientPhone = recipientPhone;
         this.deliveryRequest = deliveryRequest;
+        this.orderPassword = orderPassword;
         this.couponDiscount = couponDiscount;
         this.pointUsed = pointUsed;
         this.deliveryDate = deliveryDate;

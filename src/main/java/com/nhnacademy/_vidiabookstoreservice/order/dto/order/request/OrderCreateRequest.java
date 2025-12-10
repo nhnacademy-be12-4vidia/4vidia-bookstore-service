@@ -11,6 +11,7 @@ public record OrderCreateRequest(
         String recipientPhone,
         String deliveryRequest,
         LocalDate deliveryDate,
+        String orderPassword,
 
         int totalPrice, //도서 가격 합
         int deliveryCost, //배송비

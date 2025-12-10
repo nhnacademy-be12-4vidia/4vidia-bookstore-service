@@ -92,6 +92,7 @@ public class OrderServiceImpl implements OrderService {
                 .zipCode(request.zipCode())
                 .recipientPhone(request.recipientPhone())
                 .deliveryRequest(request.deliveryRequest())
+                .orderPassword(request.orderPassword())
                 .couponDiscount(request.couponDiscount())
                 .pointUsed(request.pointUsed())
                 .deliveryDate(request.deliveryDate())
@@ -172,14 +173,7 @@ public class OrderServiceImpl implements OrderService {
             List<Long> orderBooks = order.getOrderItems().stream().map(OrderItem::getBook).map(Book::getId).toList();
             cartService.removeItemByOrder(userId, orderBooks);
 
-
-            // todo : 주문완료된 오더에서 아이템가져오기(id, quantity) -> redis에 저장
             List<OrderItem> orderItems = order.getOrderItems();
-//            List<Long> orderItemIds = orderItems.stream().map(OrderItem::getOrderItemId).toList();
-//            List<Integer> orderItemQuantitys = orderItems.stream().map(OrderItem::getQuantity).toList();
-
-//            orderItems.stream().map(orderItem
-//                    -> redisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getOrderItemId().toString(), orderItem.getQuantity()).toString());
 
             orderItems.stream().forEach(orderItem ->
                     bestsellerRedisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getBook().getId().toString(), orderItem.getQuantity())
