@@ -30,7 +30,6 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserRes
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
     private final RabbitTemplate rabbitTemplate;
     private final OrderMessageProducer orderMessageProducer;
     private final CartService cartService;
-    private final StringRedisTemplate bestsellerRedisTemplate; // todo 이렇게 써도됨?
+    private final StringRedisTemplate bestsellerRedisTemplate;
 
 
     @Override
@@ -79,7 +78,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override//주문화면에서 넘어온 값
     public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
-        //TODO 비회원이면 (userId가 null이면)
         User user = null;
         if (userId != null) { //회원이면 회원 정보 조회
             user = userService.getUserById(userId);
@@ -205,11 +203,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
-        Order order = orderRepository.findByOrderId(orderId).orElseThrow(
+        return orderRepository.findByOrderId(orderId).orElseThrow(
                 () -> new OrderNotFoundException(orderId)
         );
-
-        return order;
     }
 
     @Override

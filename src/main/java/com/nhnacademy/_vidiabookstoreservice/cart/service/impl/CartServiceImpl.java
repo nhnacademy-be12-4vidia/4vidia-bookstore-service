@@ -10,7 +10,6 @@ import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequ
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.BookSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartBookResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
-import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartBookRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.DirtyCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.RedisCartRepository;
@@ -35,7 +34,6 @@ public class CartServiceImpl implements CartService {
     private final BookRepository bookRepository;
     private final RedisCartRepository redisCartRepository;
     private final DirtyCartRepository dirtyCartRepository;
-    private final CartBookRepository cartBookRepository;
     private final UserRepository userRepository;
 
     /**
@@ -124,8 +122,6 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void removeItem(CartOwner owner, Long bookId){
-        //TODO 유저아이디로 회원 조회
-        // 회원이면 더티유저 등록, 카트에 해당아이템 삭제, 아니면 카트에 해당아이템만 삭제
         if(!bookRepository.existsById(bookId)){
             throw new IllegalArgumentException("도서를 찾을 수 없습니다.");
         }

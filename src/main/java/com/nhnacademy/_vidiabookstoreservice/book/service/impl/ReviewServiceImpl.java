@@ -56,7 +56,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         OrderItemResponse orderItemResponse = orderItemService.getByOrderItemId(request.getOrderItemId());
         Long orderedUserId = orderItemResponse.order().getUser().getUserId();
-        //TODO? 근데 이거 원래 Order 객체로 보내면 안되고 long값 보내줘야하는건가요? 근데 오더아이템에 유저아이디 없는데
 
         if (!orderedUserId.equals(userId)) {
             throw new ReviewUserMismatchException(userId, orderedUserId);
@@ -77,9 +76,9 @@ public class ReviewServiceImpl implements ReviewService {
         savedReview.updateHasPhotoStatus();
 
         if (savedReview.isHasPhoto()) {
-            pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 3l));
+            pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 3L));
         } else {
-            pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 2l));
+            pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 2L));
         }
     }
 

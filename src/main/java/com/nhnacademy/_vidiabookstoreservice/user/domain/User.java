@@ -37,7 +37,6 @@ public class User extends BaseEntity {
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
-    // Todo  user쪽에서 쿠폰 요청하기 (매월 1일마다)
     @Setter
     @Column(name = "birth_date")
     private LocalDate birthDate;
@@ -108,20 +107,22 @@ public class User extends BaseEntity {
     public void setStatus(UserStatus userStatus) {
         this.status = userStatus;
     }
-    public void updateUserInfo(String name, String phone, LocalDate birthDate) {
-        if(name !=null && !name.trim().isEmpty()){
-            this.name = name;
-        }
-        if(phone !=null && !phone.trim().isEmpty()){
-            this.phone = phone;
-        }
-        if(birthDate !=null && !birthDate.toString().isEmpty()){
-            this.birthDate = birthDate;
-        }
-    }
+
+//    public void updateUserInfo(String name, String phone, LocalDate birthDate) {
+//        if(name !=null && !name.trim().isEmpty()){
+//            this.name = name;
+//        }
+//        if(phone !=null && !phone.trim().isEmpty()){
+//            this.phone = phone;
+//        }
+//        if(birthDate !=null && !birthDate.toString().isEmpty()){
+//            this.birthDate = birthDate;
+//        }
+//    }
+
     // 휴먼상태인지 확인 (마지막 로그인이 3개월 전이면 )
     public boolean isDormant(){
-        // todo : 회원가입하고 로그인을 안하면 -> 몇년이 지나도 휴먼이 안되요?
+        // todo : 회원가입하고 로그인을 안하면 -> 몇년이 지나도 휴먼이 안되요? -> 3개월 휴면 처리할때 같이 처리
         if(lastLoginAt == null){
             return false;
         }

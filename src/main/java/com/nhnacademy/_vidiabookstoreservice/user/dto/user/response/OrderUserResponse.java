@@ -10,7 +10,7 @@ public record OrderUserResponse(
         String email,
         String name,
         String phone,
-        int point, // todo : Integer로 변경해야함
+        Integer point,
         List<AddressResponse> addressResponses
 ) {
     public static OrderUserResponse fromEntity(User user) {

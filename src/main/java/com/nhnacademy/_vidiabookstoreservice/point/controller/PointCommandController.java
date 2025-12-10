@@ -59,7 +59,7 @@ public class PointCommandController {
     }
 
     /** 4. 정책 기준 적립 — 회원가입/리뷰/포토 리뷰 */
-    // TODO 회원가입은 /my가 없어야 하고, 나머지는 있어야 한다면? 분리? 굳이? 해야하나?
+    // TODO 회원가입은 /my가 없어야 하고, 나머지는 있어야 한다면? 분리? 굳이? 해야하나? - 분리?
     @PostMapping("/points/policy-reward")
     public ResponseEntity<Void> rewardByPolicy(
             @Valid @RequestBody PointPolicyRewardRequest request

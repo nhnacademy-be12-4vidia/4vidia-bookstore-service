@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Transactional
@@ -92,18 +91,8 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public void removeLike(Long userId, Long bookId) {
         Like like = likeRepository.findByUser_UserIdAndBook_Id(userId, bookId)
-                .orElseThrow(() -> new LikeNotFoundException());
+                .orElseThrow(LikeNotFoundException::new);
 
         likeRepository.delete(like);
     }
-    // todo : 이럴땐 어떻게하죠
-    //  - 회원이 좋아요를 눌러놓음 -> 관리자가 등록된 책을 내림
-    //  - 책이 사라지기 전에 -> 좋아요를 없애야함
-    //  >> cascade를 쓰면 안됨??
-    // JPA CascadeType.remove 이게 머에요? 이거 절대 쓰지말래요
-    // DB on delete cascade 이게 정답이래요? 전 이거 말한건데. 이거 쓰면안되요? 쓰라고 만들어놓은거 아니에요?
-    // -> 둘 다 아닌가요? 강사는 실무에서 둘 다 안쓴데요.
-    // todo : 그런데 관리자 이쉐키가 -> 내려놓은 책을 다시 등록시키면??
-    //  - if 책 내렸을때 좋아요 삭제해놨으면 -> then 좋아요 눌러논거 다 초기화된거에요?
-    //  - 내 좋아요 어디갔어요? 문의ㄱ 내 좋아요 돌려놔요
 }

@@ -10,10 +10,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
 
 @Configuration
 @EnableConfigurationProperties(MultiRedisProperties.class)
@@ -23,7 +20,7 @@ public class MultiRedisConfig {
     private final MultiRedisProperties props;
 
     @Bean
-    @Primary // TODO 리액티브 Redis 때문에 으아?
+    @Primary
     public LettuceConnectionFactory cartRedisConnectionFactory() {
         MultiRedisProperties.RedisNode c = props.getCart();
         if (c == null) {
