@@ -19,7 +19,13 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     boolean existsByIsbn(String isbn);
 
-    @Query("SELECT b FROM Book b JOIN FETCH b.bookAuthorList ba JOIN FETCH ba.author WHERE b.id = :bookId")
+    @Query("""
+          SELECT DISTINCT b
+          FROM Book b
+          LEFT JOIN FETCH b.bookAuthorList ba
+          LEFT JOIN FETCH ba.author
+          WHERE b.id = :bookId
+          """)
     Optional<Book> findByIdWithAuthors(@Param("bookId") Long bookId);
 
     Page<Book> findByTitleContaining(String keyword, Pageable pageable);
