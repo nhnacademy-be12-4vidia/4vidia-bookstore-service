@@ -1,6 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.order.repository;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,4 +21,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "join fetch oi.book " +
             "where o.orderId = :orderId")
     Optional<Order> findByOrderIdWithAll(Long orderId);
+
+    Page<Order> findByDeliveryStatus(DeliveryStatus deliveryStatus, Pageable pageable);
 }
