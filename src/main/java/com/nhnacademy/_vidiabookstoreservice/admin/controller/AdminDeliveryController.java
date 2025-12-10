@@ -27,37 +27,24 @@ public class AdminDeliveryController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return adminDeliveryService.listByDeliveryStatus(deliveryStatus, pageable)
-                .map(this::toDto);
+                .map(DeliveryResponse::from);
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<DeliveryResponse> getOrderDetail(@PathVariable long orderId){
         Order o = orderService.getOrder(orderId);
-        return ResponseEntity.ok().body(toDto(o));
+        return ResponseEntity.ok().body(DeliveryResponse.from(o));
     }
 
     @PutMapping("/{orderId}/start-delivery")
     public ResponseEntity<DeliveryResponse> startDelivery(@PathVariable Long orderId) {
         Order o = adminDeliveryService.startDelivery(orderId);
-        return ResponseEntity.ok().body(toDto(o));
+        return ResponseEntity.ok().body(DeliveryResponse.from(o));
     }
 
     @PutMapping("/{orderId}/complete-delivery")
     public ResponseEntity<DeliveryResponse> completeDelivery(@PathVariable Long orderId) {
         Order o = adminDeliveryService.completeDelivery(orderId);
-        return ResponseEntity.ok().body(toDto(o));
-    }
-
-    private DeliveryResponse toDto(Order o) {
-        return new DeliveryResponse(
-                o.getOrderId(),
-                o.getRecipientName(),
-                o.getAddressRoadname(),
-                o.getAddressDetail(),
-                o.getRecipientPhone(),
-                o.getDeliveryStatus().name(),
-                o.getPayPrice(),
-                o.getOrderStatus().name()
-        );
+        return ResponseEntity.ok().body(DeliveryResponse.from(o));
     }
 }
