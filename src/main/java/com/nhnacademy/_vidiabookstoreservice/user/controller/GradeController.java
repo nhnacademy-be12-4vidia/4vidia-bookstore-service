@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/my/grades")
+@RequestMapping("/users/me/grade") // 기존 "/my/grades"
 public class GradeController {
     private final GradeService gradeService;
 
@@ -19,8 +19,6 @@ public class GradeController {
     public ResponseEntity<GradeResponse> getGrade(@RequestHeader("X-User-Id") Long id) {
         return ResponseEntity.ok().body(gradeService.getGrade(id)); // 200 OK + JSON
     }
-
-
 
     /**
      * 등급 변경

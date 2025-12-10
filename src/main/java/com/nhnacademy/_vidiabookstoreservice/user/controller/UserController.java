@@ -1,7 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
@@ -16,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/my")
+@RequestMapping("/users") // 기존 "/my"
 @RestController
 public class UserController {
 
@@ -25,13 +23,15 @@ public class UserController {
     /**
      * 이메일로 회원 조회
      */
-    @GetMapping("/users")
+    @GetMapping // 기존 "/users?email=.."
     public ResponseEntity<UserInfoResponse> getUserByEmail(@RequestParam String email) {
         UserInfoResponse user = userService.getUserByEmail(email);
         return ResponseEntity.ok().body(user); // 200 OK + JSON
     }
 
-    // 회원 이름 조회
+    /**
+     * 회원 이름 조회
+     */
     @GetMapping("/name")
     public ResponseEntity<String> getUserName(@RequestHeader("X-User-Id") Long userId) {
         String userName = userService.getUserName(userId);
@@ -52,16 +52,15 @@ public class UserController {
      */
     @PutMapping("/profile")
     public ResponseEntity<UserProfileResponse> updateUserProfile(@RequestHeader("X-User-Id") Long id,
-                                                  @Valid @RequestBody UpdateUserRequest updateUserRequest) {
+                                                                 @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         UserProfileResponse userProfileResponse = userService.updateUserProfile(id, updateUserRequest);
         return ResponseEntity.ok().body(userProfileResponse); // 204 No Content ? 200 OK + JSON ??
     }
 
-
     /**
      * 비밀번호 수정
      */
-    @PutMapping("/change-password")
+    @PutMapping("/me/password") // 기존 "/change-password"
     public ResponseEntity<Void> changePassword(@RequestHeader("X-User-Id") Long id,
                                                @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
 
@@ -80,25 +79,6 @@ public class UserController {
     }
 
 
-    /**
-     * 회원 아이디(email) 찾기 -> 이름,생일,전화번호 조회해서 찾기
-     * */
-    @PostMapping("/find-id")
-    public ResponseEntity<String> findUserId(@Valid @RequestBody FindIdRequest findIdRequest) {
-        String email = userService.findUserId(findIdRequest);
-        return ResponseEntity.ok().body(email); // 200 OK + JSON
-    }
-
-
-    /**
-     * 회원 비밀번호 찾기 ->아이디,이름,전화번호 입력받아서 임시비밀번호 생성해서 -> 이메일로 보내기?
-     */
-    @PostMapping("/find-password")
-    public ResponseEntity<String> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
-        userService.restPasswordAndSendMail(findPasswordRequest);
-        return ResponseEntity.ok("임시 비밀번호가 발급되었습니다.");
-    }
-
-
+    // 기존 회원 아이디/비밀번호 찾기 auth controller 에 있어서(중복) 삭제함
 
 }
