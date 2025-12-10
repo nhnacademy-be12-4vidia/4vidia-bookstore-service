@@ -14,7 +14,7 @@ public class OrderMessageConsumer {
 
     @RabbitListener(queues = "processing.queue")
     public void receiveMessage(Long orderId) {
-        log.debug("[Consumer] Received orderId={}", orderId);
+        log.info("[Consumer] Received orderId={}", orderId);
 
         try {
             orderService.cancelOrderIfPending(orderId);

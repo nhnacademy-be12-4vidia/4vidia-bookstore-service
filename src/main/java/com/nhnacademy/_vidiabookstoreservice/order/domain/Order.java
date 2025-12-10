@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -72,6 +73,7 @@ public class Order {
     @Column(name = "order_status", nullable = false)
     OrderStatus orderStatus = OrderStatus.PENDING;
 
+    @Size(min = 4, max = 30, message = "주문 비밀번호는 최소 4자, 최대 30자로 입력해야 합니다.")
     @Column(name = "order_password", length = 30)
     String orderPassword;
 
