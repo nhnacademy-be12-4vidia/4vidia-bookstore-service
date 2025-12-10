@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.scheduler;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -11,14 +12,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class BestSellerScheduler {
 
-    private final StringRedisTemplate redisTemplate;
-
-    public BestSellerScheduler(@Qualifier("bestsellerRedisTemplate") StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+    private final StringRedisTemplate bestsellerRedisTemplate;
 
     /**
      * 매 시간 초기화
@@ -27,7 +25,7 @@ public class BestSellerScheduler {
     public void calculateAndReset() {
         log.info("BestSeller Daily calculation started.");
 
-        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
 
         // 1. 상위 10개 조회
         Set<ZSetOperations.TypedTuple<String>> top10 =
@@ -35,8 +33,8 @@ public class BestSellerScheduler {
 
         // 2. 저장? 일지도?
          if (top10 != null && !top10.isEmpty()) {
-            redisTemplate.delete("top10");
-            redisTemplate.opsForZSet().add("top10", top10);
+             bestsellerRedisTemplate.delete("top10");
+             bestsellerRedisTemplate.opsForZSet().add("top10", top10);
 
              Set<ZSetOperations.TypedTuple<String>> savedTop10 =
                      zSetOps.reverseRangeWithScores("top10", 0, -1);
@@ -54,6 +52,6 @@ public class BestSellerScheduler {
 
 
         // 3. Redis 초기화
-        redisTemplate.delete("bestseller");
+        bestsellerRedisTemplate.delete("bestseller");
     }
 }

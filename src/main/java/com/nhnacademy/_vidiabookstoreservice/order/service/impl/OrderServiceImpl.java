@@ -57,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
     private final RabbitTemplate rabbitTemplate;
     private final OrderMessageProducer orderMessageProducer;
     private final CartService cartService;
-    private final StringRedisTemplate bestsellerRedisTemplate;
+    private final StringRedisTemplate bestsellerRedisTemplate; // todo 이렇게 써도됨?
 
 
     @Override

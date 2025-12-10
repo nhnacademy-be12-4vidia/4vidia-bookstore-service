@@ -16,14 +16,15 @@ import java.util.Map;
  * 회원/비회원 장바구니 내용을 Redis에 저장하는 창고
  */
 @Slf4j
+@RequiredArgsConstructor
 @Repository
 public class RedisCartRepository {
-    private final StringRedisTemplate redisTemplate;
-    public RedisCartRepository(
-            @Qualifier("cartRedisTemplate") StringRedisTemplate redisTemplate
-    ) {
-        this.redisTemplate = redisTemplate;
-    }
+    private final StringRedisTemplate cartRedisTemplate;
+//    public RedisCartRepository(
+//            @Qualifier("cartRedisTemplate") StringRedisTemplate redisTemplate
+//    ) {
+//        this.redisTemplate = redisTemplate;
+//    }
 
     private static final String USER_PREFIX = "cart:user:";
     private static final String GUEST_PREFIX = "cart:guest:";
@@ -35,9 +36,9 @@ public class RedisCartRepository {
     }
 
     private void refreshTtlIfKeyExists(String key) {
-        boolean exists = redisTemplate.hasKey(key);
+        boolean exists = cartRedisTemplate.hasKey(key);
         if (exists) {
-            boolean ok = Boolean.TRUE.equals(redisTemplate.expire(key, TTL));
+            boolean ok = Boolean.TRUE.equals(cartRedisTemplate.expire(key, TTL));
             if (!ok) {
                 // 실제 운영에서는 로거로 기록하세요.
                 log.warn("Redis TTL 갱신 실패, key={}", key);
@@ -49,7 +50,7 @@ public class RedisCartRepository {
     public Map<Long, Integer> getCartItems(CartOwner owner) {
         String key = key(owner);
 
-        Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
+        Map<Object, Object> entries = cartRedisTemplate.opsForHash().entries(key);
         Map<Long, Integer> result = new HashMap<>();
         entries.forEach((k, v) -> {
             Long bookId = Long.valueOf((String) k);
@@ -63,18 +64,18 @@ public class RedisCartRepository {
     // 장바구니 도서 수량 수정
     public void setItemQuantity(CartOwner owner, Long bookId, int quantity) {
         String key = key(owner);
-        redisTemplate.opsForHash().put(key, String.valueOf(bookId), String.valueOf(quantity));
+        cartRedisTemplate.opsForHash().put(key, String.valueOf(bookId), String.valueOf(quantity));
         refreshTtlIfKeyExists(key);
     }
 
     public void incrementItemQuantity(CartOwner owner, Long bookId, int delta) {
         String key = key(owner);
 
-        Long newVal = redisTemplate.opsForHash()
+        Long newVal = cartRedisTemplate.opsForHash()
                 .increment(key, String.valueOf(bookId), delta);
 
         if (newVal <= 0) {
-            redisTemplate.opsForHash().delete(key, String.valueOf(bookId));
+            cartRedisTemplate.opsForHash().delete(key, String.valueOf(bookId));
         }
 
         refreshTtlIfKeyExists(key);
@@ -84,13 +85,13 @@ public class RedisCartRepository {
     // 장바구니 도서 제거
     public void removeItem(CartOwner owner, Long bookId) {
         String key = key(owner);
-        redisTemplate.opsForHash().delete(key, String.valueOf(bookId));
+        cartRedisTemplate.opsForHash().delete(key, String.valueOf(bookId));
 
         refreshTtlIfKeyExists(key);
     }
 
     // 장바구니 비우기 : 키 삭제
     public void clearCart(CartOwner owner) {
-        redisTemplate.delete(key(owner));
+        cartRedisTemplate.delete(key(owner));
     }
 }

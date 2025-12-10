@@ -90,9 +90,9 @@ public class MultiRedisConfig {
         return new LettuceConnectionFactory(config);
     }
 
-     @Bean
-     public StringRedisTemplate bestsellerRedisTemplate(
-     @Qualifier("bestsellerRedisConnectionFactory") LettuceConnectionFactory cf
+    @Bean
+    public StringRedisTemplate bestsellerRedisTemplate(
+            @Qualifier("bestsellerRedisConnectionFactory") LettuceConnectionFactory cf
     ) {
         return new StringRedisTemplate(cf);
     }
