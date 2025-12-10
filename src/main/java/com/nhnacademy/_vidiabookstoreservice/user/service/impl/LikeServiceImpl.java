@@ -95,4 +95,13 @@ public class LikeServiceImpl implements LikeService {
 
         likeRepository.delete(like);
     }
+
+    /**
+     * 좋아요 전체 삭제
+     */
+    @Override
+    public void removeAllLike(Long userId, List<Long> bookIds) {
+        List<Like> likes = likeRepository.findAllByUser_UserId(userId);
+        likeRepository.deleteAll(likes);
+    }
 }

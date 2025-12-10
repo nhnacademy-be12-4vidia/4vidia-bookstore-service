@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
+import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 @RequestMapping("/users/me/likes") // 기존 "/my/likes"
 public class LikeController {
     private final LikeService likeService;
+    private final UserService userService;
 
     /**
      * 좋아요 리스트 조회
@@ -40,6 +42,18 @@ public class LikeController {
     public ResponseEntity<Void> removeLike(@RequestHeader("X-User-Id") Long userId,
                                            @PathVariable Long bookId) {
         likeService.removeLike(userId, bookId);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+    /**
+     * 좋아요 전체 삭제
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> removeAllLike(@RequestHeader("X-User-Id") Long userId){
+        List<Long> bookIds = likeService.getLikes(userId).stream()
+                .map(LikeResponse::bookId)
+                .toList();
+        likeService.removeAllLike(userId, bookIds);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 }

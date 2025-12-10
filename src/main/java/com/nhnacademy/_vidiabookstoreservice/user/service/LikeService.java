@@ -11,4 +11,5 @@ public interface LikeService {
     List<UserLikeResponse> getLikeIdList(Long userId, List<Long> bookIds);
     void addLike(Long userId, Long bookId);
     void removeLike(Long userId, Long bookId);
+    void removeAllLike(Long userId, List<Long> bookIds);
 }
