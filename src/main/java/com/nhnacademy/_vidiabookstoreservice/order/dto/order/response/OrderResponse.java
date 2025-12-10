@@ -13,7 +13,7 @@ import java.util.List;
 
 public record OrderResponse(
         long orderId,
-        long userId,
+        Long userId,
         String recipientName,
         String addressRoadname,
         String addressDetail,
@@ -67,13 +67,18 @@ public record OrderResponse(
     }
 
     public static OrderResponse from(Order order) {
+        Long userId = null; // ⭐ 비회원이면 null
+        if (order.getUser() != null) {
+            userId = order.getUser().getUserId();
+        }
+
         List<OrderBookResponse> orderItems = order.getOrderItems().stream()
                 .map(OrderBookResponse::from)
                 .toList();
 
         return new OrderResponse(
                 order.getOrderId(),
-                order.getUser().getUserId(),
+                userId,
                 order.getRecipientName(),
                 order.getAddressRoadname(),
                 order.getAddressDetail(),
