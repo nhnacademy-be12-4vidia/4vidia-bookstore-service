@@ -1,7 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.book.controller;
 
-import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookBestRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailWithReviewResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
@@ -17,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -33,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/books")
 @RequiredArgsConstructor
+@Slf4j
 public class BookController {
 
     private final BookService bookService;
@@ -40,15 +39,6 @@ public class BookController {
     private final ReviewService reviewService;
     private final StringRedisTemplate bestsellerRedisTemplate;
 
-//    public BookController(BookService bookService,
-//                          BookSearchService bookSearchService,
-//                          ReviewService reviewService,
-//                          @Qualifier("bestsellerRedisTemplate") StringRedisTemplate redisTemplate) {
-//        this.bookService = bookService;
-//        this.bookSearchService = bookSearchService;
-//        this.reviewService = reviewService;
-//        this.redisTemplate = redisTemplate;
-//    }
 
     @GetMapping("/search")
     public ResponseEntity<PageResponse<BookSearchListResponse>> searchBooks(
