@@ -54,7 +54,6 @@ public class Review extends BaseEntity {
     private String content;
 
     @Column(name = "has_photo", nullable = false)
-    @Setter
     private boolean hasPhoto;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)

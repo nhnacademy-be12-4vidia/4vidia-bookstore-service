@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.book.controller;
 
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
-import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
