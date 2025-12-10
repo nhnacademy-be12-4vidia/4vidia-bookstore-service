@@ -16,6 +16,7 @@ public class BookListResponse {
     private Long id;
     private String title;
     private String isbn;
+    private Integer priceStandard;
     private Integer priceSales;
     private List<String> authorNames;
     private String publisherName;
@@ -27,6 +28,7 @@ public class BookListResponse {
             .id(book.getId())
             .title(book.getTitle())
             .isbn(book.getIsbn())
+            .priceStandard(book.getPriceStandard())
             .priceSales(book.getPriceSales())
             .authorNames(book.getBookAuthorList().stream().map(BookAuthor::getAuthor).map(
                 Author::getName).toList())
