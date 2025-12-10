@@ -17,6 +17,6 @@ public class OrderMessageProducer {
                 "order.wait", // 라우팅키
                 orderId
         );
-        log.debug("[Producer] Send delayed cancel message after 15m for orderId={}", orderId);
+        log.info("[Producer] Send delayed cancel message after 15m for orderId={}", orderId);
     }
 }
