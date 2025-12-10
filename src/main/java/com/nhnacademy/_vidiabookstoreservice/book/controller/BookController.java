@@ -42,7 +42,7 @@ public class BookController {
 
     @GetMapping("/search")
     public ResponseEntity<PageResponse<BookSearchListResponse>> searchBooks(
-        @Valid EsBookSearchRequest request,
+        @Valid EsBookSearchRequest request, 
         @PageableDefault(size = 20) Pageable pageable,
         @RequestHeader(name = "X-User-Id", required = false) Long userId
     ) {
