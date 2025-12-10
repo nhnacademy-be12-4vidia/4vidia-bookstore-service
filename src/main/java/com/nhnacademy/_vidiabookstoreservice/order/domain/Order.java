@@ -23,7 +23,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long orderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "user_id", nullable = true)
     User user;
 
@@ -71,6 +71,9 @@ public class Order {
 
     @Column(name = "order_status", nullable = false)
     OrderStatus orderStatus = OrderStatus.PENDING;
+
+    @Column(name = "order_password", length = 30)
+    String orderPassword;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     List<OrderItem> orderItems = new ArrayList<>();

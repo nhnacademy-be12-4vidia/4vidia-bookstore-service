@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
@@ -10,6 +11,8 @@ public interface PaymentService<T> {
     PaymentResponse savePayment(PaymentCreateRequest paymentCreateRequest);
 
     PaymentCancelResponse getPaymentKey(long orderId);
+
+    Payment getPaymentEntity(long orderId);
 
     T confirmPayment(String paymentKey, String orderId, long amount);
 

@@ -7,6 +7,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentC
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.PaymentService;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +30,6 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
 
     private final ObjectMapper objectMapper;
 
-
     private final PaymentRepository paymentRepository;
 
     TossPaymentServiceImpl(ObjectMapper objectMapper, PaymentRepository paymentRepository) {
@@ -43,7 +43,9 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     @Override
     @Transactional(readOnly = true)
     public PaymentResponse getPayment(long orderId) {
-        Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId);
+        Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId).orElseThrow(
+                () -> new PaymentNotFoundException(orderId)
+        );
 
         return PaymentResponse.from(payment);
     }
@@ -66,9 +68,16 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
 
     @Override
     public PaymentCancelResponse getPaymentKey(long orderId) {
-        Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId);
+        Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId)
+                .orElseThrow(() -> new PaymentNotFoundException(orderId));
 
         return PaymentCancelResponse.from(payment);
+    }
+
+    @Override
+    public Payment getPaymentEntity(long orderId) {
+        return paymentRepository.findPaymentByOrder_orderId(orderId)
+                .orElseThrow(() -> new PaymentNotFoundException(orderId));
     }
 
     @Override
