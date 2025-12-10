@@ -8,16 +8,17 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 
+@RequiredArgsConstructor
 @Repository
 public class RedisDormantAutoRepository {
 
-    private final StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate humanRedisTemplate;
 
-    public RedisDormantAutoRepository(
-            @Qualifier("humanRedisTemplate") StringRedisTemplate redisTemplate
-    ) {
-        this.redisTemplate = redisTemplate;
-    }
+//    public RedisDormantAutoRepository(
+//            @Qualifier("humanRedisTemplate") StringRedisTemplate redisTemplate
+//    ) {
+//        this.redisTemplate = redisTemplate;
+//    }
     private static final String PREFIX = "dormant:";
     private static final Duration TTL = Duration.ofMinutes(5); // 인증코드 유효시간 5분
 
@@ -30,20 +31,20 @@ public class RedisDormantAutoRepository {
      * 인증코드 저장
      */
     public void saveCode(String email, String code){
-        redisTemplate.opsForValue().set(key(email), code, TTL);
+        humanRedisTemplate.opsForValue().set(key(email), code, TTL);
     }
 
     /**
      * 인증코드 조회
      */
     public String getCode(String email){
-        return redisTemplate.opsForValue().get(key(email));
+        return humanRedisTemplate.opsForValue().get(key(email));
     }
 
     /**
      * 인증 코드 삭제
      */
     public void deleteCode(String email){
-        redisTemplate.delete(key(email));
+        humanRedisTemplate.delete(key(email));
     }
 }

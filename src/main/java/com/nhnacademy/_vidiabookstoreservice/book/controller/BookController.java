@@ -32,23 +32,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/books")
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class BookController {
 
     private final BookService bookService;
     private final BookSearchService bookSearchService;
     private final ReviewService reviewService;
-    private final StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate bestsellerRedisTemplate;
 
-    public BookController(BookService bookService,
-                          BookSearchService bookSearchService,
-                          ReviewService reviewService,
-                          @Qualifier("bestsellerRedisTemplate") StringRedisTemplate redisTemplate) {
-        this.bookService = bookService;
-        this.bookSearchService = bookSearchService;
-        this.reviewService = reviewService;
-        this.redisTemplate = redisTemplate;
-    }
+//    public BookController(BookService bookService,
+//                          BookSearchService bookSearchService,
+//                          ReviewService reviewService,
+//                          @Qualifier("bestsellerRedisTemplate") StringRedisTemplate redisTemplate) {
+//        this.bookService = bookService;
+//        this.bookSearchService = bookSearchService;
+//        this.reviewService = reviewService;
+//        this.redisTemplate = redisTemplate;
+//    }
 
     @GetMapping("/search")
     public ResponseEntity<PageResponse<BookSearchListResponse>> searchBooks(
@@ -77,7 +77,7 @@ public class BookController {
 
     @GetMapping("/best-seller")
     public ResponseEntity<List<BookListResponse>> getBestSellers() {
-        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
         Set<ZSetOperations.TypedTuple<String>> savedTop10 = zSetOps.reverseRangeWithScores("top10", 0, -1);
         List<Long> bookIdList = savedTop10.stream()
                 .map(top10 -> Long.parseLong(top10.getValue()))
