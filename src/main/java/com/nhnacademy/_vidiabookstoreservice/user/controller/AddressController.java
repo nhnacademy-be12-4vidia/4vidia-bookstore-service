@@ -14,7 +14,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/my/addresses")
+@RequestMapping("/users/me/addresses") // 기존 "/my/addresses"
 public class AddressController {
 
     private final AddressService addressService;
@@ -24,13 +24,13 @@ public class AddressController {
      */
     @PostMapping
     public ResponseEntity<Void> registerAddress(@RequestHeader("X-User-Id") Long userId,
-                                                  @Valid @RequestBody CreateAddressRequest createAddressRequest) {
+                                                @Valid @RequestBody CreateAddressRequest createAddressRequest) {
         addressService.createAddress(userId, createAddressRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
     }
 
     /**
-     * 주소 단일 조회 -> 성공 확인 못함
+     * 주소 단일 조회
      */
     @GetMapping("/{addressId}")
     public ResponseEntity<AddressResponse> getAddress(@RequestHeader("X-User-Id") Long userId,
@@ -47,42 +47,41 @@ public class AddressController {
     }
 
     /**
+     * 기본주소 조회
+     */
+    @GetMapping("/default")
+    public ResponseEntity<AddressResponse> getDefaultAddress(@RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok().body(addressService.getDefaultAddress(userId)); // 200 OK + JSON
+    }
+
+    /**
      * 주소 수정
      */
     @PutMapping("/{addressId}")
     public ResponseEntity<AddressResponse> updateAddress(@RequestHeader("X-User-Id") Long userId,
-                                                @PathVariable Long addressId,
-                                                @Valid @RequestBody AddressRequest addressRequest) {
-        // 수정한걸 꼭 리턴해야하나?
+                                                         @PathVariable Long addressId,
+                                                         @Valid @RequestBody AddressRequest addressRequest) {
         return ResponseEntity.ok().body(addressService.updateAddress(userId, addressId, addressRequest));
     }
 
     /**
-     * 주소삭제
+     * 기본주소 변경
+     * 기존 "/change-default/{addressId}"
      */
-    @DeleteMapping("/{addressId}")
-    public ResponseEntity<String> deleteAddress(@RequestHeader("X-User-Id") Long userId,
-                                                @PathVariable Long addressId) {
-        addressService.deleteAddress(userId, addressId);
-        return ResponseEntity.ok().body("delete"); // 204 No Content
-    }
-
-
-    /**
-     * '기본'주소 변경
-     */
-    @PutMapping("/change-default/{addressId}")
+    @PutMapping("/{addressId}/default")
     public ResponseEntity<Void> updateDefaultAddress(@RequestHeader("X-User-Id") Long userId,
-                                                       @PathVariable Long addressId) {
+                                                     @PathVariable Long addressId) {
         addressService.updateDefaultAddress(userId, addressId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     /**
-     * '기본'주소 조회
+     * 주소 삭제
      */
-    @GetMapping("/default")
-    public ResponseEntity<AddressResponse> getDefaultAddress(@RequestHeader("X-User-Id") Long userId) {
-        return ResponseEntity.ok().body(addressService.getDefaultAddress(userId)); // 200 OK + JSON
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<Void> deleteAddress(@RequestHeader("X-User-Id") Long userId,
+                                                @PathVariable Long addressId) {
+        addressService.deleteAddress(userId, addressId);
+        return ResponseEntity.ok().build(); // 204 No Content
     }
 }

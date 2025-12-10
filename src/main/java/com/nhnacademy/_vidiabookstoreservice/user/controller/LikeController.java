@@ -11,7 +11,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/my/likes")
+@RequestMapping("/users/me/likes") // 기존 "/my/likes"
 public class LikeController {
     private final LikeService likeService;
 
@@ -28,7 +28,7 @@ public class LikeController {
      */
     @PostMapping("/{bookId}")
     public ResponseEntity<Void> addLike(@RequestHeader("X-User-Id") Long userId,
-                                          @PathVariable Long bookId) {
+                                        @PathVariable Long bookId) {
         likeService.addLike(userId, bookId);
         return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
     }
@@ -38,7 +38,7 @@ public class LikeController {
      */
     @DeleteMapping("/{bookId}")
     public ResponseEntity<Void> removeLike(@RequestHeader("X-User-Id") Long userId,
-                                             @PathVariable Long bookId) {
+                                           @PathVariable Long bookId) {
         likeService.removeLike(userId, bookId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }

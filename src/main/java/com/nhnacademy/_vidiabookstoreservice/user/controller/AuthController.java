@@ -13,7 +13,6 @@ import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +40,7 @@ public class AuthController {
     }
 
     /**
-     * 회원 아이디(email) 찾기 -> 이름,생일,전화번호 조회해서 찾기
+     * 회원 아이디(email) 찾기
      * */
     @PostMapping("/find-id")
     public ResponseEntity<String> findUserId(@Valid @RequestBody FindIdRequest findIdRequest) {
@@ -49,17 +48,21 @@ public class AuthController {
         return ResponseEntity.ok().body(email); // 200 OK + JSON
     }
 
-
     /**
-     * 회원 비밀번호 찾기 ->아이디,이름,전화번호 입력받아서 임시비밀번호 생성해서 -> 이메일로 보내기?
+     * 회원 비밀번호 새로 발급
+     * 기존 "/find-password"
      */
-    @PostMapping("/find-password")
-    public ResponseEntity<String> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
         authService.restPasswordAndSendMail(findPasswordRequest);
-        return ResponseEntity.ok("임시 비밀번호가 발급되었습니다.");
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/check-email")
+    /**
+     * 이메일 중복여부
+     * 기존 "/check-email"
+     */
+    @GetMapping("/emails/exists")
     @ResponseBody
     public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
         String decodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
@@ -67,30 +70,27 @@ public class AuthController {
         return ResponseEntity.ok().body(existsByEmail);
     }
 
-
-    // 로그인시 휴먼상태 여부 확인 후 마지막로그인 시간 업데이트 (리턴은 휴먼여부)
-    @GetMapping("/check-dormant")
+    /**
+     * 로그인 후 -> 휴먼 여부 확인
+     * 기존 "/check-dormant"
+     */
+    @GetMapping("/dormant")
     public ResponseEntity<Boolean> checkDormant(@RequestParam String email) {
         return ResponseEntity.ok().body(authService.isDormant(email));
     }
 
-
-    // 마지막로그인시간 업데이트하기
-    @PutMapping("/update-time")
-    public ResponseEntity<Void> updateLastLoginAt(@RequestBody UpdateLastLoginRequest updateLastLoginRequest) {
-        userService.updateLastLoginAt(updateLastLoginRequest.email());
-        return ResponseEntity.noContent().build();
-    }
-
-
-    // 휴면 인증
+    /**
+     * 휴면 인증코드 전송
+     */
     @PostMapping("/dormant/send-code")
     public ResponseEntity<Void> send(@RequestBody DormantSendCodeRequest req){
         dormantAuthService.sendAuthCode(req.email(),req.webhookUrl());
         return ResponseEntity.ok().build();
     }
 
-    // 인증
+    /**
+     * 휴면 인증코드 검증
+     */
     @PostMapping("/dormant/verify")
     public ResponseEntity<Void> verify(@RequestBody DormantVerifyRequest req){
         String email = URLDecoder.decode(req.email(), StandardCharsets.UTF_8);
@@ -98,12 +98,23 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-
-    // 메일로 인증
+    /**
+     * 메일로 휴면 인증코드 전송
+     */
     @PostMapping("/dormant/send-code/email")
     public ResponseEntity<Void> sendCodeByEmail(@RequestBody DormantSendCodeByEmailRequest req) {
         dormantAuthService.sendAuthCodeByEmail(req.email(), req.contactEmail());
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 마지막로그인시간 업데이트하기
+     * 기존 "/update-time"
+     */
+    @PutMapping("/last-login")
+    public ResponseEntity<Void> updateLastLoginAt(@RequestBody UpdateLastLoginRequest updateLastLoginRequest) {
+        userService.updateLastLoginAt(updateLastLoginRequest.email());
+        return ResponseEntity.noContent().build();
     }
 
 
