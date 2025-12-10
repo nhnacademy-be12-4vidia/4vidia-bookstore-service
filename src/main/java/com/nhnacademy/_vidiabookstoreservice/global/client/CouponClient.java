@@ -23,4 +23,12 @@ public interface CouponClient {
             @RequestHeader("X-User-Id") Long userId,
             @RequestBody CouponUseRequest couponUseRequest);
 
+
+    // 회원가입 시 welcome 쿠폰 요청
+    // todo : 회원가입일이 생일이면?? birthday 쿠폰 자동으로 주나?
+    @PostMapping("/coupons/welcome")
+    void getRegisterCoupon(
+            @RequestHeader("X-User-Id") Long userId
+    );
+
 }
