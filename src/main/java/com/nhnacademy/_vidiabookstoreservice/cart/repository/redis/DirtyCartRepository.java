@@ -15,11 +15,6 @@ import java.util.stream.Collectors;
 @Repository
 public class DirtyCartRepository {
     private final StringRedisTemplate cartRedisTemplate;
-//    public DirtyCartRepository(
-//            @Qualifier("cartRedisTemplate") StringRedisTemplate redisTemplate
-//    ) {
-//        this.redisTemplate = redisTemplate;
-//    }
 
     private static final String DIRTY_USERS_KEY = "cart:dirty:users";
 
