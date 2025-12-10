@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
@@ -72,24 +74,18 @@ public class CartController {
         return ResponseEntity.ok().build();
     }
 
-    // 장바구니 삭제
+    /**
+     * 장바구니 삭제
+     */
     @DeleteMapping
     public ResponseEntity<Void> deleteCart(@RequestHeader("X-User-Id") Long userId) { // MySQL에서 장바구니 삭제 (회원만)
         cartService.deleteCart(userId);
         return ResponseEntity.noContent().build();
     }
 
-    // 장바구니 비우기
-    @DeleteMapping("/items")
-    public ResponseEntity<Void> clearCart(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId
-    ) {
-        cartService.clear(resolveOwner(userId, guestId));
-        return ResponseEntity.noContent().build();
-    }
-
-    // 장바구니 특정 도서 삭제
+    /**
+     * 장바구니 특정 도서 삭제
+     */
     @DeleteMapping("/items/{bookId}")
     public ResponseEntity<Void> deleteItem(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
@@ -97,6 +93,23 @@ public class CartController {
             @PathVariable Long bookId
     ) {
         cartService.removeItem(resolveOwner(userId, guestId), bookId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 장바구니 아이템 여러권 삭제
+     */
+    @DeleteMapping("/items")
+    public ResponseEntity<Void> deleteSelectItems(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
+            @RequestParam("itemIds") List<Long> bookIds
+    ){
+        Long id = (userId == null) ? guestId : userId;
+        if(bookIds == null || bookIds.isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
+        cartService.removeItemByOrder(id, bookIds);
         return ResponseEntity.noContent().build();
     }
 
