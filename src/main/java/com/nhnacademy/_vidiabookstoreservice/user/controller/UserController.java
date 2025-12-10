@@ -11,9 +11,7 @@ import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -74,7 +72,7 @@ public class UserController {
     /**
      * 회원 탈퇴
      */
-    @PutMapping("/delete") // todo : 실제로 회원을 삭제하지 않는데 맵핑, 메서드명에 delete가 맞는가?
+    @PutMapping("/delete")
     public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") Long id,
                                            @Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
         userService.deleteUserById(id, deletePasswordRequest);

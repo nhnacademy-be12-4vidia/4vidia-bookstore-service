@@ -19,7 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -35,7 +34,6 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 회원가입
-     * todo : 쿠폰 api 에 웰컴쿠폰 달라고 하기? CouponClient (global)
      */
     @Override
     public Long register(UserSignupRequest request) {
@@ -60,6 +58,8 @@ public class AuthServiceImpl implements AuthService {
 
         couponClient.getRegisterCoupon(user.getUserId());
 
+        //TODO 생일 달인지 체크해서 맞으면? 생일쿠폰 요청
+
         return user.getUserId();
     }
 
@@ -72,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByNameAndBirthDateAndPhone(
                         request.name(),birthday,request.phone()
                 )
-                .orElseThrow(()-> new UserNotFoundException());
+                .orElseThrow(UserNotFoundException::new);
         return user.getEmail();
     }
 
