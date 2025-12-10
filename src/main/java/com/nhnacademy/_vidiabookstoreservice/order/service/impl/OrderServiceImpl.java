@@ -18,6 +18,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentR
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderFailedException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProducer;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.*;
@@ -333,8 +334,10 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
         bookService.increaseStock(bookStockDecreaseRequestList);
 
-        // 멱등성 있어서 취소할 결제가 없어도 안전하게 무시되니 부르는게 안전성 굳
-        paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
+        if (confirmRequest != null) { // 결제과정에서 성공해서 paymentKey값 있을때만
+            // 멱등성 있어서 취소할 결제가 없어도 안전하게 무시되니 부르는게 안전성 굳
+            paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
+        }
 
         order.setOrderStatus(OrderStatus.CANCELED);
     }
@@ -343,13 +346,40 @@ public class OrderServiceImpl implements OrderService {
         rabbitTemplate.convertAndSend("coupon4.exchange", "coupon4.use.rollback", orderId);
     }
 
+
+    @Override
     public void cancelOrderIfPending(Long orderId) {
         Order order = getOrder(orderId);
 
         if (order.getOrderStatus() == OrderStatus.PENDING) {
-            PaymentCancelResponse paymentKey = paymentService.getPaymentKey(order.getOrderId());
-            PaymentConfirmRequest confirmRequest = new PaymentConfirmRequest(paymentKey.paymentKey(), paymentKey.orderId(), paymentKey.amount());
-            cancelCouponAndDecreaseStockAndPoint(order, confirmRequest);
+
+            PaymentConfirmRequest confirmRequest = null;
+
+            try {
+                PaymentCancelResponse paymentKey = paymentService.getPaymentKey(order.getOrderId());
+                confirmRequest = new PaymentConfirmRequest(paymentKey.paymentKey(), paymentKey.orderId(), paymentKey.amount());
+                cancelCouponAndDecreaseStockAndPoint(order, confirmRequest);
+
+            } catch (PaymentNotFoundException e) {
+                cancelCouponAndDecreaseStockAndPoint(order, null);
+            }
         }
+    }
+
+    @Override
+    public void cancelOrderStatus(Long orderId) {
+        Order order = getOrder(orderId);
+
+        if (order.getOrderStatus() == OrderStatus.PAID) {
+            Payment payment = paymentService.getPaymentEntity(orderId);
+            paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+        }
+    }
+
+    @Override
+    public Boolean validateGuest(OrderTrackingRequest orderTrackingRequest) {
+        Order order = getOrder(orderTrackingRequest.orderId());
+
+        return order.getOrderPassword().equals(orderTrackingRequest.orderPassword());
     }
 }

@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutListRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderTrackingRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
@@ -38,20 +40,50 @@ public class OrderController {
 
     @PostMapping("/{orderId}/success")
     public ResponseEntity<PaymentResponse> savePaymentDetail(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                             @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
                                                              @PathVariable long orderId,
                                                              @RequestBody PaymentConfirmRequest confirmRequest) {
-        Long userId = xUserId == null ? xGuestId : xUserId;
-        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest, userId);
+        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest, xUserId);
 
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
 
-    @GetMapping("/{orderId}") //주문내역 상세보기
+    /**
+     * 주문 내역 상세보기 OrderDetail
+     * @param orderId : 주문아이디
+     * @return 주문내역 상세보기
+     */
+    @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable long orderId) {
         OrderResponse orderResponse = orderService.getOrderResponse(orderId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
+    }
+
+    /**
+     * 비회원 주문 상세 내역 보기
+     * @param orderTrackingRequest
+     * @return
+     */
+    @PostMapping("/guest")
+    public ResponseEntity<OrderResponse> getOrder(@RequestBody OrderTrackingRequest orderTrackingRequest) {
+        if (orderService.validateGuest(orderTrackingRequest)) {
+            OrderResponse orderResponse = orderService.getOrderResponse(orderTrackingRequest.orderId());
+            return ResponseEntity.status(HttpStatus.OK).body(orderResponse);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+    }
+
+
+    /**
+     * 배송 전 주문취소
+     * @param orderId : 주문아이디
+     * @return 200 OK
+     */
+    @PutMapping("/{orderId}/cancel")
+    public ResponseEntity<Void> cancelOrder(@PathVariable long orderId) {
+        orderService.cancelOrderStatus(orderId);
+
+        return ResponseEntity.ok().build();
     }
 
 }
