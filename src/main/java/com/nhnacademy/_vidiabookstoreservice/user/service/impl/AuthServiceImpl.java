@@ -1,12 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
+import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.LoginRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
@@ -19,7 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -31,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final GradeRepository gradeRepository;
     private final EmailService mailService;
     private final BCryptPasswordEncoder BCryptPasswordEncoder;
+    private final CouponClient couponClient;
 
     /**
      * 회원가입
@@ -56,6 +57,8 @@ public class AuthServiceImpl implements AuthService {
         log.info("grade : {}", user.getGrade());
 
         userRepository.save(user);
+
+        couponClient.getRegisterCoupon(user.getUserId());
 
         return user.getUserId();
     }
