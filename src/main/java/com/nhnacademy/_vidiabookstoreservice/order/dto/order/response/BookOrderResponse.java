@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 
 import java.util.Optional;
 
@@ -10,17 +11,17 @@ public record BookOrderResponse(
         String author,
         String imageUrl,
         Integer salePrice,
-        Long category
+        String categoryKdc
 ) {
     public static BookOrderResponse from(Book book) {
         return new BookOrderResponse(
             book.getId(),
             book.getTitle(),
             book.getBookAuthorList().stream().findFirst().map(author -> author.getAuthor().getName()).orElse("저자 미상"),
-            book.getBookImageList().stream().findFirst().map(bookImage -> bookImage.getImageUrl().toString()).orElse("null"),
+            book.getBookImageList().stream().findFirst().map(bookImage -> bookImage.getImageUrl()).orElse("null"),
             book.getPriceSales(),
             Optional.ofNullable(book.getCategory())
-                        .map(category -> category.getId())
+                        .map(Category::getKdcCode)
                         .orElse(null)
         );
     }

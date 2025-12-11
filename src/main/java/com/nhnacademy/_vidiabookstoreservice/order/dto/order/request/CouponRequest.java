@@ -5,5 +5,5 @@ import java.util.List;
 public record CouponRequest(
         int amount,
         List<Long> bookIds,
-        List<Long> categoryIds
+        List<String> categoryKdcIds
 ) { }
