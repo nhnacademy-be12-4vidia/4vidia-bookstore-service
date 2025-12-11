@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.refund.dto;
+package com.nhnacademy._vidiabookstoreservice.refund.dto.response;
 
 import java.util.List;
 

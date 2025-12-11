@@ -34,6 +34,7 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
         }
 
         order.setDeliveryStatus(DeliveryStatus.SHIPPING);
+        order.setActualDeliveryDate(LocalDate.now()); // 배송 시작일
         return order;
     }
 
@@ -47,7 +48,6 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
         }
 
         order.setDeliveryStatus(DeliveryStatus.DELIVERED);
-        order.setActualDeliveryDate(LocalDate.now());
         return order;
     }
 }
