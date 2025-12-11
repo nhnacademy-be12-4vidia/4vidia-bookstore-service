@@ -78,6 +78,14 @@ public class UserController {
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
+    /**
+     * 회원 역할 조회
+     */
+    @GetMapping("/role")
+    public ResponseEntity<String> getUserRole(@RequestHeader("X-User-Id") Long userId) {
+        String userRole = userService.getUserRole(userId);
+        return ResponseEntity.ok().body(userRole);
+    }
 
     // 기존 회원 아이디/비밀번호 찾기 auth controller 에 있어서(중복) 삭제함
 

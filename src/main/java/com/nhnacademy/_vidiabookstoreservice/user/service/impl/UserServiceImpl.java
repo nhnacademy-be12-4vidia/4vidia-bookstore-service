@@ -220,4 +220,12 @@ public class UserServiceImpl implements UserService {
 
         user.setLastLoginAt(LocalDateTime.now());
     }
+
+    @Override
+    public String getUserRole(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+        return user.getRole().name();
+    }
+
 }
