@@ -331,7 +331,7 @@ public class OrderServiceImpl implements OrderService {
             paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
         }
 
-        order.setOrderStatus(OrderStatus.CANCELED);
+        order.setOrderStatus(OrderStatus.REFUNDED);
     }
 
     private void sendRollBackCoupon(Long orderId) {
@@ -369,7 +369,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // OrderStatus -> PENDING(0)에도 상태 변경 해줘야함 (if문 밖으로 뺌)
-        order.setOrderStatus(OrderStatus.CANCELED); // 취소로 변경
+        order.setOrderStatus(OrderStatus.REFUNDED); // 취소로 변경
         order.setDeliveryStatus(DeliveryStatus.CANCELED); // 취소로 변경
 
         List<BookStockChangeRequest> requests = order.getOrderItems().stream()
