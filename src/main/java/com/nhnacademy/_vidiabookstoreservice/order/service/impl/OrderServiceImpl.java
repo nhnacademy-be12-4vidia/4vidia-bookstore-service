@@ -375,7 +375,7 @@ public class OrderServiceImpl implements OrderService {
         List<BookStockChangeRequest> requests = order.getOrderItems().stream()
                 .map(item -> new BookStockChangeRequest(item.getBook().getId(), item.getQuantity()))
                 .toList();
-        bookService.decreaseStock(requests);
+        bookService.increaseStock(requests);
     }
 
     @Override
