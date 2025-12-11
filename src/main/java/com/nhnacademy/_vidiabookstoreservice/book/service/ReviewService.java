@@ -15,4 +15,8 @@ public interface ReviewService {
 
     List<Long> getReviewedOrderItemIdList(List<Long> orderItemIdList);
 
+    Long getTotalReviewCount(Long bookId);
+
+    Double getAvgReviewRating(Long bookId);
+
 }

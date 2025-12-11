@@ -21,6 +21,7 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsExc
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookAuthorRequiredException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
+import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
@@ -28,6 +29,7 @@ import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookTagService;
 import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.PublisherService;
+import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +61,7 @@ public class BookServiceImpl implements BookService {
     private final CategoryService categoryService;
     private final ApplicationEventPublisher eventPublisher;
     private final TagService tagService;
+    private final ReviewRepository reviewRepository;
     private final BookTagService bookTagService;
 
     @Value("${image.default.thumbnail}")
@@ -97,7 +100,10 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository.findByIdWithAuthors(id).orElseThrow(
             () -> new BookNotFoundException(id));
 
-        return BookDetailResponse.from(book);
+        Long totalReviewCount = reviewRepository.countByBook_Id(id).orElse(0L);
+        Double avgReviewRating = reviewRepository.findAverageRatingByBookId(id);
+
+        return BookDetailResponse.from(book, totalReviewCount, avgReviewRating);
     }
 
     @Override

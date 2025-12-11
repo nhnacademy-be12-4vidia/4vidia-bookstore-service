@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.domain.ReviewImage;
+import com.nhnacademy._vidiabookstoreservice.book.dto.review.event.ReviewRatingEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.ReviewUserMismatchException;
@@ -17,11 +18,14 @@ import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyReward
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,6 +43,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final MinioService minioService;
     private final ReviewImageService reviewImageService;
     private final PointCommandService pointCommandService;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Override
@@ -80,6 +85,10 @@ public class ReviewServiceImpl implements ReviewService {
         } else {
             pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 2L));
         }
+
+        Double avgRating = reviewRepository.findAverageRatingByBookId(request.getBookId());
+
+        eventPublisher.publishEvent(new ReviewRatingEvent(request.getBookId(), avgRating));
     }
 
     @Transactional
@@ -108,8 +117,11 @@ public class ReviewServiceImpl implements ReviewService {
 
             String imageUrl = minioService.upload(file);
 
+            String decodedUrl = URLDecoder.decode(imageUrl, StandardCharsets.UTF_8);
+
+
             ReviewImage reviewImage = ReviewImage.builder()
-                .imageUrl(imageUrl)
+                .imageUrl(decodedUrl)
                 .review(review)
                 .displayOrder(order++)
                 .build();
@@ -124,5 +136,17 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public List<Long> getReviewedOrderItemIdList(List<Long> orderItemIdList) {
         return reviewRepository.findReviewedOrderItemIdList(orderItemIdList);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getTotalReviewCount(Long bookId) {
+        return reviewRepository.countByBook_Id(bookId).orElse(0L);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Double getAvgReviewRating(Long bookId) {
+        return reviewRepository.findAverageRatingByBookId(bookId);
     }
 }

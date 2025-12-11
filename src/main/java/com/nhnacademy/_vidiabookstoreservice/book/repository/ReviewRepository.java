@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.repository;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,5 +35,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> searchAdminReviews(@Param("keyword") String keyword,
                                     @Param("rating") Integer rating,
                                     Pageable pageable);
+
+    Optional<Long> countByBook_Id(Long bookId);
+
+    @Query("SELECT coalesce(avg(r.rating), 0) " +
+        "FROM Review r " +
+        "WHERE r.book.id = :bookId")
+    Double findAverageRatingByBookId(@Param("bookId") Long bookId);
 
 }
