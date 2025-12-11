@@ -1,11 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
-
-
-import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminReviewPageResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminReviewResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.exception.ReviewNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.admin.service.AdminReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,33 +14,41 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AdminReviewServiceImpl {
+public class AdminReviewServiceImpl implements AdminReviewService {
     private final ReviewRepository reviewRepository;
 
     /**
-     * 관리자 리뷰 목록 조회 (검색 + 페이징)
+     * 관리자 리뷰 목록 조회 (검색 + 평점 + 페이징)
      */
-    public AdminReviewPageResponse getReviews(String keyword,Integer rating, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    @Override
+    public PageResponse<AdminReviewResponse> getReviews(
+            String keyword,
+            Integer rating,
+            int page,
+            int size
+    ) {
+        // 검색어 정리 (null / 공백 → null)
+        String trimmed = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
 
-        Page<Review> reviewPage = reviewRepository.searchAdminReviews(
-                (keyword == null || keyword.isBlank()) ? null : keyword.trim(),
-                rating,
-                pageable
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt")   // 최신 리뷰 먼저
         );
 
-        return new AdminReviewPageResponse(
-                reviewPage.getContent().stream()
-                        .map(AdminReviewResponse::from)
-                        .toList(),
-                reviewPage.getNumber(),
-                reviewPage.getSize(),
-                reviewPage.getTotalPages(),
-                reviewPage.getTotalElements(),
-                reviewPage.isFirst(),
-                reviewPage.isLast()
-        );
+        // 엔티티 페이지 조회
+        Page<Review> reviewPage =
+                reviewRepository.searchAdminReviews(trimmed, rating, pageable);
+
+        // 엔티티 → DTO 페이지로 매핑
+        Page<AdminReviewResponse> dtoPage =
+                reviewPage.map(AdminReviewResponse::from);
+
+        // 공통 PageResponse로 감싸서 리턴
+        return PageResponse.from(dtoPage);
     }
+
+
         /**
          * 리뷰 삭제
          */
