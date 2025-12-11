@@ -18,4 +18,21 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         """)
     List<Long> findReviewedOrderItemIdList(@Param("orderItemIdList") List<Long> orderItemIdList);
 
+
+    // 관리자 페이지 리뷰조회
+    @Query("""
+       select r
+       from Review r
+       join r.book b
+       join r.user u
+       where (:keyword is null
+              or lower(b.title) like lower(concat('%', :keyword, '%'))
+              or lower(r.content) like lower(concat('%', :keyword, '%'))
+              or lower(u.email) like lower(concat('%', :keyword, '%')))
+         and (:rating is null or r.rating = :rating)
+       """)
+    Page<Review> searchAdminReviews(@Param("keyword") String keyword,
+                                    @Param("rating") Integer rating,
+                                    Pageable pageable);
+
 }
