@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface AdminDeliveryService {
-    Page<Order> listByDeliveryStatus(DeliveryStatus status, Pageable pageable);
+    Page<Order> listByDeliveryStatus(DeliveryStatus status,String keyword, Pageable pageable);
     Order startDelivery(Long orderId);
     Order completeDelivery(Long orderId);
 }
