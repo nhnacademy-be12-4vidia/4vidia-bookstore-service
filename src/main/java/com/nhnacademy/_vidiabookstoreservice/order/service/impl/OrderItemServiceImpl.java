@@ -31,7 +31,9 @@ public class OrderItemServiceImpl implements OrderItemService {
         OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItemId).orElseThrow(
                 () -> new OrderItemNotFoundException(orderItemId));
 
-        findOrderItem.setConfirmStatus(confirmStatus);
+        if (findOrderItem.getConfirmStatus().equals(ConfirmStatus.UNCONFIRMED)) {
+            findOrderItem.setConfirmStatus(confirmStatus);
+        }
     }
 
     @Override

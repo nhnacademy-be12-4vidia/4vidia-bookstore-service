@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.domain.PackagingOption;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.PackagingOptionRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.PackagingOptionResponse;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
