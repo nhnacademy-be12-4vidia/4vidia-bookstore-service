@@ -36,6 +36,9 @@ public class BookDetailResponse {
     private List<String> imageUrls;
     private List<String> tags;
 
+    private Long reviewCount;
+    private Double avgRating;
+
     @Getter @Builder
     public static class PublisherInfo {
         private Long id;
@@ -58,7 +61,7 @@ public class BookDetailResponse {
         private String kdcCode;
     }
 
-    public static BookDetailResponse from(Book book) {
+    public static BookDetailResponse from(Book book, Long reviewCount, Double avgRating) {
         return BookDetailResponse.builder()
             .id(book.getId())
             .isbn(book.getIsbn())
@@ -91,6 +94,8 @@ public class BookDetailResponse {
             .volumeNumber(book.getVolumeNumber())
             .imageUrls(book.getBookImageList().stream().map(BookImage::getImageUrl).toList())
             .tags(book.getBookTagList().stream().map(bt -> bt.getTag().getName()).toList())
+            .reviewCount(reviewCount)
+            .avgRating(avgRating)
             .build();
     }
 
