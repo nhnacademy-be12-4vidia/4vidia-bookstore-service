@@ -3,10 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.refund.domain;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Refund {
     @Id
+    @Column(name = "refund_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long refundId;
 
@@ -24,15 +22,16 @@ public class Refund {
     @JoinColumn(name = "order_item_id", nullable = false, foreignKey = @ForeignKey(name = "fk_refund_order_item"))
     private OrderItem orderItem;
 
-    @Column(nullable = false)
+    @Column(name = "damaged", nullable = false)
     private boolean damaged;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(length = 250)
+    @Column(name = "description", length = 250)
     private String description;
 
+    @Setter
     @Convert(converter = RefundStatusConverter.class)
     @Column(name = "refund_status", nullable = false)
     private RefundStatus refundStatus;
