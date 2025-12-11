@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/my/points")
+@RequestMapping("/users/me/points")
 public class PointQueryController {
     private final PointQueryService queryService;
     private final PointQueryService pointQueryService;
