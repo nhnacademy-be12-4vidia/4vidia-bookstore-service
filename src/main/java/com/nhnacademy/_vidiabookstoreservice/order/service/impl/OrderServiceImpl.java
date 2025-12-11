@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
@@ -268,8 +269,8 @@ public class OrderServiceImpl implements OrderService {
             orderName = bookItems.getFirst().bookTitle() + " 외 " + num + "권";
         }
 
-        List<Long> categoryIds = books.stream()
-                .map(BookOrderResponse::category)
+        List<String> categoryIds = books.stream()
+                .map(BookOrderResponse::categoryKdc)
                 .toList();
 
         if (userId != null) { //회원인경우

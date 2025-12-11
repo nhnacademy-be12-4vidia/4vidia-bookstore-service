@@ -35,3 +35,6 @@ build/
 ### yml ###
 application-young.yml
 application-local.yml
+
+### RabbitConfig ###
+RabbitConfigLocal.java
