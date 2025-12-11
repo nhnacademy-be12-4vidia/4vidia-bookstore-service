@@ -359,7 +359,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void cancelOrderStatus(Long orderId) {
+    public void cancelOrder(Long orderId) {
         Order order = getOrder(orderId);
 
         // OrderStatus -> PAID(1) 일때는 결제 취소해야함
@@ -371,6 +371,11 @@ public class OrderServiceImpl implements OrderService {
         // OrderStatus -> PENDING(0)에도 상태 변경 해줘야함 (if문 밖으로 뺌)
         order.setOrderStatus(OrderStatus.CANCELED); // 취소로 변경
         order.setDeliveryStatus(DeliveryStatus.CANCELED); // 취소로 변경
+
+        List<BookStockChangeRequest> requests = order.getOrderItems().stream()
+                .map(item -> new BookStockChangeRequest(item.getBook().getId(), item.getQuantity()))
+                .toList();
+        bookService.decreaseStock(requests);
     }
 
     @Override
