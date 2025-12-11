@@ -31,6 +31,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
               or lower(r.content) like lower(concat('%', :keyword, '%'))
               or lower(u.email) like lower(concat('%', :keyword, '%')))
          and (:rating is null or r.rating = :rating)
+                order by r.id desc
        """)
     Page<Review> searchAdminReviews(@Param("keyword") String keyword,
                                     @Param("rating") Integer rating,

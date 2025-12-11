@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminReviewPageResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminReviewResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.exception.ReviewNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class AdminReviewServiceImpl {
          */
         public void deleteReview(Long reviewId){
             if(!reviewRepository.existsById(reviewId)) {
-                throw new IllegalArgumentException("리뷰를 찾을 수 없습니다. id="+reviewId);
+                throw new ReviewNotFoundException(reviewId);
             }
             reviewRepository.deleteById(reviewId);
         }
