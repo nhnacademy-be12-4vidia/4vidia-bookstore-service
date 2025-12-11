@@ -392,4 +392,13 @@ public class OrderServiceImpl implements OrderService {
             orderItemService.changeStatusOrderItem(orderItem.getOrderItemId(), confirmStatus);
         }
     }
+
+    @Override
+    public void changeOrderStatus_ByUser(Long orderId, ConfirmStatus confirmStatus) {
+        Order order = getOrder(orderId);
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            orderItemService.changeStatusOrderItem_byUser(orderItem.getOrderItemId(), confirmStatus);
+        }
+    }
 }

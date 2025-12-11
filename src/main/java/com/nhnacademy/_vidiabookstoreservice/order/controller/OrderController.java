@@ -92,12 +92,13 @@ public class OrderController {
 
 
     /**
-     * 유저가 구매확정 눌렀을 때:  주문아이템 상태변경
+     * 유저 구매확정 눌렀을 때:  주문아이템 상태변경
      * @param orderId : 주문아이디
      */
     @PutMapping("/confirm-order")
     public void changeConfirmOrder(@RequestBody Long orderId) {
-        orderService.changeOrderStatus(orderId, ConfirmStatus.CONFIRMED);
+
+        orderService.changeOrderStatus_ByUser(orderId, ConfirmStatus.CONFIRMED);
     }
 
 }

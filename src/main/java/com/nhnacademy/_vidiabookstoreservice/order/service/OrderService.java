@@ -35,4 +35,6 @@ public interface OrderService {
     Boolean validateGuest(OrderTrackingRequest orderTrackingRequest);
 
     void changeOrderStatus(Long orderId, ConfirmStatus confirmStatus);
+
+    void changeOrderStatus_ByUser(Long orderId, ConfirmStatus confirmStatus);
 }
