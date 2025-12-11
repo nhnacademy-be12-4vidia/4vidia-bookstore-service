@@ -9,7 +9,8 @@ import lombok.Getter;
 public enum OrderStatus {
     PENDING(0),
     PAID(1),
-    CANCELED(2);
+    REFUND_REQUEST(2),
+    REFUNDED(3);
 
     private final int code;
 

@@ -384,4 +384,14 @@ public class OrderServiceImpl implements OrderService {
 
         return order.getOrderPassword().equals(orderTrackingRequest.orderPassword());
     }
+
+    @Override
+    public void changeOrderStatus(Long orderId) {
+        Order order = getOrder(orderId);
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            orderItemService.changeStatusOrderItem(orderItem.getOrderItemId(), ConfirmStatus.CONFIRMED);
+        }
+
+    }
 }
