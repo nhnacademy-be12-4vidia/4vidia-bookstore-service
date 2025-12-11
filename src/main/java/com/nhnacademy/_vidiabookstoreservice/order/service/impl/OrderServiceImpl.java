@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
@@ -386,12 +385,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void changeOrderStatus(Long orderId) {
+    public void changeOrderStatus(Long orderId, ConfirmStatus confirmStatus) {
         Order order = getOrder(orderId);
 
         for (OrderItem orderItem : order.getOrderItems()) {
-            orderItemService.changeStatusOrderItem(orderItem.getOrderItemId(), ConfirmStatus.CONFIRMED);
+            orderItemService.changeStatusOrderItem(orderItem.getOrderItemId(), confirmStatus);
         }
-
     }
 }

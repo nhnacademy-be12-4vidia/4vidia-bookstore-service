@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.service;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
@@ -33,5 +34,5 @@ public interface OrderService {
 
     Boolean validateGuest(OrderTrackingRequest orderTrackingRequest);
 
-    void changeOrderStatus(Long orderId);
+    void changeOrderStatus(Long orderId, ConfirmStatus confirmStatus);
 }
