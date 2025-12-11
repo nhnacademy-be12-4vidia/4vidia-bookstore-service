@@ -117,6 +117,11 @@ eureka:
     service-url:
       defaultZone: http://${ADMIN_ID}:${ADMIN_PASSWORD}@4vidia-discovery-1:8080/eureka/
 
+google:
+  api:
+    api-key: AIzaSyA160-bCTB7KALB_ctm8zvk2pckN1I3wlA
+    model: gemini-2.5-flash
+
 
 toss:
   secretKey: test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy

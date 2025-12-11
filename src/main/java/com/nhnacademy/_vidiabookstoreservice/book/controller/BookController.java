@@ -6,6 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResp
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
@@ -50,6 +51,19 @@ public class BookController {
             userId);
 
         return ResponseEntity.ok(PageResponse.from(result));
+    }
+
+    @GetMapping("/search/ai")
+    public ResponseEntity<AiBookSearchResponse> searchBooksWithLlm(
+        @Valid EsBookSearchRequest request,
+        @PageableDefault(size = 20) Pageable pageable,
+        @RequestHeader(name = "X-User-Id", required = false) Long userId) {
+
+        AiBookSearchResponse response = bookSearchService.searchBookWithLlm(request, pageable,
+            userId);
+
+        return ResponseEntity.ok(response);
+
     }
 
     @GetMapping("/{bookId}")
