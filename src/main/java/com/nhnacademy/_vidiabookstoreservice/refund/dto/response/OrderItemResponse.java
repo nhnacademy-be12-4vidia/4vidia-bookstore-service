@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.refund.dto;
+package com.nhnacademy._vidiabookstoreservice.refund.dto.response;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 
