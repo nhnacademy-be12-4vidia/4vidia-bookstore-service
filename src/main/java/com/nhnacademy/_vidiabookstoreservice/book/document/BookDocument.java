@@ -45,7 +45,11 @@ public class BookDocument {
     @Field(type = FieldType.Dense_Vector, dims = 1024)
     private double[] embedding;
 
+    @Field(type = FieldType.Double)
+    private Double rating;
+
     public static BookDocument from(Book book, double[] vector) {
+
         return BookDocument.builder()
             .id(String.valueOf(book.getId()))
             .title(book.getTitle())
