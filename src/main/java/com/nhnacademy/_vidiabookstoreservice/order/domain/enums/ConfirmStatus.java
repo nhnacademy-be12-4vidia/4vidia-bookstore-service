@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum ConfirmStatus {
     UNCONFIRMED(0),
     CONFIRMED(1),
-    RETURNED(2);
+    REFUND_REQUEST(2),
+    REFUNDED(3);
 
     private final int code;
 
