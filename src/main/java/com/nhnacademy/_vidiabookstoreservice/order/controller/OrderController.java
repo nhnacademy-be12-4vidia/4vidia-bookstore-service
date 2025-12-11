@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
-import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutListRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderTrackingRequest;
@@ -83,7 +82,7 @@ public class OrderController {
      */
     @PutMapping("/{orderId}/cancel")
     public ResponseEntity<Void> cancelOrder(@PathVariable long orderId) {
-        orderService.cancelOrderStatus(orderId);
+        orderService.cancelOrder(orderId);
 
         return ResponseEntity.ok().build();
     }
