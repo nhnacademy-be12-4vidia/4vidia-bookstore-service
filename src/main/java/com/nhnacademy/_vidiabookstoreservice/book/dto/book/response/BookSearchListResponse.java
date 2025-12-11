@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 public class BookSearchListResponse {
 
     private Long id;
@@ -22,6 +22,12 @@ public class BookSearchListResponse {
     private String publisherName;
     private String imageUrl;
     private Boolean liked;
+
+    private Integer rank;
+    private Double relevanceScore;
+    private boolean recommended;
+
+    private String llmSummary;
 
 
     public static BookSearchListResponse from(Book book, boolean liked) {
