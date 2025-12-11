@@ -22,11 +22,12 @@ public class AdminDeliveryController {
     @GetMapping
     public Page<DeliveryResponse> listByDeliveryStatus(
             @RequestParam(value = "deliveryStatus", required = false) DeliveryStatus deliveryStatus,
+            @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return adminDeliveryService.listByDeliveryStatus(deliveryStatus, pageable)
+        return adminDeliveryService.listByDeliveryStatus(deliveryStatus,keyword, pageable)
                 .map(DeliveryResponse::from);
     }
 
