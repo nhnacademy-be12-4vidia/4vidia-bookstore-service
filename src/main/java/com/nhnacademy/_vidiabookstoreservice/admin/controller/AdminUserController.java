@@ -3,10 +3,10 @@ package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.AdminUserSearchCondition;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.request.UpdateUserStatusRequest;
-import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminUserPageResponse;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminUserResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminUserService;
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 
 import lombok.RequiredArgsConstructor;
@@ -31,19 +31,21 @@ public class AdminUserController {
      */
 
     @GetMapping
-    public AdminUserPageResponse getUsers(
+    public PageResponse<AdminUserResponse> getUsers(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) UserStatus status,
             @PageableDefault(size = 20) Pageable pageable
     ) {
+        // URL 인코딩 풀기
         if (keyword != null && keyword.contains("%")) {
             keyword = URLDecoder.decode(keyword, StandardCharsets.UTF_8);
         }
+        // 검색 조건 생성
         AdminUserSearchCondition condition = new AdminUserSearchCondition(keyword, status);
-
+        // 서비스 호출
         Page<AdminUserResponse> page = adminUserService.getUsers(condition, pageable);
 
-        return AdminUserPageResponse.from(page);
+        return PageResponse.from(page);
     }
 
     /**
