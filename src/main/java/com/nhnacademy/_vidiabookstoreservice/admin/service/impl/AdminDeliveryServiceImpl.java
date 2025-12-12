@@ -20,9 +20,15 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     private final OrderRepository orderRepository;
 
     @Override
-    public Page<Order> listByDeliveryStatus(DeliveryStatus status, Pageable pageable) {
-        return orderRepository.findByDeliveryStatus(status, pageable);
+    public Page<Order> listByDeliveryStatus(DeliveryStatus status, String keyword, Pageable pageable) {
+
+        String trimmed = (keyword == null || keyword.trim().isEmpty())
+                ? null
+                : keyword.trim();
+        // 검색+상태 필터를 다 지원하는 쿼리 사용
+        return orderRepository.searchAdminDeliveries(status, trimmed, pageable);
     }
+
 
     @Override
     public Order startDelivery(Long orderId) {
@@ -34,6 +40,7 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
         }
 
         order.setDeliveryStatus(DeliveryStatus.SHIPPING);
+        order.setActualDeliveryDate(LocalDate.now()); // 배송 시작일
         return order;
     }
 
@@ -47,7 +54,8 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
         }
 
         order.setDeliveryStatus(DeliveryStatus.DELIVERED);
-        order.setActualDeliveryDate(LocalDate.now());
         return order;
     }
+
+
 }

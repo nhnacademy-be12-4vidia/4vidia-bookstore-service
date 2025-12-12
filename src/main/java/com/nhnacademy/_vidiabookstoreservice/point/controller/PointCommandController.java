@@ -18,7 +18,7 @@ public class PointCommandController {
     private final PointCommandService pointCommandService;
 
     /** 1. 주문 완료 기본 적립 */
-    @PostMapping("/my/points/reward")
+    @PostMapping("/users/me/points/reward")
     public ResponseEntity<Void> reward(
             @Valid @RequestBody PointOrderRewardRequest request,
             @RequestHeader("X-User-Id") Long userId
@@ -29,7 +29,7 @@ public class PointCommandController {
 
 
     /** 2. 주문 시 포인트 사용 (차감) */
-    @PostMapping("/my/points/use")
+    @PostMapping("/users/me/points/use")
     public ResponseEntity<Void> use(
             @Valid @RequestBody PointUseRequest request,
             @RequestHeader("X-User-Id") Long userId
@@ -39,7 +39,7 @@ public class PointCommandController {
     }
 
     /** 3. 결제 비정상 처리 || 결제 취소 */
-    @PostMapping("/my/points/cancel")
+    @PostMapping("/users/me/points/cancel")
     public ResponseEntity<Void> cancelUse(@RequestBody Long orderId,
                                           @RequestHeader("X-User-Id") Long userId
     ){
@@ -49,7 +49,7 @@ public class PointCommandController {
 
 
     /** 3. 반품 — 차감되었던 포인트 복구 (적립) */
-    @PostMapping("/my/points/refund")
+    @PostMapping("/users/me/points/refund")
     public ResponseEntity<Void> refund(
             @Valid @RequestBody PointRefundRequest request,
             @RequestHeader("X-User-Id") Long userId
@@ -59,15 +59,20 @@ public class PointCommandController {
     }
 
     /** 4. 정책 기준 적립 — 회원가입/리뷰/포토 리뷰 */
-    // TODO 회원가입은 /my가 없어야 하고, 나머지는 있어야 한다면? 분리? 굳이? 해야하나? - 분리?
-    @PostMapping("/points/policy-reward")
-    public ResponseEntity<Void> rewardByPolicy(
+    @PostMapping("/points/signup")
+    public ResponseEntity<Void> rewardBySignUp(
             @Valid @RequestBody PointPolicyRewardRequest request
     ) {
         pointCommandService.rewardByPolicy(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-
+    @PostMapping("/users/me/points/review")
+    public ResponseEntity<Void> rewardByReview(
+            @Valid @RequestBody PointPolicyRewardRequest request
+    ) {
+        pointCommandService.rewardByPolicy(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 
 }

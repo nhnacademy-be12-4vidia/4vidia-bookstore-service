@@ -47,7 +47,6 @@ public class User extends BaseEntity {
 
     @Column(name = "status", nullable = false)
     private UserStatus status =  UserStatus.ACTIVE; // ACTIVE, DORMANT, DELETED
-
     @Column(name = "role", nullable = false)
     private UserRole role = UserRole.USER; //USER, ADMIN
 

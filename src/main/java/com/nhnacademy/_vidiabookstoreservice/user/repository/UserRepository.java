@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUserId(Long userId);
 
+    Optional<User> findByProviderAndSocialId(String provider, String socialId);
+
     //관리자 페이지  회원 검색용
     @Query("""
         select u from User u
