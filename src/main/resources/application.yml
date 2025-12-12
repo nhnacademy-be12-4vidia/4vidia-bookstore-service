@@ -123,6 +123,7 @@ google:
     api-key2: ${GOOGLE_API_KEY2}
     model: gemini-2.5-flash
 
+
 toss:
   secretKey:  test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy
 
