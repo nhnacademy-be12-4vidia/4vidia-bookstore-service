@@ -126,7 +126,7 @@ google:
 
 
 toss:
-  secretKey:  test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy
+  secretKey: ${TOSS_SECRET_KEY}
 
 server:
   port: 8080
