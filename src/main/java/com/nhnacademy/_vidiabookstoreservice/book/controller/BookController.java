@@ -23,11 +23,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/books")
@@ -43,7 +39,7 @@ public class BookController {
 
     @GetMapping("/search")
     public ResponseEntity<PageResponse<BookSearchListResponse>> searchBooks(
-        @Valid EsBookSearchRequest request, 
+        @Valid @ModelAttribute EsBookSearchRequest request,
         @PageableDefault(size = 20) Pageable pageable,
         @RequestHeader(name = "X-User-Id", required = false) Long userId
     ) {
