@@ -127,7 +127,5 @@ google:
 
 toss:
   secretKey:  test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy
-
-
-
-
+server:
+  port: 8080
