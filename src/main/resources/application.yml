@@ -112,6 +112,7 @@ image:
     thumbnail: http://storage.java21.net:8000/4vidia/default-book-cover.png
 
 
+
 eureka:
   client:
     service-url:
@@ -126,7 +127,5 @@ google:
 
 toss:
   secretKey:  test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy
-
-
-
-
+server:
+  port: 8080
