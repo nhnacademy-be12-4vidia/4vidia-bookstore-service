@@ -35,6 +35,7 @@ where u.status = :status
 """)
     List<User> findActiveUsersNotLoggedInSince(@Param("status") UserStatus status,
                                                @Param("threshold") LocalDateTime threshold);
+    Optional<User> findByProviderAndSocialId(String provider, String socialId);
 
     //관리자 페이지  회원 검색용
     @Query("""

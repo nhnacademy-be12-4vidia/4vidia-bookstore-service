@@ -2,8 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.user.service;
 
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.LoginRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
 
 import java.time.LocalDateTime;
 
