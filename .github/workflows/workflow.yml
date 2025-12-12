@@ -59,3 +59,7 @@ jobs:
             echo "Starting 4vidia-bookstore-service-1"
             docker compose pull 4vidia-bookstore-service-1
             docker compose up -d 4vidia-bookstore-service-1
+            
+            echo "Starting 4vidia-bookstore-service-2"
+            docker compose pull 4vidia-bookstore-service-2
+            docker compose up -d 4vidia-bookstore-service-2
