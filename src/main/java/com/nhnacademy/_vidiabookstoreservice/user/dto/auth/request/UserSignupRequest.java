@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.user.dto.user.request;
+package com.nhnacademy._vidiabookstoreservice.user.dto.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;

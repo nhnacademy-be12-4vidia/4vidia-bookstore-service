@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum UserStatus {
     ACTIVE(0), //정상
     DORMANT(1), //휴면
-    DELETED(2) ;
+    DELETED(2),
+    TEMP(3);
 
     private final int code;
 

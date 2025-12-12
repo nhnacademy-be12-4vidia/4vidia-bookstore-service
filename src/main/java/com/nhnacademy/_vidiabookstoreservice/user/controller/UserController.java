@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
@@ -89,4 +90,12 @@ public class UserController {
 
     // 기존 회원 아이디/비밀번호 찾기 auth controller 에 있어서(중복) 삭제함
 
+    /**
+     * OAuth2용 유저 찾기
+     */
+    @GetMapping("/oauth2")
+    public ResponseEntity<OAuth2UserDto> getOAuth2User(@RequestParam String provider, @RequestParam String socialId) {
+        OAuth2UserDto oAuth2User = userService.getOAuth2User(provider, socialId);
+        return ResponseEntity.ok().body(oAuth2User);
+    }
 }

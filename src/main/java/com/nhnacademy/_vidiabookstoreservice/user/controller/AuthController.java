@@ -6,7 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSen
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantVerifyRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateLastLoginRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UserSignupRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.DormantAuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
