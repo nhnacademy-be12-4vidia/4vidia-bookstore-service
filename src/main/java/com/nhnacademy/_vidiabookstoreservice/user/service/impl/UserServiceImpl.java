@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
@@ -228,4 +229,10 @@ public class UserServiceImpl implements UserService {
         return user.getRole().name();
     }
 
+
+    @Override
+    public OAuth2UserDto getOAuth2User(String provider, String socialId) {
+        User user = userRepository.findByProviderAndSocialId(provider, socialId).orElseThrow(() -> new UserNotFoundException());
+        return OAuth2UserDto.fromEntity(user);
+    }
 }

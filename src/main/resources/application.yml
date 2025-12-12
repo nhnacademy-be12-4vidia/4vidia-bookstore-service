@@ -47,16 +47,16 @@ spring:
         default_batch_fetch_size: 100
     #SMTP
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: 4vidia.bookservice@gmail.com
-    password: ${SMTP_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          starttls:
-            enable: true
-          auth: true
+      host: smtp.gmail.com
+      port: 587
+      username: 4vidia.bookservice@gmail.com
+      password: ${SMTP_PASSWORD}
+      properties:
+        mail:
+          smtp:
+            starttls:
+              enable: true
+            auth: true
 
 
 
