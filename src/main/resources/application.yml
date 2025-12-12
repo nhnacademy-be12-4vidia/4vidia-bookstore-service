@@ -6,19 +6,19 @@ spring:
       cart:
         host: s4.java21.net
         port: 6379
-        password: ${REDIS_PASSWORD}
+        password: "*N2vya7H@muDTwdNMR!"#${REDIS_PASSWORD}
         database: 384 # local 장바구니 아이템 저장용
         timeout: 5000ms
       dormant:
         host: s4.java21.net
         port: 6379
-        password: ${REDIS_PASSWORD}
+        password: "*N2vya7H@muDTwdNMR!"#${REDIS_PASSWORD}
         database: 383
         timeout: 5000ms
       bestseller:
         host: s4.java21.net
         port: 6379
-        password: ${REDIS_PASSWORD}
+        password: "*N2vya7H@muDTwdNMR!"#${REDIS_PASSWORD}
         database: 382 # 매 시간 저장(메인페이지에 띄울 베스트셀러)
         timeout: 5000ms
 
@@ -27,7 +27,7 @@ spring:
     url: jdbc:mysql://s4.java21.net:13306/project_be12_team4
 
     username: project_be12_team4
-    password: ${MYSQL_PASSWORD}
+    password: Qrs8WavVsmxaQd[O #${MYSQL_PASSWORD}
 
   jpa:
     hibernate:
@@ -50,7 +50,7 @@ spring:
       host: smtp.gmail.com
       port: 587
       username: 4vidia.bookservice@gmail.com
-      password: ${SMTP_PASSWORD}
+      password: jnstvwwweeauxmzt #${SMTP_PASSWORD}
       properties:
         mail:
           smtp:
@@ -63,7 +63,7 @@ spring:
   elasticsearch:
     uris: s4.java21.net:9200
     username: elastic
-    password: ${NHN_PASSWORD}
+    password: nhnacademy123! #${NHN_PASSWORD}
     socket-timeout: 30s
     connection-timeout: 5s
   cloud:
@@ -82,7 +82,7 @@ spring:
     host: s4.java21.net
     port: 5672
     username: admin
-    password: ${NHN_PASSWORD}
+    password: nhnacademy123! #${NHN_PASSWORD}
     virtual-host: /4vidia
     listener:
       simple:
@@ -124,7 +124,7 @@ google:
     model: gemini-2.5-flash
 
 toss:
-  secretKey:  ${TOSS_SECRET_KEY}
+  secretKey:  test_sk_Gv6LjeKD8aYzQLpyoGzM8wYxAdXy
 
 
 
