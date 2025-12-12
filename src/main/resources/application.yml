@@ -119,7 +119,7 @@ eureka:
 
 google:
   api:
-    api-key: AIzaSyA160-bCTB7KALB_ctm8zvk2pckN1I3wlA
+    api-key: ${GOOGLE_API_KEY}
     model: gemini-2.5-flash
 
 
