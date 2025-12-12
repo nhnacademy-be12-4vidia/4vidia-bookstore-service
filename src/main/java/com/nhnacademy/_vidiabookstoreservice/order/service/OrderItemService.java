@@ -12,6 +12,10 @@ public interface OrderItemService{
 
     OrderItem addOrderItem(OrderItem orderItem);
 
+    void changeStatusOrderItem_byUser(Long orderItemId, ConfirmStatus confirmStatus);
+
+    void changeStatusOrderItem_byAdmin(Long orderItemId, ConfirmStatus confirmStatus);
+
     void changeStatusOrderItem(Long orderItemId, ConfirmStatus confirmStatus);
 
     OrderItemResponse getByOrderItemId(Long orderItemId);

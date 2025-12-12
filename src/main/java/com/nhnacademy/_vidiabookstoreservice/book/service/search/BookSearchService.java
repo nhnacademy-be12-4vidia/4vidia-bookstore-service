@@ -3,15 +3,22 @@ package com.nhnacademy._vidiabookstoreservice.book.service.search;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 
+import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.embedding.EmbeddingService;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.es.BookDocumentSearchClient;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.rerank.BookDocumentReranker;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.result.BookSearchResultAssembler;
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +36,7 @@ public class BookSearchService {
     private final BookDocumentSearchClient searchClient;
     private final BookDocumentReranker reranker;
     private final BookSearchResultAssembler resultAssembler;
+    private final GeminiAnswerService geminiAnswerService;
 
     public Page<BookSearchListResponse> searchBooks(EsBookSearchRequest request, Pageable pageable, Long userId) {
         String keyword = request.getKeyword();
@@ -40,10 +48,6 @@ public class BookSearchService {
 
         float[] queryVector = null;
 
-        if (useSemantic) {
-            queryVector = embeddingService.embedOrNull(keyword);
-        }
-
         List<BookDocument> initialDocs = searchClient.search(request, queryVector, MAX_RESULTS);
 
         if (initialDocs.isEmpty()) {
@@ -53,6 +57,80 @@ public class BookSearchService {
         List<BookDocument> rerankDocs = reranker.rerankSafely(keyword, initialDocs);
 
         return resultAssembler.assemble(rerankDocs, userId, pageable);
+    }
+
+    public AiBookSearchResponse searchBookWithLlm(EsBookSearchRequest request, Pageable pageable,
+        Long userId) {
+
+        String keyword = request.getKeyword();
+        if (!StringUtils.hasText(keyword)) {
+            return AiBookSearchResponse.builder()
+                .results(PageResponse.from(Page.empty(pageable)))
+                .aiAnswer("")
+                .build();
+        }
+
+        boolean useSemantic = Boolean.TRUE.equals(request.getUseSemantic());
+        float[] queryVector = null;
+
+        if (useSemantic) {
+            queryVector = embeddingService.embedOrNull(keyword);
+        }
+
+        List<BookDocument> initialDocs = searchClient.search(request, queryVector, MAX_RESULTS);
+
+        if (initialDocs.isEmpty()) {
+            return AiBookSearchResponse.builder()
+                .results(PageResponse.from(Page.empty(pageable)))
+                .aiAnswer("검색 결과가 없습니다.")
+                .build();
+        }
+
+        List<BookDocument> rerankDocs = reranker.rerankSafely(keyword, initialDocs);
+
+        Page<BookSearchListResponse> pageResult = resultAssembler.assemble(rerankDocs, userId,
+            pageable);
+
+        List<BookDocument> topForLlm = rerankDocs.stream()
+            .limit(10)
+            .toList();
+
+        List<GeminiBookSuggestion> suggestions = geminiAnswerService.generateSuggestions(keyword,
+            topForLlm);
+
+        Map<Long, BookSearchListResponse> dtoMap = pageResult.getContent().stream()
+            .collect(Collectors.toMap(BookSearchListResponse::getId, dto -> dto));
+
+
+        List<BookSearchListResponse> rankedDtos = suggestions.stream()
+            .sorted(Comparator.comparingInt(GeminiBookSuggestion::getRank))
+            .map(s -> {
+                BookSearchListResponse base = dtoMap.get(s.getBookId());
+                if (base == null) {
+                    return null;
+                }
+                return base.toBuilder()
+                    .rank(s.getRank())
+                    .relevanceScore(s.getRelevanceScore())
+                    .recommended(s.isRecommended())
+                    .llmSummary(s.getSummary())
+                    .build();
+            })
+            .filter(dto -> dto != null)
+            .toList();
+
+        Page<BookSearchListResponse> enrichedPage =
+            new PageImpl<>(rankedDtos, pageable, rankedDtos.size());
+
+        PageResponse<BookSearchListResponse> pageResponse =
+            PageResponse.from(enrichedPage);
+
+        String aiAnswer = ""; // 필요하면 나중에 LLM natural answer 넣기
+
+        return AiBookSearchResponse.builder()
+            .results(pageResponse)
+            .aiAnswer(aiAnswer)
+            .build();
     }
 
 }

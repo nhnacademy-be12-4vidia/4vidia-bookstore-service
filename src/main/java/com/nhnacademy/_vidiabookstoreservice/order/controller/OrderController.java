@@ -1,5 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutListRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderTrackingRequest;
@@ -85,6 +88,17 @@ public class OrderController {
         orderService.cancelOrder(orderId);
 
         return ResponseEntity.ok().build();
+    }
+
+
+    /**
+     * 유저 구매확정 눌렀을 때:  주문아이템 상태변경
+     * @param orderId : 주문아이디
+     */
+    @PutMapping("/confirm-order")
+    public void changeConfirmOrder(@RequestBody Long orderId) {
+
+        orderService.changeOrderStatus_ByUser(orderId, ConfirmStatus.CONFIRMED);
     }
 
 }

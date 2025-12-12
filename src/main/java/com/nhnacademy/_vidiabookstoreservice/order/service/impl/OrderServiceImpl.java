@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
@@ -331,7 +330,7 @@ public class OrderServiceImpl implements OrderService {
             paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
         }
 
-        order.setOrderStatus(OrderStatus.CANCELED);
+        order.setOrderStatus(OrderStatus.REFUNDED);
     }
 
     private void sendRollBackCoupon(Long orderId) {
@@ -369,7 +368,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // OrderStatus -> PENDING(0)에도 상태 변경 해줘야함 (if문 밖으로 뺌)
-        order.setOrderStatus(OrderStatus.CANCELED); // 취소로 변경
+        order.setOrderStatus(OrderStatus.REFUNDED); // 취소로 변경
         order.setDeliveryStatus(DeliveryStatus.CANCELED); // 취소로 변경
 
         List<BookStockChangeRequest> requests = order.getOrderItems().stream()
@@ -383,5 +382,23 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrder(orderTrackingRequest.orderId());
 
         return order.getOrderPassword().equals(orderTrackingRequest.orderPassword());
+    }
+
+    @Override
+    public void changeOrderStatus(Long orderId, ConfirmStatus confirmStatus) {
+        Order order = getOrder(orderId);
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            orderItemService.changeStatusOrderItem(orderItem.getOrderItemId(), confirmStatus);
+        }
+    }
+
+    @Override
+    public void changeOrderStatus_ByUser(Long orderId, ConfirmStatus confirmStatus) {
+        Order order = getOrder(orderId);
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            orderItemService.changeStatusOrderItem_byUser(orderItem.getOrderItemId(), confirmStatus);
+        }
     }
 }
