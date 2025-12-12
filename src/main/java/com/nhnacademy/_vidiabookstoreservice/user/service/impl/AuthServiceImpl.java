@@ -19,8 +19,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -141,14 +144,20 @@ public class AuthServiceImpl implements AuthService {
             return true;
         }
 
-        // 4. 장기 미접속때 -> 업데이트해줘야함 // todo : 스케줄러 사용해야함 -> 배치...?
-        if (user.isDormant()) {
-            user.setStatus(UserStatus.DORMANT);
-            userRepository.save(user);
-            return true; // 휴먼 ㅇㅇ (이때도 마지막로그인 업데이트 안함)
-        }
 
         return false; // 휴먼 ㄴㄴ
+    }
+
+    @Transactional
+    public int convertDormantUsers(LocalDateTime day){
+        List<User> targets =
+                userRepository.findActiveUsersNotLoggedInSince(UserStatus.ACTIVE,day);
+        targets.forEach(
+                user->
+                        user.setStatus(UserStatus.DORMANT)
+        );
+
+        return targets.size(); // 처리 건수 로깅용
     }
 
 }
