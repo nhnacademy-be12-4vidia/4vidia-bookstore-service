@@ -127,7 +127,7 @@ public class User extends BaseEntity {
         }
 
         // 마지막 로그인 시간이 현재 시간보다 3개월 이전이면 -> true(휴먼ㅇㅇ)
-        return lastLoginAt.isBefore(LocalDateTime.now().minusMonths(3));
+        return true;
     }
     // 비밀번호 변경
     public void updateEncodedPassword(String encodedPassword) {

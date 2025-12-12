@@ -165,61 +165,14 @@ public class UserServiceImpl implements UserService {
         user.setStatus(UserStatus.DELETED); // status → DELETED 로 변경 등
     }
 
-    /**
-     * 아이디 찾기 (이름 + 생일 + 전화번호)
-     */
-    @Override
-    public String findUserId(FindIdRequest request) {
-        LocalDate birthday = LocalDate.parse(request.birthday());
-        User user = userRepository.findByNameAndBirthDateAndPhone(
-                        request.name(),birthday,request.phone()
-                )
-                .orElseThrow(()-> new UserNotFoundException());
-        return user.getEmail();
-    }
-
-
-    /**
-     * 비밀번호 찾기 ( 아이디 + 이름 + 전화번호) -> 임시 비밀번호 발급
-     */
-    @Override
-    public String restPasswordAndSendMail (FindPasswordRequest request) {
-        User user = userRepository.findByEmailAndNameAndPhone(
-                request.email(),request.name(),request.phone()
-        ).orElseThrow(()-> new UserNotFoundByEmailException(request.email()));
-
-        // 임시 비밀번호 생성
-        String tempPassword = generateTempPassword(10);
-
-        // 비밀번호 암호화 후 저장
-
-        String encodedPassword = BCryptPasswordEncoder.encode(tempPassword);
-        user.updateEncodedPassword(encodedPassword);
-        userRepository.save(user);
-
-        // 이메일 발송 ( 구체 로직은 MailService에서)
-        mailService.sendTempPassword(user.getEmail(), tempPassword);
-        return "임시 비밀번호가 이메일로 발송되었습니다.";
-
-    }
-    // 임시 비밀번호 발급 로직
-    private String generateTempPassword(int length) {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-
-        for(int i = 0; i < length; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return sb.toString();
-    }
-
     @Override
     public void updateLastLoginAt(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundByEmailException(email));
 
         user.setLastLoginAt(LocalDateTime.now());
+
+
     }
 
     @Override

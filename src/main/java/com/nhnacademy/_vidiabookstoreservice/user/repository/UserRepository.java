@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUserId(Long userId);
 
+    // 3개월 이전 + active 사용자 조회
+    @Query("""
+select u
+from User u
+where u.status = :status
+  and (u.lastLoginAt is null or u.lastLoginAt < :threshold)
+""")
+    List<User> findActiveUsersNotLoggedInSince(@Param("status") UserStatus status,
+                                               @Param("threshold") LocalDateTime threshold);
     Optional<User> findByProviderAndSocialId(String provider, String socialId);
 
     //관리자 페이지  회원 검색용
