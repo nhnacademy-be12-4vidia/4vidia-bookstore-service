@@ -112,6 +112,7 @@ image:
     thumbnail: http://storage.java21.net:8000/4vidia/default-book-cover.png
 
 
+
 eureka:
   client:
     service-url:
