@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,7 +68,7 @@ class GradeControllerTest {
         // updateGrade는 void 반환이므로 Mock 설정만
         // gradeService.updateGrade(1L, 2L)를 호출해도 실제 동작은 없음
 
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/users/me/grade/2")
+        mockMvc.perform(put("/users/me/grade/2")
                         .header("X-User-Id", 1L))
                 .andExpect(status().isNoContent())
                 .andDo(document("put-grade"));
