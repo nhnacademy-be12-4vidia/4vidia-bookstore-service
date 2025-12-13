@@ -14,8 +14,6 @@ import java.util.List;
 
 public interface OrderService {
 
-    List<DeliveryDateResponse> getDeliveryDates();
-
     OrderResponse getOrderResponse(Long orderItemId);
 
     OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request);
@@ -25,8 +23,6 @@ public interface OrderService {
     Order getOrder(Long orderId);
 
     List<OrderPreviewResponse> getOrdersByUserId(Long userId);
-
-    OrderCheckoutResponse getOrderCheckoutResponse(Long userId, List<OrderCheckoutRequest> orderCheckoutRequests);
 
     void cancelOrderIfPending(Long orderId);
 

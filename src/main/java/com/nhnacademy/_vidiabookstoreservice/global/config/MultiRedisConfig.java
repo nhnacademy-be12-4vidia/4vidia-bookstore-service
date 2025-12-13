@@ -10,7 +10,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableConfigurationProperties(MultiRedisProperties.class)
@@ -20,7 +23,7 @@ public class MultiRedisConfig {
     private final MultiRedisProperties props;
 
     @Bean
-    @Primary
+    @Primary // 장바구니 + 선택된 주문아이템
     public LettuceConnectionFactory cartRedisConnectionFactory() {
         MultiRedisProperties.RedisNode c = props.getCart();
         if (c == null) {
@@ -41,6 +44,21 @@ public class MultiRedisConfig {
             @Qualifier("cartRedisConnectionFactory") LettuceConnectionFactory cf
     ) {
         return new StringRedisTemplate(cf);
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> orderRedisTemplate( // value에 Object 저장위해
+            @Qualifier("cartRedisConnectionFactory") LettuceConnectionFactory cf) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(cf);
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        return template;
     }
 
     @Bean

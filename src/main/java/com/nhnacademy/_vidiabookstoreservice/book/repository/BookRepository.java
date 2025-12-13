@@ -50,4 +50,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findBookById(Long id);
 
     List<Book> findAllByIdIn(List<Long> bookIdList);
+
+    @Query("SELECT b.id, b.stock FROM Book b WHERE b.id IN :bookIds")
+    List<Object[]> findIdsAndStocksById(List<Long> bookIds);
 }

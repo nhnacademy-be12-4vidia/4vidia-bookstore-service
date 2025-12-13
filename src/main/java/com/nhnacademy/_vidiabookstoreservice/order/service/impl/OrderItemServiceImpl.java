@@ -31,17 +31,13 @@ public class OrderItemServiceImpl implements OrderItemService {
         OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItemId).orElseThrow(
                 () -> new OrderItemNotFoundException(orderItemId));
 
-        if (findOrderItem.getConfirmStatus().equals(ConfirmStatus.UNCONFIRMED)) {
-            findOrderItem.setConfirmStatus(confirmStatus);
-        }
-    }
-
-    @Override
-    public void changeStatusOrderItem_byAdmin(Long orderItemId, ConfirmStatus confirmStatus) {
-        OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItemId).orElseThrow(
-                () -> new OrderItemNotFoundException(orderItemId));
-
         if (findOrderItem.getConfirmStatus().equals(ConfirmStatus.REFUND_REQUEST)) {
+            //TODO 반품신청중인게 있으면 예외
+            return;
+        }
+
+        if (findOrderItem.getConfirmStatus().equals(ConfirmStatus.UNCONFIRMED)) {
+            // 반품됨 제외하고 미확정인것만 확정 상태로 변경
             findOrderItem.setConfirmStatus(confirmStatus);
         }
     }
@@ -71,6 +67,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderItemRequest> getOrderItemRequests(Order order) {
         List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
 

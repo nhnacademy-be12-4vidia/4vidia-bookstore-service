@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PackagingOptionService {
 
-    void savePackagingOption(PackagingOptionRequest packagingOptionRequest);
+    PackagingOption savePackagingOption(PackagingOptionRequest packagingOptionRequest);
 
     List<PackagingOptionResponse> getPackagingOptions();
 

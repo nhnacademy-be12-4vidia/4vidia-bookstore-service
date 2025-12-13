@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmExcep
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.PaymentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.util.Map;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TossPaymentServiceImpl implements PaymentService<TossPaymentResponse> {
 
     @Value("${toss.secretKey}")
@@ -31,11 +33,6 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     private final ObjectMapper objectMapper;
 
     private final PaymentRepository paymentRepository;
-
-    TossPaymentServiceImpl(ObjectMapper objectMapper, PaymentRepository paymentRepository) {
-        this.objectMapper = objectMapper;
-        this.paymentRepository = paymentRepository;
-    }
 
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
     private static final String TOSS_URL = "https://api.tosspayments.com/v1/payments/";

@@ -14,7 +14,7 @@ public class PackagingServiceImpl implements PackagingService {
 
     private final PackagingRepository packagingRepository;
 
-    public Packaging addPacakging(Packaging packaging) {
+    public Packaging addPackaging(Packaging packaging) {
         return packagingRepository.save(packaging);
     }
 }
