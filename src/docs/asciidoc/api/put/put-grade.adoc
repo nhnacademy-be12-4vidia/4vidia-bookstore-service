@@ -1,0 +1,20 @@
+==== 등급 변경 API
+
+===== Curl Request
+include::{snippets}/put-grade/curl-request.adoc[]
+
+===== HTTPIE Request
+include::{snippets}/put-grade/httpie-request.adoc[]
+
+===== HTTP Request
+include::{snippets}/put-grade/http-request.adoc[]
+
+===== HTTP Response
+include::{snippets}/put-grade/http-response.adoc[]
+
+===== HTTP Request Body
+include::{snippets}/put-grade/request-body.adoc[]
+
+===== HTTP Response Body
+include::{snippets}/put-grade/response-body.adoc[]
+
