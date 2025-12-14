@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookReviewSummaryRepository extends JpaRepository<BookReviewSummary, Long> {
 
@@ -28,4 +29,13 @@ public interface BookReviewSummaryRepository extends JpaRepository<BookReviewSum
                     AND s.status = 0
             """)
     int tryMarkRunning(@Param("bookId") Long bookId);
+
+    @Query("""
+    select s.summaryText
+    from BookReviewSummary s
+    where s.bookId = :bookId
+      and s.summaryText is not null
+      and trim(s.summaryText) <> ''
+""")
+    Optional<String> findNonEmptySummaryText(@Param("bookId") Long bookId);
 }

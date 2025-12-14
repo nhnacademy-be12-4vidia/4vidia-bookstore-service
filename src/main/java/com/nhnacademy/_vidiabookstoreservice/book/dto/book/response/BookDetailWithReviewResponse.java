@@ -16,10 +16,10 @@ public class BookDetailWithReviewResponse {
 
     BookDetailResponse book;
     PageResponse<ReviewListResponse> reviews;
+    String reviewSummary;
 
-    public static BookDetailWithReviewResponse of(BookDetailResponse book,
-        PageResponse<ReviewListResponse> reviews) {
-        return new BookDetailWithReviewResponse(book, reviews);
+    public static BookDetailWithReviewResponse of(BookDetailResponse book, PageResponse<ReviewListResponse> reviews, String reviewSummary) {
+        return new BookDetailWithReviewResponse(book, reviews, reviewSummary);
     }
 
 }

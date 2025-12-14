@@ -5,8 +5,10 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailWi
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
@@ -35,6 +37,7 @@ public class BookController {
     private final BookSearchService bookSearchService;
     private final ReviewService reviewService;
     private final StringRedisTemplate bestsellerRedisTemplate;
+    private final BookReviewSummaryService bookReviewSummaryService;
 
 
     @GetMapping("/search")
@@ -71,8 +74,9 @@ public class BookController {
 
         PageResponse<ReviewListResponse> reviewList = PageResponse.from(reviewListResponsePage);
         BookDetailResponse bookDetailResponse = bookService.getBookDetail(bookId);
+        String reviewSummary = bookReviewSummaryService.getSummary(bookId);
 
-        return ResponseEntity.ok(BookDetailWithReviewResponse.of(bookDetailResponse, reviewList));
+        return ResponseEntity.ok(BookDetailWithReviewResponse.of(bookDetailResponse, reviewList, reviewSummary));
     }
 
     @GetMapping("/best-seller")
