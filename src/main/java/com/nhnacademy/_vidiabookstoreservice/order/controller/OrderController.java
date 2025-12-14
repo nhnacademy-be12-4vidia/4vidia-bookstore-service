@@ -110,7 +110,7 @@ public class OrderController {
      * @param orderId : 주문아이디
      */
     @PutMapping("/{order-id}/confirm-order")
-    public ResponseEntity<Void> changeConfirmOrder(@RequestBody Long orderId) {
+    public ResponseEntity<Void> changeConfirmOrder(@PathVariable("order-id") Long orderId) {
         orderService.changeOrderStatus_ByUser(orderId, ConfirmStatus.CONFIRMED);
 
         return ResponseEntity.noContent().build();
