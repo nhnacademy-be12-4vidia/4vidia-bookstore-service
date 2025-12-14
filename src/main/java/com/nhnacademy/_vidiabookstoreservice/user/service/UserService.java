@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.service;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
@@ -29,5 +30,5 @@ public interface UserService {
 
     String getUserRole(Long userId);
 
-    OAuth2UserDto getOAuth2User(String provider, String socialId);
+    void completeProfile(Long userId, CompleteProfileRequest completeProfileRequest);
 }
