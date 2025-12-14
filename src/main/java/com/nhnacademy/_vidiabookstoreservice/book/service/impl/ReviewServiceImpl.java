@@ -1,12 +1,14 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookReviewSummary;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.domain.ReviewImage;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.event.ReviewRatingEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.ReviewUserMismatchException;
+import com.nhnacademy._vidiabookstoreservice.book.repository.BookReviewSummaryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewImageService;
@@ -27,6 +29,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +47,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewImageService reviewImageService;
     private final PointCommandService pointCommandService;
     private final ApplicationEventPublisher eventPublisher;
+    private final BookReviewSummaryRepository bookReviewSummaryRepository;
 
 
     @Override
@@ -88,6 +92,11 @@ public class ReviewServiceImpl implements ReviewService {
 
         Double avgRating = reviewRepository.findAverageRatingByBookId(request.getBookId());
 
+        BookReviewSummary summary = bookReviewSummaryRepository.findById(request.getBookId()).orElseGet(
+                () -> bookReviewSummaryRepository.save(BookReviewSummary.builder().bookId(request.getBookId()).build()));
+
+        summary.markDirty();
+
         eventPublisher.publishEvent(new ReviewRatingEvent(request.getBookId(), avgRating));
     }
 
@@ -130,6 +139,18 @@ public class ReviewServiceImpl implements ReviewService {
             review.addReviewImage(reviewImage);
         }
         reviewImageService.saveAll(reviewImageList);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Review> getTop200ReviewListByBookId(Long bookId) {
+        List<Review> top200List = reviewRepository.findTop200ByBook_IdOrderByIdDesc(bookId);
+        return !top200List.isEmpty() ? top200List : List.of();
+    }
+
+    @Override
+    public List<String> getReviewContentListByBookId(Long bookId) {
+        return reviewRepository.findTopReviewContentsByBookId(bookId, PageRequest.of(0, 200));
     }
 
     @Override

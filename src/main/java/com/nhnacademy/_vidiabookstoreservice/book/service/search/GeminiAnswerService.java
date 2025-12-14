@@ -11,6 +11,8 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiPart;
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiResponse;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -25,37 +27,12 @@ public class GeminiAnswerService {
 
     public List<GeminiBookSuggestion> generateSuggestions(String userQuestion, List<BookDocument> rerankedDocs) {
 
-        String prompt = buildPrompt(userQuestion, rerankedDocs);
+        String prompt = buildSearchPrompt(userQuestion, rerankedDocs);
 
-        GeminiRequest request = new GeminiRequest(
-            List.of(new GeminiContent(List.of(new GeminiPart(prompt)))),
-            new GeminiGenerationConfig(
-                0.7,
-                0.8,
-                List.of("\n\n", "---")
-            )
-        );
-
-        GeminiResponse response = geminiRestClient.post()
-            .uri("/models/" + geminiProperties.getModel() + ":generateContent")
-            .body(request)
-            .retrieve()
-            .body(GeminiResponse.class);
-
-        if (response == null
-            || response.candidates() == null
-            || response.candidates().isEmpty()
-            || response.candidates().get(0).content() == null
-            || response.candidates().get(0).content().parts().isEmpty()) {
+        String json = getGeminiText(buildGeminiRequest(prompt, 0.7, 0.8)).orElse(null);
+        if (json == null || json.isBlank()) {
             return List.of();
         }
-
-        String json = response.candidates()
-            .get(0)
-            .content()
-            .parts()
-            .get(0)
-            .text();
 
         try {
             return objectMapper.readValue(
@@ -68,10 +45,18 @@ public class GeminiAnswerService {
             // log.warn("Failed to parse Gemini JSON: {}", json, e);
             return List.of();
         }
+    }
 
-}
+    public String summarizeReview(Long bookId, String reviewTextBundle) {
+        String prompt = buildReviewSummaryPrompt(bookId, reviewTextBundle);
 
-    private String buildPrompt(String userQuestion, List<BookDocument> docs) {
+        return getGeminiText(buildGeminiRequest(prompt, 0.4, 0.8))
+                .map(String::trim)
+                .orElse("");
+
+    }
+
+    private String buildSearchPrompt(String userQuestion, List<BookDocument> docs) {
         StringBuilder sb = new StringBuilder();
         sb.append("다음은 사용자의 도서 검색 질의와, 검색/재순위화된 도서 목록입니다.\n")
             .append("각 도서에는 내부 식별자 bookId가 있습니다.\n")
@@ -109,5 +94,72 @@ public class GeminiAnswerService {
 
         return sb.toString();
     }
+
+    private String buildReviewSummaryPrompt(Long bookId, String reviewTextBundle) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("당신은 도서 리뷰 요약 도우미입니다.\n")
+                .append("아래는 특정 도서의 리뷰 모음입니다. 도서 식별자는 bookId 입니다.\n")
+                .append("리뷰는 사용자가 작성한 원문이며, 같은 내용이 반복되거나 잡음이 있을 수 있습니다.\n")
+                .append("요약 시에는 사실에 근거해 과장하지 말고, 리뷰에서 반복적으로 등장하는 내용 위주로 정리하세요.\n\n")
+
+                .append("반드시 아래 형식으로만 출력하세요(마크다운/추가 설명 금지).\n")
+                .append("형식:\n")
+                .append("총평: <한 줄>\n")
+                .append("장점: <세 줄 이내, 항목은 ';'로 구분>\n")
+                .append("단점: <세 줄 이내, 항목은 ';'로 구분>\n")
+                .append("추천대상: <한 줄>\n\n")
+
+                .append("bookId: ").append(bookId).append("\n")
+                .append("---\n")
+                .append("리뷰 원문:\n")
+                .append(reviewTextBundle == null ? "" : reviewTextBundle);
+
+        return sb.toString();
+    }
+
+    private GeminiRequest buildGeminiRequest(String prompt, double temperature, double topP) {
+        return new GeminiRequest(
+                List.of(new GeminiContent(List.of(new GeminiPart(prompt)))),
+                new GeminiGenerationConfig(temperature, topP, List.of("\n\n", "---"))
+        );
+    }
+
+    private Optional<String> getGeminiText(GeminiRequest request) {
+        GeminiResponse response = getGeminiResponse(request);
+        return extractFirstText(response);
+    }
+
+    private Optional<String> extractFirstText(GeminiResponse response) {
+        if (response == null
+                || response.candidates() == null
+                || response.candidates().isEmpty()
+                || response.candidates().get(0).content() == null
+                || response.candidates().get(0).content().parts().isEmpty()) {
+            return Optional.empty();
+        }
+
+        String text = response.candidates()
+                .get(0)
+                .content()
+                .parts()
+                .get(0)
+                .text();
+
+        if (text == null || text.isBlank()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(text);
+    }
+
+    private GeminiResponse getGeminiResponse(GeminiRequest request) {
+        return geminiRestClient.post()
+                .uri("/models/" + geminiProperties.getModel() + ":generateContent")
+                .body(request)
+                .retrieve()
+                .body(GeminiResponse.class);
+    }
+
 
 }
