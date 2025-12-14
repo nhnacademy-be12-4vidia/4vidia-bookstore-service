@@ -1,8 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
-import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
-import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
+import com.nhnacademy._vidiabookstoreservice.user.service.impl.LikeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,15 +14,14 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -41,9 +40,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith({SpringExtension.class, RestDocumentationExtension.class})
 @ActiveProfiles("local")
 @SpringBootTest
+@Transactional
 class LikeControllerTest {
-    @MockitoBean
-    private LikeService likeService;
+
+    @Autowired
+    private BookService bookService;
+    @Autowired
+    private LikeServiceImpl likeServiceImpl;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -59,34 +62,9 @@ class LikeControllerTest {
 
 
     @Test
-    @DisplayName("좋아요 리스트 조회")
+    @DisplayName("[좋아요 리스트 조회]")
     void getLikeList() throws Exception {
-        Long userId = 1L;
-
-        // given
-        List<LikeResponse> likeResponseList = List.of(
-                LikeResponse.builder()
-                        .bookId(92812L)
-                        .bookTitle("데미안")
-                        .authorName("헤르만 헤세 (지은이)")
-                        .priceStandard(7500)
-                        .priceSales(6750)
-                        .stockStatus(StockStatus.IN_STOCK.name())
-                        .bookImage("http://image.aladin.co.kr/product/8802/95/cover/k192535897_1.jpg")
-                        .build(),
-                LikeResponse.builder()
-                        .bookId(156882L)
-                        .bookTitle("노인과 바다")
-                        .authorName("어니스트 헤밍웨이")
-                        .priceStandard(13000)
-                        .priceSales(11700)
-                        .stockStatus(StockStatus.IN_STOCK.name())
-                        .bookImage("https://image.aladin.co.kr/product/28548/96/cover/k662835947_1.jpg")
-                        .build()
-        );
-
-        // when
-        when(likeService.getLikes(userId)).thenReturn(likeResponseList);
+        Long userId = 1L; // nhn@naver.com
 
         mockMvc.perform(get("/users/me/likes")
                         .header("X-User-Id", userId)
@@ -112,14 +90,13 @@ class LikeControllerTest {
     }
 
     @Test
-    @DisplayName("좋아요 등록")
+    @DisplayName("[좋아요 등록]")
     void addLike() throws Exception {
-        // given
-        // addLike는 void반환
+        Long userId = 1L; // nhn@naver.com
+        Long targetBookId = bookService.getProxyById(29120L).getId(); // 임의의 도서
 
-        // when
-        mockMvc.perform(post("/users/me/likes/{bookId}", 5L)
-                        .header("X-User-Id", 1L))
+        mockMvc.perform(post("/users/me/likes/{bookId}", targetBookId)
+                        .header("X-User-Id", userId))
                 .andExpect(status().isCreated())
                 .andDo(document("user-like-post",
                         preprocessRequest(prettyPrint()),
@@ -135,14 +112,15 @@ class LikeControllerTest {
     }
 
     @Test
-    @DisplayName("좋아요 삭제")
+    @DisplayName("[좋아요 삭제]")
     void removeLike() throws Exception {
-        // given
-        // removeLike는 void반환
+        Long userId = 1L; // nhn@naver.com
 
-        //when
-        mockMvc.perform(delete("/users/me/likes/{bookId}", 5L)
-                        .header("X-User-Id", 1L))
+        List<LikeResponse> likes = likeServiceImpl.getLikes(userId); // ㅇ?? 이상한데
+        Long targetBookId = likes.stream().findFirst().get().bookId(); // userId에 해당하는 유저가 실제 db에 좋아요 등록해놓은게 없으면???
+
+        mockMvc.perform(delete("/users/me/likes/{bookId}", targetBookId)
+                        .header("X-User-Id", userId))
                 .andExpect(status().isNoContent())
                 .andDo(document("user-like-delete",
                         preprocessRequest(prettyPrint()),
@@ -158,14 +136,12 @@ class LikeControllerTest {
     }
 
     @Test
-    @DisplayName("좋아요 전체 삭제")
+    @DisplayName("[좋아요 전체 삭제]")
     void removeAllLike() throws Exception {
-        // given
-        // removeLike는 void반환
+        Long userId = 1L; // nhn@naver.com
 
-        //when
         mockMvc.perform(delete("/users/me/likes")
-                        .header("X-User-Id", 1L))
+                        .header("X-User-Id", userId))
                 .andExpect(status().isNoContent())
                 .andDo(document("user-likes-delete",
                         preprocessRequest(prettyPrint()),

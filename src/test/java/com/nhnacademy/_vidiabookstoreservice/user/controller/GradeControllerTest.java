@@ -1,8 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
-import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
-import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
+import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
+import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -31,16 +31,18 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureRestDocs
 @ExtendWith({RestDocumentationExtension.class, SpringExtension.class})
 @ActiveProfiles("local") // 테스트 전용 profile 사용
 @SpringBootTest
+@Transactional
 class GradeControllerTest {
 
-    @MockitoBean
-    private GradeService gradeService; // 외부 의존성을 Mock 처리
+    @Autowired
+    private GradeRepository gradeRepository;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -55,23 +57,17 @@ class GradeControllerTest {
     }
 
     @Test
+    @DisplayName("[등급 조회]")
     void getGrade() throws Exception {
-        Long userId = 1L;
-
-        // given
-        GradeResponse response = GradeResponse.builder()
-                .gradeName("ROYAL")
-                .pointRate(3)
-                .build();
-
-        // when
-        when(gradeService.getGrade(userId)).thenReturn(response);
+        Long userId = 1L; // nhn@naver.com 유저 (관리자)
 
         // 요청 수행 및 결과 검증
         mockMvc.perform(get("/users/me/grade")
                         .header("X-User-Id", userId) // 헤더 포함
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.gradeName").exists())
+                .andExpect(jsonPath("$.pointRate").isNumber())
                 .andDo(document("user-grade-get", // target에 만들어질 패키지 이름!!! todo: 컨벤션 정해야함
                         preprocessRequest(prettyPrint()), // 요청/응답 body를 보기 좋게 출력해준데요 (없으면 한줄로 출력)
                         preprocessResponse(prettyPrint()),
@@ -89,13 +85,13 @@ class GradeControllerTest {
     }
 
     @Test
+    @DisplayName("[등급 변경]")
     void updateGrade() throws Exception {
-        // given
-        // updateGrade는 void 반환
+        Long userId = 1L; // nhn@naver.com 유저 (관리자)
+        Long targetGradeId = gradeRepository.findByGradeName(GradeName.GOLD).getGradeId();
 
-        // when & then
-        mockMvc.perform(put("/users/me/grade/{gradeId}", 2L) // 경로 변수 포함
-                        .header("X-User-Id", 1L))
+        mockMvc.perform(put("/users/me/grade/{gradeId}", targetGradeId) // 경로 변수 포함
+                        .header("X-User-Id", userId))
                 .andExpect(status().isNoContent())
                 .andDo(document("user-grade-put",
                         preprocessRequest(prettyPrint()), // 요청/응답 body를 보기 좋게 출력해준데요 (없으면 한줄로 출력)
