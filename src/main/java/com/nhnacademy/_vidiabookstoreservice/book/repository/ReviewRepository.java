@@ -44,4 +44,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         "WHERE r.book.id = :bookId")
     Double findAverageRatingByBookId(@Param("bookId") Long bookId);
 
+    List<Review> findTop200ByBook_IdOrderByIdDesc(Long bookId);
 }
