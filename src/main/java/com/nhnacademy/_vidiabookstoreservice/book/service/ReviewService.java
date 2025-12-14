@@ -22,6 +22,4 @@ public interface ReviewService {
 
     List<Review> getTop200ReviewListByBookId(Long bookId);
 
-    List<String> getReviewContentListByBookId(Long bookId);
-
 }

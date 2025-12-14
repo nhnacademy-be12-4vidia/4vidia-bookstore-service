@@ -149,11 +149,6 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<String> getReviewContentListByBookId(Long bookId) {
-        return reviewRepository.findTopReviewContentsByBookId(bookId, PageRequest.of(0, 200));
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<Long> getReviewedOrderItemIdList(List<Long> orderItemIdList) {
         return reviewRepository.findReviewedOrderItemIdList(orderItemIdList);
