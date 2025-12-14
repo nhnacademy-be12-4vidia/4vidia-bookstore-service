@@ -3,6 +3,7 @@
 // --------------------------------------------------------------
 // 1. 조회 (GET)
 ==== 회원 등급 조회
+:table-number: 0
 
 .요청 (Request)
 include::{snippets}/user-grade-get/http-request.adoc[]
@@ -18,11 +19,14 @@ include::{snippets}/user-grade-get/response-fields.adoc[]
 // --------------------------------------------------------------
 // 3. 수정 (PUT/PATCH)
 ==== 회원 등급 변경
+:table-number: 0
 
 .요청 (Request)
 include::{snippets}/user-grade-put/http-request.adoc[]
 .Path Parameters
 include::{snippets}/user-grade-put/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-grade-put/request-headers.adoc[]
 
 .응답 (Response)
 include::{snippets}/user-grade-put/http-response.adoc[]
