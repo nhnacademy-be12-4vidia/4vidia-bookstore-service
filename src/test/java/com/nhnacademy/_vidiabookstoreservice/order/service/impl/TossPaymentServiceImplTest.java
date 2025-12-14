@@ -92,8 +92,8 @@ class TossPaymentServiceImplTest {
     @Test
     @DisplayName("결제 엔티티 조회 실패 (getPaymentEntity)")
     void getPaymentEntity_fail() {
-        // GIVEN
-        given(paymentRepository.findPaymentByOrder_orderId(anyLong())).willReturn(Optional.empty());
+//        // GIVEN
+//        given(paymentRepository.findPaymentByOrder_orderId(anyLong())).willReturn(Optional.empty());
 
         // WHEN & THEN
         //assertThatThrownBy(() -> tossPaymentService.getPaymentEntity(99L))

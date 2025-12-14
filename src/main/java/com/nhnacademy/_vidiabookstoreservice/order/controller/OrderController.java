@@ -66,18 +66,6 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
     }
 
-    @PostMapping("/{orderId}/success") // - 매핑
-    public ResponseEntity<PaymentResponse> savePaymentDetail(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                             @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
-                                                             @PathVariable long orderId,
-                                                             @RequestBody PaymentConfirmRequest confirmRequest) {
-
-        Long userId = xUserId == null ? xGuestId : xUserId; //비회원이면 장바구니 삭제시 필요함
-        PaymentResponse paymentResponse = orderService.payAndCompleteOrder(orderId, confirmRequest, userId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
-    }
-
     /**
      * 주문 내역 상세보기 OrderDetail
      * @param orderId : 주문아이디
@@ -104,7 +92,6 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
 
-
     /**
      * 배송 전 주문취소
      * @param orderId : 주문아이디
@@ -116,7 +103,6 @@ public class OrderController {
 
         return ResponseEntity.noContent().build();
     }
-
 
     /**
      * 유저 구매확정 눌렀을 때:  주문아이템 상태변경

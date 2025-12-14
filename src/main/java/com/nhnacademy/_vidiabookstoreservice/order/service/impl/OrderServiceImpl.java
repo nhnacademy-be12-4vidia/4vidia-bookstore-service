@@ -28,7 +28,6 @@ import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
 import com.nhnacademy._vidiabookstoreservice.point.exception.NotEnoughPointException;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -163,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
 
             orderItems.stream().forEach(orderItem ->
                     bestsellerRedisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getBook().getId().toString(), orderItem.getQuantity())
-            ); // 의미가? 분리하는게 비동기 event 처리
+            ); // TODO 의미가? 분리하는게 비동기 event 처리하기
 
             return paymentResponse;
 
@@ -261,6 +260,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
+    // 15분동안 미결제 시 주문 취소 및 사용 아이템 복구
     @Override
     public void cancelOrderIfPending(Long orderId) {
         Order order = getOrder(orderId);
@@ -287,7 +287,12 @@ public class OrderServiceImpl implements OrderService {
         // OrderStatus -> PAID(1) 일때는 결제 취소해야함
         if (order.getOrderStatus() == OrderStatus.PAID) {
             Payment payment = paymentService.getPaymentEntity(orderId);
-            paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+
+            TossPaymentResponse tossPaymentResponse = paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+
+            PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.cancels().getLast().cancelAmount());
+
+            paymentService.savePayment(paymentCreateRequest);
         }
 
         // OrderStatus -> PENDING(0)에도 상태 변경 해줘야함 (if문 밖으로 뺌)
@@ -328,8 +333,12 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    /**
+     * 사용 전 선택된 상품 아이템 가격, 배송비 정책, 선택된 포장지 가격, 쿠폰 할인금액 검증
+     * @param user
+     * @param request
+     */
     private void validateOrder(User user, OrderCreateRequest request) {
-        // 사용 전 선택된 상품 아이템 가격, 배송비 정책에, 선택된 포장지 가격, 쿠폰 할인금액 검증
         int serverItemPrice = 0; // 서버에서 계산할 도서 총 금액
         int serverPackagingPrice = 0; // 서버에서 계산할 포장비 총 금액
 
@@ -381,9 +390,16 @@ public class OrderServiceImpl implements OrderService {
         }
 
         int serverPointPrice = 0; // 서버에서 계산할 유저 할인 가능 금액
-        if (request.pointUsed() > user.getPoint()) {
-            throw new NotEnoughPointException();
+        if (user != null) {
+            if (request.pointUsed() > user.getPoint()) {
+                throw new NotEnoughPointException();
+            }
+        } else {
+            if (request.pointUsed() != 0) {
+                throw new NotEnoughPointException();
+            }
         }
+
 
         int finalTotalPrice = serverItemPrice + serverPackagingPrice + serverDeliveryPrice - serverCouponPrice - serverPointPrice;
 
