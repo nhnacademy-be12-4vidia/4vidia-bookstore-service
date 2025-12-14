@@ -3,33 +3,56 @@
 // --------------------------------------------------------------
 // 1. 조회 (GET)
 ==== 회원 좋아요 리스트 조회
+:table-number: 0
 
 .요청 (Request)
+include::{snippets}/user-likes-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-likes-get/request-headers.adoc[]
 
 .응답 (Response)
+include::{snippets}/user-likes-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/user-likes-get/response-fields.adoc[]
 // --------------------------------------------------------------
 // 2. 생성 (POST)
 ==== 회원 좋아요 등록
+:table-number: 0
 
 .요청 (Request)
+include::{snippets}/user-like-post/http-request.adoc[]
+.Path Parameters
+include::{snippets}/user-like-post/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-like-post/request-headers.adoc[]
 
 .응답 (Response)
+include::{snippets}/user-like-post/http-response.adoc[]
 // --------------------------------------------------------------
 // 3. 수정 (PUT/PATCH) - 없으므로 생략
-.요청 (Request)
-
-.응답 (Response)
 // --------------------------------------------------------------
 // 4. 삭제 (DELETE)
-.요청 (Request)
-
-.응답 (Response)
-// --------------------------------------------------------------
 ==== 회원 좋아요 삭제
+:table-number: 0
 
 .요청 (Request)
-// include::{snippets}/delete-like/http-request.adoc[]
+include::{snippets}/user-like-delete/http-request.adoc[]
+.Path Parameters
+include::{snippets}/user-like-post/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-like-delete/request-headers.adoc[]
 
 .응답 (Response)
-// include::{snippets}/delete-like/http-response.adoc[]
+include::{snippets}/user-like-delete/http-response.adoc[]
+
+==== 회원 좋아요 전체 삭제
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-likes-delete/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-likes-delete/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-likes-delete/http-response.adoc[]
 // --------------------------------------------------------------

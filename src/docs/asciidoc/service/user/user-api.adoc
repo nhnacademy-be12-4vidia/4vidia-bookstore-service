@@ -14,7 +14,7 @@ include::grade.adoc[]
 // include::address.adoc[]
 
 === `좋아요(Like) 관리`
-// include::like.adoc[]
+include::like.adoc[]
 
 === `내 주문(My Order) 관리`
 // include::my-order.adoc[]

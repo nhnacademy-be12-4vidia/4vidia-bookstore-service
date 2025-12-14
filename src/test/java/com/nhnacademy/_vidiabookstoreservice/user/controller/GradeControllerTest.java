@@ -23,13 +23,14 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.headerWit
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureRestDocs
@@ -72,6 +73,9 @@ class GradeControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("user-grade-get", // target에 만들어질 패키지 이름!!! todo: 컨벤션 정해야함
+                        preprocessRequest(prettyPrint()), // 요청/응답 body를 보기 좋게 출력해준데요 (없으면 한줄로 출력)
+                        preprocessResponse(prettyPrint()),
+
                         requestHeaders( // 요청 헤더 문서화
                                 headerWithName("X-User-Id").description("사용자 식별 ID")
                         ),
@@ -94,6 +98,9 @@ class GradeControllerTest {
                         .header("X-User-Id", 1L))
                 .andExpect(status().isNoContent())
                 .andDo(document("user-grade-put",
+                        preprocessRequest(prettyPrint()), // 요청/응답 body를 보기 좋게 출력해준데요 (없으면 한줄로 출력)
+                        preprocessResponse(prettyPrint()),
+
                         requestHeaders( // 요청 헤더 문서화
                                 headerWithName("X-User-Id").description("사용자 식별 ID")
                         ),

@@ -2,7 +2,9 @@ package com.nhnacademy._vidiabookstoreservice.user.dto.like.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
+import lombok.Builder;
 
+@Builder
 public record LikeResponse(
         Long bookId,
         String bookTitle, // 책 제목
