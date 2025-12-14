@@ -1,99 +1,57 @@
-ifndef::snippets[]
-:snippets: ../../build/generated-snippets
-endif::[]
-
 = 4VIDIA Bookstore API 명세서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
 :toc: left
-:toclevels: 2
+:toclevels: 3
+:sectlinks:
 :sectnums:
-:sectnumlevels: 3
 
-== 응답 상태 코드 및 메시지
-.Status 코드별 의미
-[cols="1,1,2", options="header"]
-|===
-|HTTP 상태 | Code | Description
+// 1. 공통 사항
+== 개요
+include::common/http-status.adoc[]
 
-|200
-|OK
-|일반적인 요청 성공 (응답 바디에 에러를 전송해서는 안됨)
+////
+[팀원 가이드: API 문서 작업 순서]
+1. ControllerTest 테스트코드 작성 -> .andDo(document("{스니펫이름}", ...)) -> 테스트 실행 (Pass 필수)
+2. target/generated-snippets/{스니펫이름} 폴더 생성 확인
+3. 해당 도메인 폴더(service/{도메인})로 이동하여 .adoc 파일 작성 (아래 include 구조 참고)
+    - 각 기능별로 .adoc 파일 만들어서 r-c-u-d 순서로 보이게 스니펫 배치 ex) grade.adoc 참고
+    - 도메인-api.adoc에 완성한 기능.adoc 참조 추가
+4. html 생성 확인
+////
 
-|201
-|Created
-|성공적으로 리소스를 생성했을 때 사용
+// 2. User 서비스
+== 회원(User) API
+include::service/user/user-api.adoc[]
 
-|202
-|Accepted
-|비동기 처리가 성공적으로 시작되었음을 알릴 때 사용
+// 3. Book 서비스
+== 도서(Book) API
+include::service/book/book-api.adoc[]
 
-|204
-|No Content
-|성공하였으나 반환할 데이터 없음
+// 4. Order 서비스
+== 주문(Order) API
+include::service/order/order-api.adoc[]
 
-|400
-|Bad Request
-|일반적인 요청 실패
+// 5. Cart 서비스
+== 장바구니(Cart) API
+include::service/cart/cart-api.adoc[]
 
-|401
-|Unauthorized
-|클라이언트 인증에 문제가 있을 때 사용
+// 6. Point 서비스
+== 포인트(Point) API
+include::service/point/point-api.adoc[]
 
-|403
-|Forbidden
-|인증상태에 상관없이, 액세스를 금지할 때 사용
+// 7. Refund 서비스
+== 반품(Refund) API
+include::service/refund/refund-api.adoc[]
 
-|404
-|Not Found
-|리소스가 없을 때 사용
-
-|405
-|Method Not Allowed
-|HTTP 메서드가 지원되지 않을 때 사용
-
-|406
-|Not Acceptable
-|요청된 리소스 미디어 타입을 제공하지 못 할 때 사용
-
-|409
-|Conflict
-|리소스 상태에 위반되는 행위를 지원할 때 사용
-
-|500
-|Internal Server Error
-|서버 내부 오류
-
-|502
-|Bad Gateway
-|상위 서버 오류
-
-|503
-|Service Unavailable
-|서버 다운/점검
-
-|504
-|Gateway Timeout
-|응답 지연
-|===
+// 8. Global 서비스
+== 글로벌(Global) API
+include::service/global/global-api.adoc[]
 
 
-== 🚀 API
-
-=== GET API
-
-include::api/get/get-grade.adoc[]
-
-=== POST API
-
-=== PUT API
-
-include::api/put/put-grade.adoc[]
-
-=== DELETE API
-
-
-
-
-== ⚡️ 참고
-* 모든 API는 `Content-Type: application/json` 헤더를 사용합니다.
-* 인증이 필요한 API는 `Authorization: Bearer {token}` 헤더를 필수로 포함해야 합니다.
-* 날짜/시간 형식: ISO 8601 (ex: 2025-12-13T17:35:00Z)
+// 9.
+// == 참고
+// * 모든 API는 `Content-Type: application/json` 헤더를 사용합니다.
+// * 인증이 필요한 API는 `Authorization: Bearer {token}` 헤더를 필수로 포함해야 합니다.
+// * 날짜/시간 형식: ISO 8601 (ex: 2025-12-13T17:35:00Z)
