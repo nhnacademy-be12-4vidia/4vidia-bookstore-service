@@ -1,0 +1,31 @@
+// 회원 등급 R/C/U/D 기능
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 회원 등급 조회
+
+.요청 (Request)
+include::{snippets}/user-grade-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-grade-get/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-grade-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/user-grade-get/response-fields.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+==== 회원 등급 변경
+
+.요청 (Request)
+include::{snippets}/user-grade-put/http-request.adoc[]
+.Path Parameters
+include::{snippets}/user-grade-put/path-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-grade-put/http-response.adoc[]
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------

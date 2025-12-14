@@ -1,0 +1,20 @@
+// User 도메인 통합 파일
+
+
+// === 인증/로그인(Auth) 관리
+// include::auth.adoc[]
+
+=== `회원(User) 관리`
+// include::user.adoc[]
+
+=== `등급(Grade) 관리`
+include::grade.adoc[]
+
+=== `주소(Address) 관리`
+// include::address.adoc[]
+
+=== `좋아요(Like) 관리`
+// include::like.adoc[]
+
+=== `내 주문(My Order) 관리`
+// include::my-order.adoc[]
