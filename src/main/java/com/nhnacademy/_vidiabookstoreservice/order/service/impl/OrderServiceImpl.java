@@ -218,8 +218,10 @@ public class OrderServiceImpl implements OrderService {
     //쿠폰 사용, 포인트 사용, 도서 차감
     public void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, Long couponId, int pointUsed) {
         if (order.getUser() != null) {
-            CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponId);
-            couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
+            if (couponId != null) {
+                CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponId);
+                couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
+            }
 
             PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
             pointCommandService.use(pointUseRequest, order.getUser().getUserId());
