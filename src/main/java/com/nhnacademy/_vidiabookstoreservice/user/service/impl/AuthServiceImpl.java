@@ -46,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
      * 회원가입
      */
     @Override
+    @Transactional // 이거 없으면 롤백이 안됩니다요 (근데 지금 생일쿠폰 호출 오류나서 transaction 있으면 회원가입 안됨.. 쿠폰 호출 주석처리 하세요.. )
     public Long register(UserSignupRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException(request.email());

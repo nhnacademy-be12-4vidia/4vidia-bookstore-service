@@ -1,13 +1,21 @@
 package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.response.AdminRefundListResponse;
-import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.response.RefundDetailResponse;
-import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.response.RefundItemDto;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.AdminRefundListResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundDetailResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundItemDto;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
+import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
+import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
+import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
+import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
+import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,11 +25,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * AdminRefundServiceImpl : 관리자 반품 승인/거절 처리, 승인 시 환불 처리 담당
+ */
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AdminRefundServiceImpl implements AdminRefundService {
     private final RefundRepository refundRepository;
+    private final PointCommandService pointService;
+    private final PointDetailRepository pointDetailRepository;
+    private final OrderItemService orderItemService;
+    private final OrderItemRepository orderItemRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -39,9 +54,8 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     @Transactional(readOnly = true)
     public RefundDetailResponse getRefundDetail(Long refundId) {
         Refund refund = refundRepository.findById(refundId)
-                .orElseThrow(() -> new IllegalArgumentException("Refund not found: " + refundId));
+                .orElseThrow(() -> new RefundNotFoundException(refundId));
 
-        // Refund가 OrderItem을 참조하므로 관련 정보 추출
         OrderItem oi = refund.getOrderItem();
         Long orderId = oi.getOrder() != null ? oi.getOrder().getOrderId() : null;
 
@@ -65,34 +79,57 @@ public class AdminRefundServiceImpl implements AdminRefundService {
                 items
         );
     }
+
+    // 반품 승인 유스케이스 : 반품 상태 변경 + OrderItem 상태 변경 + 포인트 환불
     @Override
     public void acceptRefund(Long refundId) {
         Refund refund = refundRepository.findById(refundId)
-                .orElseThrow(() -> new IllegalArgumentException("Refund not found: " + refundId));
+                .orElseThrow(() -> new RefundNotFoundException(refundId));
 
-        // 비즈니스: 승인 시 RefundStatus 변경, OrderItem confirm 상태 변경 등
-        refund.setRefundStatus(RefundStatus.ACCEPT);
-        refundRepository.save(refund);
+        refund.accept(); // 반품 상태 변경
 
-        // 예: 관련 orderItem confirmStatus 변경 (엔티티에 setter가 있어야 함)
-        OrderItem oi = refund.getOrderItem();
-        if (oi != null) {
-            oi.setConfirmStatus(ConfirmStatus.REFUNDED);
-        }
+        OrderItem item = refund.getOrderItem();
+        orderItemService.changeStatusOrderItem(item.getOrderItemId(), ConfirmStatus.REFUNDED);
 
-        // 추가: 포인트 환불, 알림 등 처리
+        Order order = item.getOrder();
+        Long userId = order.getUser().getUserId();
+
+        int refundPoint = calculateItemRefundPoint(item);
+        int cashPoint = item.getSalePrice() * item.getQuantity();
+
+        pointService.refundDamaged(
+                new PointRefundRequest(order.getOrderId(), refundPoint, cashPoint),
+                userId
+        );
     }
 
     @Override
     public void rejectRefund(Long refundId) {
         Refund refund = refundRepository.findById(refundId)
-                .orElseThrow(() -> new IllegalArgumentException("Refund not found: " + refundId));
+                .orElseThrow(() -> new RefundNotFoundException(refundId));
 
-        refund.setRefundStatus(RefundStatus.REJECT);
-        refundRepository.save(refund);
-
-        // 추가: 사용자 통지, 이력 기록 등
+        refund.reject();
+        orderItemService.changeStatusOrderItem(refund.getOrderItem().getOrderItemId(), ConfirmStatus.UNCONFIRMED);
     }
 
+    /**
+     * 수량 비례 환불 포인트 계산
+     */
+    private int calculateItemRefundPoint(OrderItem item) {
+        Order order = item.getOrder();
+        int totalUsedPoint = order.getPointUsed(); // 주문 시 사용한 포인트 금액
+        int totalQuantity = orderItemRepository.sumOrderItemQuantity(order.getOrderId()); // 주문한 도서 수량
 
+        // 이미 환불 완료된 수량 합계
+        int refundedQuantity = refundRepository.sumRefundedQuantity(order.getOrderId(), RefundStatus.ACCEPT);
+
+        int unitPoint = totalUsedPoint / totalQuantity; // 도서 한 권당 반환 포인트 금액
+
+        // 마지막 환불이면 남은 포인트 전부 반환 (호출 전 이미 상태 바뀜)
+        if(refundedQuantity + item.getQuantity() == totalQuantity){
+            return totalUsedPoint - (unitPoint * refundedQuantity);
+        }
+
+        return unitPoint * item.getQuantity();
+    }
 }

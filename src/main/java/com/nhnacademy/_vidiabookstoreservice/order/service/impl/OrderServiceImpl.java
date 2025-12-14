@@ -305,6 +305,9 @@ public class OrderServiceImpl implements OrderService {
                 .map(item -> new BookStockChangeRequest(item.getBook().getId(), item.getQuantity()))
                 .toList();
         bookService.increaseStock(requests);
+
+        // TODO 혹시 주문취소 시 포인트 환불 요청이 빠졌다면.. cancelUse() 호출해주세요!
+//        pointCommandService.cancelUse(orderId, order.getUser().getUserId());
     }
 
     @Override
@@ -331,8 +334,8 @@ public class OrderServiceImpl implements OrderService {
             orderItemService.changeStatusOrderItem_byUser(orderItem.getOrderItemId(), confirmStatus);
         }
 
-        //TODO 포인트 지급도 해야됨 - 서비스 부르기(오더Entity)
-
+        //TODO 포인트 지급도 해야됨 - 서비스 부르기(오더Entity) -> 추가했습니다.
+        pointCommandService.reward(order);
     }
 
     /**
