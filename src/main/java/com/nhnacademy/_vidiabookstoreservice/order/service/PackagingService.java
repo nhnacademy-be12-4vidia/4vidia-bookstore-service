@@ -4,5 +4,5 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.Packaging;
 
 public interface PackagingService {
 
-    Packaging addPacakging(Packaging packaging);
+    Packaging addPackaging(Packaging packaging);
 }

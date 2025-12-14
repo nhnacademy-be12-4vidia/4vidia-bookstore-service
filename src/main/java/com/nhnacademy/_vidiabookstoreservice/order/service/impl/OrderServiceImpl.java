@@ -17,6 +17,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCr
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.OrderAmountMismatchException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderFailedException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
@@ -24,22 +25,20 @@ import com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProdu
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.*;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
+import com.nhnacademy._vidiabookstoreservice.point.exception.NotEnoughPointException;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -60,29 +59,16 @@ public class OrderServiceImpl implements OrderService {
     private final CartService cartService;
     private final StringRedisTemplate bestsellerRedisTemplate;
 
-
     @Override
-    public List<DeliveryDateResponse> getDeliveryDates() {
-        LocalDate date = LocalDate.now();
-
-        List<DeliveryDateResponse> deliveryDateResponseList = new ArrayList<>();
-
-        for (int i=2; i<=7; i++) {
-            deliveryDateResponseList.add(new DeliveryDateResponse(
-                    date.plusDays(i).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                    date.plusDays(i).format(DateTimeFormatter.ofPattern("yyyy-MM-dd (E)", Locale.KOREAN))
-            ));
-        }
-        return deliveryDateResponseList;
-    }
-
-    @Override//주문화면에서 넘어온 값
     public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
         User user = null;
-        if (userId != null) { //회원이면 회원 정보 조회
+        if (userId != null) {
             user = userService.getUserById(userId);
         }
 
+        validateOrder(user, request); // 오류 안걸리면 검증 성공
+
+        // 검증 성공하면 주문 저장
         Order order = Order.builder()
                 .user(user)
                 .recipientName(request.recipientName())
@@ -106,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
                     .map(OrderItemRequest::from)
                     .toList();
 
-            useCouponAndDecreaseStockAndPoint(savedOrder, orderItemRequests, request.coupons(), request.pointUsed());
+            useCouponAndDecreaseStockAndPoint(savedOrder, orderItemRequests, request.couponId(), request.pointUsed());
 
             for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
 
@@ -134,7 +120,7 @@ public class OrderServiceImpl implements OrderService {
                                 .packagingOption(packagingOption)
                                 .build();
 
-                        packagingService.addPacakging(packaging);
+                        packagingService.addPackaging(packaging);
 
                     }
                 }
@@ -147,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
                 sendRollBackCoupon(savedOrder.getOrderId());
             }
 
-            throw new  OrderFailedException(e.getMessage());
+            throw new OrderFailedException(e.getMessage());
         }
     }
 
@@ -176,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
 
             orderItems.stream().forEach(orderItem ->
                     bestsellerRedisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getBook().getId().toString(), orderItem.getQuantity())
-            );
+            ); // TODO 의미가? 분리하는게 비동기 event 처리하기
 
             return paymentResponse;
 
@@ -227,76 +213,12 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    @Override
-    @Transactional(readOnly = true) //주문화면에 보낼 값
-    public OrderCheckoutResponse getOrderCheckoutResponse(Long userId, List<OrderCheckoutRequest> orderCheckoutRequests) {
 
-        OrderUserResponse orderUserResponse = null;
-        List<OrderPageCouponResponse> orderPageCouponResponses = null;
-        List<OrderPageCouponResponse> possibleCoupons = null;
-        List<OrderPageCouponResponse> impossibleCoupons = null;
-
-        List<Long> bookIds = orderCheckoutRequests.stream()
-                .map(OrderCheckoutRequest::bookId)
-                .toList();
-
-        List<BookOrderResponse> books = bookService.getOrderBookByBookIds(bookIds);
-
-        Map<Long, BookOrderResponse> bookMap = books.stream() //O(N) -> O(1)
-                .collect(Collectors.toMap(BookOrderResponse::id, Function.identity()));
-
-        List<OrderBookResponse> bookItems = orderCheckoutRequests.stream()
-                .map(req -> {
-                    BookOrderResponse bookOrderResponse = bookMap.get(req.bookId());
-
-                    return OrderBookResponse.from(bookOrderResponse, req.quantity());
-                })
-                .toList();
-
-
-        //책 * 수량 최종 금액
-        int finalAmount = bookItems.stream()
-                .mapToInt(item -> item.salePrice() * item.quantity())
-                .sum();
-
-        //담은 책 종류에 따라 주문명 변경
-        String orderName = "";
-        if (bookItems.getFirst().quantity() == 1) {
-            orderName = bookItems.getFirst().bookTitle();
-        }else {
-            int num = bookItems.stream().mapToInt(OrderBookResponse::quantity).sum() - 1;
-            orderName = bookItems.getFirst().bookTitle() + " 외 " + num + "권";
-        }
-
-        List<String> categoryIds = books.stream()
-                .map(BookOrderResponse::categoryKdc)
-                .toList();
-
-        if (userId != null) { //회원인경우
-            orderUserResponse = userService.getOrderUser(userId);
-
-            CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
-            orderPageCouponResponses = couponClient.getUserCoupons(userId,couponRequest);
-            Map<Boolean, List<OrderPageCouponResponse>> partition = orderPageCouponResponses.stream() //우와 이런 좋은 방법이?
-                    .collect(Collectors.partitioningBy(OrderPageCouponResponse::available));
-
-            possibleCoupons = partition.get(true);
-            impossibleCoupons = partition.get(false);
-
-        } else { //비회원인경우
-            orderUserResponse = new OrderUserResponse("", "", "", 0, null);
-        }
-
-        List<DeliveryDateResponse> deliveryDateResponses = getDeliveryDates();
-        List<PackagingOptionResponse> packagingOptions =  packagingOptionService.getPackagingOptions();
-
-        return OrderCheckoutResponse.from(orderUserResponse, bookItems, orderName, finalAmount, possibleCoupons, impossibleCoupons, deliveryDateResponses, packagingOptions);
-    }
 
     //쿠폰 사용, 포인트 사용, 도서 차감
-    public void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, List<Long> couponIds, int pointUsed) {
+    public void useCouponAndDecreaseStockAndPoint(Order order, List<OrderItemRequest> itemRequests, Long couponId, int pointUsed) {
         if (order.getUser() != null) {
-            CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponIds);
+            CouponUseRequest couponUseRequest = new CouponUseRequest(order.getOrderId(), couponId);
             couponClient.useCoupon(order.getUser().getUserId(), couponUseRequest);
 
             PointUseRequest pointUseRequest = new PointUseRequest(order.getOrderId(), pointUsed);
@@ -338,6 +260,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
+    // 15분동안 미결제 시 주문 취소 및 사용 아이템 복구
     @Override
     public void cancelOrderIfPending(Long orderId) {
         Order order = getOrder(orderId);
@@ -364,7 +287,12 @@ public class OrderServiceImpl implements OrderService {
         // OrderStatus -> PAID(1) 일때는 결제 취소해야함
         if (order.getOrderStatus() == OrderStatus.PAID) {
             Payment payment = paymentService.getPaymentEntity(orderId);
-            paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+
+            TossPaymentResponse tossPaymentResponse = paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+
+            PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.cancels().getLast().cancelAmount());
+
+            paymentService.savePayment(paymentCreateRequest);
         }
 
         // OrderStatus -> PENDING(0)에도 상태 변경 해줘야함 (if문 밖으로 뺌)
@@ -399,6 +327,84 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItem orderItem : order.getOrderItems()) {
             orderItemService.changeStatusOrderItem_byUser(orderItem.getOrderItemId(), confirmStatus);
+        }
+
+        //TODO 포인트 지급도 해야됨 - 서비스 부르기(오더Entity)
+
+    }
+
+    /**
+     * 사용 전 선택된 상품 아이템 가격, 배송비 정책, 선택된 포장지 가격, 쿠폰 할인금액 검증
+     * @param user
+     * @param request
+     */
+    private void validateOrder(User user, OrderCreateRequest request) {
+        int serverItemPrice = 0; // 서버에서 계산할 도서 총 금액
+        int serverPackagingPrice = 0; // 서버에서 계산할 포장비 총 금액
+
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        for (OrderCreateRequest.ItemRequestDto itemDto : request.orderItems()) {
+
+            Book book = bookService.getBookEntity(itemDto.bookId());
+
+            serverItemPrice += (book.getPriceSales() * itemDto.quantity());
+
+            orderItems.add(OrderItem.builder()
+                    .book(book)
+                    .quantity(itemDto.quantity()) // 사용자가 선택한 수량
+                    .salePrice(book.getPriceSales()) // 도서에서 가져온 값
+                    .confirmStatus(ConfirmStatus.UNCONFIRMED)
+                    .build()
+            );
+
+            for (Long packagingOptionId : itemDto.packagingOptionIds()) {
+                PackagingOption packagingOption = packagingOptionService.getByPackagingOptionId(packagingOptionId);
+
+                serverPackagingPrice += packagingOption.getPrice();
+            }
+        }
+
+        int serverDeliveryPrice = 0; // 서버에서 계산할 배송비 총 금액
+        serverDeliveryPrice = serverItemPrice + serverPackagingPrice < 50000 ? 3000 : 0;
+
+        int serverCouponPrice = 0; // 서버에서 계산할 쿠폰 할인 총 금액
+
+        if (user != null) { // 회원이면 회원 정보 조회, 쿠폰 검증
+            List<CouponCalculationRequest.ItemInfo> itemInfos = orderItems.stream()
+                    .map(item -> new CouponCalculationRequest.ItemInfo(
+                            item.getBook().getId(),
+                            item.getBook().getCategory().getKdcCode(),
+                            item.getBook().getPriceSales(),
+                            item.getQuantity()
+                    )).toList();
+
+            if (request.couponId() != null) {
+                CouponCalculationRequest couponCalculationRequest = new CouponCalculationRequest(
+                        request.couponId(),
+                        itemInfos
+                );
+                serverCouponPrice = couponClient.calculateCoupons(Objects.requireNonNull(user).getUserId(), couponCalculationRequest);
+            }
+
+        }
+
+        int serverPointPrice = 0; // 서버에서 계산할 유저 할인 가능 금액
+        if (user != null) {
+            if (request.pointUsed() > user.getPoint()) {
+                throw new NotEnoughPointException();
+            }
+        } else {
+            if (request.pointUsed() != 0) {
+                throw new NotEnoughPointException();
+            }
+        }
+
+
+        int finalTotalPrice = serverItemPrice + serverPackagingPrice + serverDeliveryPrice - serverCouponPrice - serverPointPrice;
+
+        if (finalTotalPrice != request.payPrice()) {
+            throw new OrderAmountMismatchException();
         }
     }
 }

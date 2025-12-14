@@ -18,15 +18,16 @@ import java.util.List;
 public class PackagingOptionServiceImpl implements PackagingOptionService {
     private final PackagingOptionRepository packagingOptionRepository;
 
-    public void savePackagingOption(PackagingOptionRequest packagingOptionRequest) {
+    public PackagingOption savePackagingOption(PackagingOptionRequest packagingOptionRequest) {
         PackagingOption packagingOption = PackagingOption.builder()
                 .name(packagingOptionRequest.name())
                 .price(packagingOptionRequest.price())
                 .build();
 
-        packagingOptionRepository.save(packagingOption);
+        return packagingOptionRepository.save(packagingOption);
     }
 
+    @Transactional(readOnly = true)
     public List<PackagingOptionResponse> getPackagingOptions() {
         List<PackagingOption> packagingOptions = packagingOptionRepository.findAll();
 
