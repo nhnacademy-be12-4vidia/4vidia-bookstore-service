@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
@@ -182,10 +183,24 @@ public class UserServiceImpl implements UserService {
         return user.getRole().name();
     }
 
-
     @Override
-    public OAuth2UserDto getOAuth2User(String provider, String socialId) {
-        User user = userRepository.findByProviderAndSocialId(provider, socialId).orElseThrow(() -> new UserNotFoundException());
-        return OAuth2UserDto.fromEntity(user);
+    public void completeProfile(Long userId, CompleteProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+        if (request.email() != null && !request.email().isBlank()) {
+            user.setEmail(request.email());
+        }
+        if(request.name()!=null && !request.name().isBlank()){
+            user.setName(request.name());
+        }
+        if(request.phone()!=null && !request.phone().isBlank()){
+            user.setPhone(request.phone());
+        }
+        if (request.birthDate() != null) {
+            user.setBirthDate(request.birthDate());
+        }
+        user.setStatus(UserStatus.ACTIVE);
     }
+
+
 }

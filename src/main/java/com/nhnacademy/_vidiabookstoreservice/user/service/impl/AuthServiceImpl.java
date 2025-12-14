@@ -6,10 +6,14 @@ import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
+import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
@@ -34,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final GradeRepository gradeRepository;
     private final EmailService mailService;
-    private final BCryptPasswordEncoder BCryptPasswordEncoder;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final CouponClient couponClient;
     private final PointCommandService pointCommandService;
 
@@ -43,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public Long register(UserSignupRequest request) {
-        if(userRepository.existsByEmail(request.email())){
+        if (userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException(request.email());
         }
 
@@ -52,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
         // User 생성
         User user = User.builder()
                 .email(request.email())
-                .password(BCryptPasswordEncoder.encode(request.password()))
+                .password(bCryptPasswordEncoder.encode(request.password()))
                 .name(request.name())
                 .phone(request.phone())
                 .birthDate(request.birthDate())
@@ -76,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
     public String findUserId(FindIdRequest request) {
         LocalDate birthday = LocalDate.parse(request.birthday());
         User user = userRepository.findByNameAndBirthDateAndPhone(
-                        request.name(),birthday,request.phone()
+                        request.name(), birthday, request.phone()
                 )
                 .orElseThrow(UserNotFoundException::new);
         return user.getEmail();
@@ -86,17 +90,17 @@ public class AuthServiceImpl implements AuthService {
      * 비밀번호 찾기 ( 아이디 + 이름 + 전화번호) -> 임시 비밀번호 발급
      */
     @Override
-    public String restPasswordAndSendMail (FindPasswordRequest request) {
+    public String restPasswordAndSendMail(FindPasswordRequest request) {
         User user = userRepository.findByEmailAndNameAndPhone(
-                request.email(),request.name(),request.phone()
-        ).orElseThrow(()-> new UserNotFoundByEmailException(request.email()));
+                request.email(), request.name(), request.phone()
+        ).orElseThrow(() -> new UserNotFoundByEmailException(request.email()));
 
         // 임시 비밀번호 생성
         String tempPassword = generateTempPassword(10);
 
         // 비밀번호 암호화 후 저장
 
-        String encodedPassword = BCryptPasswordEncoder.encode(tempPassword);
+        String encodedPassword = bCryptPasswordEncoder.encode(tempPassword);
         user.updateEncodedPassword(encodedPassword);
         userRepository.save(user);
 
@@ -118,7 +122,7 @@ public class AuthServiceImpl implements AuthService {
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
 
-        for(int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             sb.append(chars.charAt(random.nextInt(chars.length())));
         }
         return sb.toString();
@@ -149,15 +153,46 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Transactional
-    public int convertDormantUsers(LocalDateTime day){
+    public int convertDormantUsers(LocalDateTime day) {
         List<User> targets =
-                userRepository.findActiveUsersNotLoggedInSince(UserStatus.ACTIVE,day);
+                userRepository.findActiveUsersNotLoggedInSince(UserStatus.ACTIVE, day);
         targets.forEach(
-                user->
+                user ->
                         user.setStatus(UserStatus.DORMANT)
         );
 
         return targets.size(); // 처리 건수 로깅용
+    }
+
+    @Override
+    public OAuth2UserDto findOrCreateOAuthUser(String provider, PaycoUserRequest paycoUserRequest) {
+        User user = userRepository.findByProviderAndSocialId(provider, paycoUserRequest.id()).orElseGet(
+                () -> createTempOAuthUser(provider, paycoUserRequest)
+        );
+        return OAuth2UserDto.fromEntity(user);
+    }
+
+    private User createTempOAuthUser(String provider, PaycoUserRequest paycoUserRequest) {
+        String name = "PAYCO임시이름";
+        String email = provider + "_" + paycoUserRequest.id() + "@temp.4vidia.shop";
+        String phone = "010-0000-0000";
+        Grade defaultGrade = gradeRepository.findByGradeName(GradeName.WELCOME);
+
+        String rawPassword = java.util.UUID.randomUUID().toString();
+        String encodedPassword = bCryptPasswordEncoder.encode(rawPassword);
+        User user = User.oauthBuilder()
+                .provider(provider)
+                .socialId(paycoUserRequest.id())
+                .email(email)
+                .role(UserRole.USER)
+                .status(UserStatus.TEMP)
+                .name(name)
+                .phone(phone)
+                .password(encodedPassword)
+                .grade(defaultGrade)
+                .build();
+
+        return userRepository.save(user);
     }
 
 }

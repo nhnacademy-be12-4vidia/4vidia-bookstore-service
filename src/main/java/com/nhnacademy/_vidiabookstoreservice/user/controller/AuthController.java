@@ -2,6 +2,8 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeByEmailRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantVerifyRequest;
@@ -39,6 +41,14 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userId); // 201 Created
     }
 
+    /**
+     * 페이코 계정 찾거나 만들기(auth서버에서 사용)
+     */
+    @PostMapping("/payco/find-or-create")
+    public ResponseEntity<OAuth2UserDto> findOrCreateByPaycoId(@RequestBody PaycoUserRequest paycoUserRequest) {
+        OAuth2UserDto payco = authService.findOrCreateOAuthUser("payco", paycoUserRequest);
+        return ResponseEntity.ok().body(payco);
+    }
     /**
      * 회원 아이디(email) 찾기
      * */

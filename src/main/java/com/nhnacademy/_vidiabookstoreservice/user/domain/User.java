@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.domain;
 
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
+import com.nhnacademy._vidiabookstoreservice.user.domain.converters.UserStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import jakarta.persistence.*;
@@ -15,7 +16,6 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class User extends BaseEntity {
 
     @Id
@@ -23,7 +23,8 @@ public class User extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "email", nullable = false, length = 50)
+    @Column(name = "email", nullable = false, length = 100)
+    @Setter
     private String email;
 
     @Column(name = "password", nullable = false, length = 60)
@@ -46,7 +47,8 @@ public class User extends BaseEntity {
     private LocalDateTime lastLoginAt;
 
     @Column(name = "status", nullable = false)
-    private UserStatus status =  UserStatus.ACTIVE; // ACTIVE, DORMANT, DELETED
+    @Convert(converter = UserStatusConverter.class)
+    private UserStatus status; // ACTIVE, DORMANT, DELETED
     @Column(name = "role", nullable = false)
     private UserRole role = UserRole.USER; //USER, ADMIN
 
@@ -70,7 +72,7 @@ public class User extends BaseEntity {
     private Grade grade;
 
 
-    @Builder
+    @Builder(builderClassName = "LocalUserBuilder")
     public User(String email, String password, String name,
                 String phone,
                 LocalDate birthDate, Grade grade){
@@ -79,6 +81,29 @@ public class User extends BaseEntity {
         this.name = name;
         this.phone = phone;
         this.birthDate = birthDate;
+        this.grade = grade;
+        this.status = UserStatus.ACTIVE;
+    }
+
+    @Builder(builderMethodName = "oauthBuilder", builderClassName = "OAuthUserBuilder")
+    public User(String email,
+                String password,
+                String name,
+                String phone,
+                String socialId,
+                String provider,
+                UserStatus status,
+                UserRole role,
+                Grade grade) {
+
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.phone = phone;
+        this.socialId = socialId;
+        this.provider = provider;
+        this.status = status;
+        this.role = role;
         this.grade = grade;
     }
 
