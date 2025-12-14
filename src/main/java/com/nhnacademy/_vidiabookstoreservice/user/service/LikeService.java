@@ -6,7 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResp
 import java.util.List;
 
 public interface LikeService {
-    boolean isLiked(Long userId, Long bookId);
+//    boolean isLiked(Long userId, Long bookId);
     List<LikeResponse> getLikes(Long userId);
     List<UserLikeResponse> getLikeIdList(Long userId, List<Long> bookIds);
     void addLike(Long userId, Long bookId);
