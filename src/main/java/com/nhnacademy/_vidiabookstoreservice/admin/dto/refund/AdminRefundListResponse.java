@@ -1,7 +1,6 @@
-package com.nhnacademy._vidiabookstoreservice.admin.dto.refund.response;
+package com.nhnacademy._vidiabookstoreservice.admin.dto.refund;
 
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
 
 import java.time.LocalDateTime;
 

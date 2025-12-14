@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.admin.dto.refund.response;
+package com.nhnacademy._vidiabookstoreservice.admin.dto.refund;
 
 public record RefundItemDto(
         Long orderItemId,

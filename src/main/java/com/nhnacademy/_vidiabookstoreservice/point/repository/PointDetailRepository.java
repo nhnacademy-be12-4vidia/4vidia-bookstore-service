@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.point.repository;
 
 
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PointDetailRepository extends JpaRepository<PointDetail, Long> {
@@ -79,5 +81,17 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      * 환불 API 호출 시 중복 환불 차단에 필수
      */
     boolean existsByUserIdAndOrderIdAndReason(Long userId, Long orderId, PointReason reason);
-    PointDetail findByOrderIdAndReason(Long orderId, PointReason reason);
+
+    Optional<PointDetail> findByOrderIdAndReason(Long orderId, PointReason reason);
+
+    @Query("""
+        select p
+        from PointDetail p
+        where p.userId = :userId
+          and p.expiredDate > :now
+          and p.remainingPrice < p.price
+        order by p.expiredDate desc
+    """)
+    List<PointDetail> findPointForRefund(Long userId, LocalDate now);
+
 }

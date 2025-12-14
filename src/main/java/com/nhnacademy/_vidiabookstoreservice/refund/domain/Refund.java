@@ -36,6 +36,9 @@ public class Refund {
     @Column(name = "refund_status", nullable = false)
     private RefundStatus refundStatus;
 
+//    @Column(name = "reject_detail")
+//    private String rejectDetail; // 반품 거절 사유
+
     @Builder
     public Refund(OrderItem orderItem, boolean damaged, String description, RefundStatus refundStatus){
         this.orderItem = orderItem;
@@ -43,5 +46,43 @@ public class Refund {
         this.createdAt = LocalDateTime.now();
         this.description = description;
         this.refundStatus = refundStatus;
+    }
+
+    public void accept() {
+        if (this.refundStatus == RefundStatus.ACCEPT) {
+            throw new IllegalStateException("이미 승인된 반품입니다.");
+        }
+        this.refundStatus = RefundStatus.ACCEPT;
+    }
+
+    public void reject() {
+        this.refundStatus = RefundStatus.REJECT;
+    }
+
+    public static Refund reject(OrderItem item, String reason) {
+        return Refund.builder()
+                .orderItem(item)
+                .damaged(false)
+                .description(reason)
+                .refundStatus(RefundStatus.REJECT)
+                .build();
+    }
+
+    public static Refund accept(OrderItem item, String reason) {
+        return Refund.builder()
+                .orderItem(item)
+                .damaged(false)
+                .description(reason)
+                .refundStatus(RefundStatus.ACCEPT)
+                .build();
+    }
+
+    public static Refund process(OrderItem item, String reason) {
+        return Refund.builder()
+                .orderItem(item)
+                .damaged(true)
+                .description(reason)
+                .refundStatus(RefundStatus.PROCESS)
+                .build();
     }
 }

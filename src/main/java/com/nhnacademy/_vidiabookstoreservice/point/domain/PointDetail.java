@@ -115,26 +115,9 @@ public class PointDetail {
     }
 
     /**
-     * 결제 취소 || 결제 실패 || 반품 -> 포인트 환불
+     * 결제 취소 || 결제 실패 || 단순 변심 반품-> 포인트 환불
      */
-    public static PointDetail cancelUse(Long userId, Long orderId, int price, LocalDate expiredDate, Integer remaining){
-        LocalDateTime ldt = LocalDateTime.now();
-
-        return PointDetail.builder()
-                .userId(userId)
-                .orderId(orderId)
-                .price(-price)
-                .createdAt(ldt)
-                .expiredDate(expiredDate)
-                .reason(PointReason.ORDER_CANCEL_REFUND)
-                .remainingPrice(-remaining)
-                .build();
-    }
-
-    /**
-     * 반품금액 포인트로 환불 (만료일 없음)
-     */
-    public static PointDetail refund(Long userId, Long orderId, int price) {
+    public static PointDetail cancelUse(Long userId, Long orderId, int price){
         LocalDateTime ldt = LocalDateTime.now();
 
         return PointDetail.builder()
@@ -143,7 +126,38 @@ public class PointDetail {
                 .price(price)
                 .createdAt(ldt)
                 .reason(PointReason.ORDER_CANCEL_REFUND)
-                .remainingPrice(price)
+                .build();
+    }
+
+    /**
+     * 파손 반품 -> 포인트 환불 (만료일 새로 생성)
+     */
+    public static PointDetail damageRefund(Long userId, Long orderId, int price, LocalDate expiredDate){
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .price(price)
+                .createdAt(ldt)
+                .expiredDate(expiredDate)
+                .reason(PointReason.ORDER_CANCEL_REFUND)
+                .build();
+    }
+
+    /**
+     * 반품금액 포인트로 환불 (만료일 없음)
+     */
+    public static PointDetail refund(Long userId, Long orderId, int price, int remainingPrice) {
+        LocalDateTime ldt = LocalDateTime.now();
+
+        return PointDetail.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .price(price)
+                .createdAt(ldt)
+                .reason(PointReason.ORDER_CANCEL_REFUND)
+                .remainingPrice(remainingPrice)
                 .build();
     }
 
@@ -161,13 +175,26 @@ public class PointDetail {
                 .build();
     }
 
+    /**
+     * 포인트 차감 (remainingPrice 감소)
+     */
     public void decrease(int amount){
         if(amount < 0) {
-            throw new IllegalArgumentException("감소 금액은 양수여야 합니다.");
+            throw new IllegalArgumentException("포인트 감소 금액은 양수여야 합니다.");
         }
         if(this.remainingPrice<amount){
             throw new IllegalArgumentException("차감 금액이 적립 금액보다 큽니다.");
         }
         this.remainingPrice-=amount;
+    }
+
+    /**
+     * 포인트 환불 (remainingPrice 증가)
+     */
+    public void increase(int amount){
+        if(amount < 0){
+            throw new IllegalArgumentException("포인트 환불 금액은 양수여야 합니다.");
+        }
+        this.remainingPrice+=amount;
     }
 }

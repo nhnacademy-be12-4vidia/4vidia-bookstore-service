@@ -7,10 +7,14 @@ import com.nhnacademy._vidiabookstoreservice.order.exception.OrderItemNotFoundEx
 import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
+import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
+import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.OrderItemResponse;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import com.nhnacademy._vidiabookstoreservice.refund.service.RefundService;
@@ -21,8 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * RefundServiceImpl : 반품 신청서 작성, 단순 변심 환불 처리 담당
+ */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -31,87 +37,116 @@ public class RefundServiceImpl implements RefundService {
     private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
     private final RefundRepository refundRepository;
+    private final OrderItemService orderItemService;
+    private final PointCommandService pointCommandService;
 
+    /**
+     * 반품 가능 리스트 조회
+     */
     @Override
     @Transactional(readOnly = true)
     public RefundResponse getRefundList(long orderId) {
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        List<OrderItem> orderItems =  orderItemRepository.findAllByConfirmStatusAndOrder(ConfirmStatus.UNCONFIRMED,order);
+        List<OrderItem> orderItems =
+                orderItemRepository.findAllByConfirmStatusAndOrder(
+                        ConfirmStatus.UNCONFIRMED, order);
 
-        List<OrderItemResponse> response = orderItems.stream().map(OrderItemResponse::from).toList();
-
-        return new RefundResponse(orderId, response);
+        return new RefundResponse(
+                orderId,
+                orderItems.stream().map(OrderItemResponse::from).toList()
+        );
     }
 
+    /**
+     * 반품 신청
+     */
     @Override
-    public void refundRegister(RefundRequest refundRequest) {
-        // 주문 조회
-        Order order = orderRepository.findByOrderId(refundRequest.orderId())
-                .orElseThrow(() -> new OrderNotFoundException(refundRequest.orderId()));
+    public void refundRegister(RefundRequest request) {
+        Order order = orderRepository.findByOrderId(request.orderId())
+                .orElseThrow(() -> new OrderNotFoundException(request.orderId()));
 
-        LocalDate deliveryStart = order.getActualDeliveryDate();
-        List<Long> itemIds = refundRequest.orderItemIds();
+        boolean damaged = request.damaged();
+        long days = ChronoUnit.DAYS.between(order.getActualDeliveryDate(), LocalDate.now());
 
-        // 단순 변심 반품 : 배송일 확인
-        if (!refundRequest.damaged()) {
-            // 배송일 ChronoUnit이용 -> 두 LocalDate 객체 사이 일수 계산
-            long daysSinceDelivery = ChronoUnit.DAYS.between(deliveryStart, LocalDate.now());
+        for (Long itemId : request.orderItemIds()) {
+            OrderItem item = getOrderItem(itemId);
 
-            if (daysSinceDelivery > 10) {
-                for (Long itemId : itemIds) {
-                    OrderItem orderItem = orderItemRepository.findById(itemId)
-                            .orElseThrow(() -> new OrderItemNotFoundException(itemId));
-
-                    Refund refund = Refund.builder()
-                            .orderItem(orderItem)
-                            .damaged(false)
-                            .description(refundRequest.reason()) // 이거 없애고 싶다
-                            .refundStatus(RefundStatus.REJECT)
-                            .build();
-
-                    refundRepository.save(refund);
-                }
-            } else { // 자동 수락
-                for(Long itemId : itemIds){
-                    OrderItem orderItem = orderItemRepository.findById(itemId)
-                            .orElseThrow(() -> new OrderItemNotFoundException(itemId));
-
-                    Refund refund = Refund.builder()
-                            .orderItem(orderItem)
-                            .damaged(false)
-                            .description(refundRequest.reason())
-                            .refundStatus(RefundStatus.ACCEPT)
-                            .build();
-
-                    refundRepository.save(refund);
-
-                    //OrderItem 상태 변경
-                    orderItem.setConfirmStatus(ConfirmStatus.REFUNDED);
-                    orderItemRepository.save(orderItem);
-
-                    //TODO 포인트 + 환불금액 포인트 적립
-                }
-            }
-        }else{
-            // 파손 -> 관리자
-            for(Long itemId : itemIds){
-                OrderItem orderItem = orderItemRepository.findById(itemId)
-                        .orElseThrow(() -> new OrderItemNotFoundException(itemId));
-
-                Refund refund = Refund.builder()
-                        .orderItem(orderItem)
-                        .damaged(true)
-                        .description(refundRequest.reason())
-                        .refundStatus(RefundStatus.PROCESS) // PROCESS(0)로 가정
-                        .build();
-                refundRepository.save(refund);
-
-                //OrderItem 상태 변경
-                orderItem.setConfirmStatus(ConfirmStatus.REFUND_REQUEST);
-                orderItemRepository.save(orderItem);
+            if (!damaged) { // 단순 변심
+                handleSimpleChange(item, request.reason(), days);
+            }else{
+                handleDamaged(item, request.reason());
             }
         }
     }
+
+    /**
+     * 사용자 반품 내역 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<RefundHistoryResponse> getMyRefunds(Long userId, RefundStatus status) {
+
+        List<Refund> refunds =
+                status == null
+                        ? refundRepository.findAllByUserId(userId)
+                        : refundRepository.findAllByUserIdAndRefundStatus(userId, status);
+
+        return refunds.stream()
+                .map(RefundHistoryResponse::from)
+                .toList();
+    }
+
+    private void handleSimpleChange(OrderItem item, String reason, long days) {
+        // 10일 초과 → 즉시 거절
+        if (days > 10) {
+            refundRepository.save(Refund.reject(item, reason));
+            return;
+        }
+
+        // 10일 이내 → 즉시 승인 + 포인트 환불
+        refundRepository.save(Refund.accept(item, reason));
+        orderItemService.changeStatusOrderItem(item.getOrderItemId(), ConfirmStatus.REFUNDED);
+
+        // 사용한 포인트 환불 금액 계산
+        Order order = item.getOrder();
+        int totalUsedPoint = order.getPointUsed();
+        int totalQuantity = orderItemRepository.sumOrderItemQuantity(order.getOrderId());
+        int refundPoint;
+
+        // 이미 환불 완료된 Item 수
+        int refundedQuantity = refundRepository.sumRefundedQuantity(order.getOrderId(), RefundStatus.ACCEPT);
+        int unitPoint = totalUsedPoint / totalQuantity;
+
+        // 마지막 환불이면 남은 포인트 전부 반환 (호출 전 이미 상태 바뀜)
+        // TODO (반품,포인트) 마지막 환불 확인이 안됨.
+        if(refundedQuantity + item.getQuantity() == totalQuantity){
+            refundPoint = totalUsedPoint - (unitPoint * refundedQuantity);
+        }else{
+            refundPoint = unitPoint * item.getQuantity();
+        }
+
+        PointRefundRequest pointRequest = new PointRefundRequest(
+                order.getOrderId(),
+                refundPoint,
+                item.getSalePrice() * item.getQuantity() //TODO (반품, 포인트) 쿠폰 할인 추가해서 다시 작성 해야함.......
+        );
+
+        pointCommandService.refundSimpleChange(pointRequest, order.getUser().getUserId());
+    }
+
+    private void handleDamaged(OrderItem item, String reason) {
+        Refund refund = Refund.process(item, reason);
+        refundRepository.save(refund);
+        orderItemService.changeStatusOrderItem(item.getOrderItemId(), ConfirmStatus.REFUND_REQUEST);
+        //관리자가 승인 시 포인트 적립
+    }
+
+    private OrderItem getOrderItem(Long itemId) {
+        return orderItemRepository.findById(itemId)
+                .orElseThrow(() -> new OrderItemNotFoundException(itemId));
+    }
+
 }
+

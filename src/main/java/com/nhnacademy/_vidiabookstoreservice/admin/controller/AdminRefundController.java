@@ -1,11 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
-import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.response.AdminRefundListResponse;
-import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.response.RefundDetailResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.AdminRefundListResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
-import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,31 +31,29 @@ public class AdminRefundController {
     }
 
     /**
-     * 반품 상세 조회 (AJAX용)
+     * 반품 상세 조회 (관리자)
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<RefundDetailResponse> getRefundDetail(@PathVariable Long id) {
-        RefundDetailResponse detail = adminRefundService.getRefundDetail(id);
+    @GetMapping("/{refundId}")
+    public ResponseEntity<RefundDetailResponse> getRefundDetail(@PathVariable Long refundId) {
+        RefundDetailResponse detail = adminRefundService.getRefundDetail(refundId);
         return ResponseEntity.ok(detail);
     }
 
     /**
-     * 관리자 승인
-     * POST /api/v1/order-service/admin/refunds/{id}/accept
+     * 관리자 반품 승인
      */
-    @PostMapping("/{id}/accept")
-    public ResponseEntity<Void> acceptRefund(@PathVariable Long id) {
-        adminRefundService.acceptRefund(id);
+    @PostMapping("/{refundId}/accept")
+    public ResponseEntity<Void> acceptRefund(@PathVariable Long refundId) {
+        adminRefundService.acceptRefund(refundId);
         return ResponseEntity.ok().build();
     }
 
     /**
-     * 관리자 거절
-     * POST /api/v1/order-service/admin/refunds/{id}/reject
+     * 관리자 반품 거절
      */
-    @PostMapping("/{id}/reject")
-    public ResponseEntity<Void> rejectRefund(@PathVariable Long id) {
-        adminRefundService.rejectRefund(id);
+    @PostMapping("/{refundId}/reject")
+    public ResponseEntity<Void> rejectRefund(@PathVariable Long refundId) {
+        adminRefundService.rejectRefund(refundId);
         return ResponseEntity.ok().build();
     }
 
