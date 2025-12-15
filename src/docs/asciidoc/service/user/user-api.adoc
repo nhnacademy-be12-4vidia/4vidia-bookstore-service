@@ -5,7 +5,7 @@
 // include::auth.adoc[]
 
 === `회원(User) 관리`
-// include::user.adoc[]
+include::user.adoc[]
 
 === `등급(Grade) 관리`
 include::grade.adoc[]
