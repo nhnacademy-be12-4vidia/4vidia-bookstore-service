@@ -12,6 +12,7 @@ import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryServi
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -66,9 +67,8 @@ public class BookController {
     }
 
     @GetMapping("/{bookId}")
-    public ResponseEntity<BookDetailWithReviewResponse> bookDetails(@PathVariable Long bookId,
-        @RequestHeader(name = "X-User-Id", required = false) Long userId, Pageable pageable) {
-
+    public ResponseEntity<BookDetailWithReviewResponse> bookDetails(@PathVariable Long bookId, Pageable pageable) {
+        Long userId = UserContext.get().getUserId();
         Page<ReviewListResponse> reviewListResponsePage = reviewService.getReviewListByBookId(
             bookId, userId, pageable);
 

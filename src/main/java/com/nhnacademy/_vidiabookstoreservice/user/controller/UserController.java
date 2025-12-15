@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
@@ -62,10 +63,10 @@ public class UserController {
      * 비밀번호 수정
      */
     @PutMapping("/me/password") // 기존 "/change-password"
-    public ResponseEntity<Void> changePassword(@RequestHeader("X-User-Id") Long id,
-                                               @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+        Long userId = UserContext.get().getUserId();
 
-        userService.changePassword(id, changePasswordRequest);
+        userService.changePassword(userId, changePasswordRequest);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
@@ -73,9 +74,9 @@ public class UserController {
      * 회원 탈퇴
      */
     @PutMapping("/delete")
-    public ResponseEntity<Void> deleteUser(@RequestHeader("X-User-Id") Long id,
-                                           @Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
-        userService.deleteUserById(id, deletePasswordRequest);
+    public ResponseEntity<Void> deleteUser(@Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
+        Long userId = UserContext.get().getUserId();
+        userService.deleteUserById(userId, deletePasswordRequest);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
@@ -83,7 +84,8 @@ public class UserController {
      * 회원 역할 조회
      */
     @GetMapping("/role")
-    public ResponseEntity<String> getUserRole(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<String> getUserRole() {
+        Long userId = UserContext.get().getUserId();
         String userRole = userService.getUserRole(userId);
         return ResponseEntity.ok().body(userRole);
     }
@@ -94,7 +96,8 @@ public class UserController {
      * payco 로그인 전용 필수 정보 입력
      */
     @PutMapping("/complete-profile")
-    public ResponseEntity<Void> updateCompleteProfile(@RequestHeader("X-User-Id") Long userId, @RequestBody CompleteProfileRequest completeProfileRequest) {
+    public ResponseEntity<Void> updateCompleteProfile(@RequestBody CompleteProfileRequest completeProfileRequest) {
+        Long userId = UserContext.get().getUserId();
         userService.completeProfile(userId, completeProfileRequest);
         return ResponseEntity.ok().build();
     }

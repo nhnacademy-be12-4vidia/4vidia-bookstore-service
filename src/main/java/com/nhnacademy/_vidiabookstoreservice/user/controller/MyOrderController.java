@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,9 @@ public class MyOrderController {
      * 주문내역 미리보기
      */
     @GetMapping
-    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview(@RequestHeader(value = "X-User-Id") Long userId) {
+    public ResponseEntity<List<OrderPreviewResponse>> getOrderPreview() {
+        Long userId = UserContext.get().getUserId();
+
         List<OrderPreviewResponse> orderPreviewResponse = orderService.getOrdersByUserId(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderPreviewResponse);
     }

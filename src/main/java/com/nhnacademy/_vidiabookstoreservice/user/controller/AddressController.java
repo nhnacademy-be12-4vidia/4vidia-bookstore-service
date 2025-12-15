@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
@@ -23,8 +24,8 @@ public class AddressController {
      * 주소 등록
      */
     @PostMapping
-    public ResponseEntity<Void> registerAddress(@RequestHeader("X-User-Id") Long userId,
-                                                @Valid @RequestBody CreateAddressRequest createAddressRequest) {
+    public ResponseEntity<Void> registerAddress(@Valid @RequestBody CreateAddressRequest createAddressRequest) {
+        Long userId = UserContext.get().getUserId();
         addressService.createAddress(userId, createAddressRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
     }
@@ -33,8 +34,9 @@ public class AddressController {
      * 주소 단일 조회
      */
     @GetMapping("/{address-id}")
-    public ResponseEntity<AddressResponse> getAddress(@RequestHeader("X-User-Id") Long userId,
-                                                      @PathVariable("address-id") Long addressId) {
+    public ResponseEntity<AddressResponse> getAddress(@PathVariable("address-id") Long addressId) {
+        Long userId = UserContext.get().getUserId();
+
         return ResponseEntity.ok().body(addressService.getAddress(userId, addressId)); // 200 OK + JSON
     }
 
@@ -42,7 +44,8 @@ public class AddressController {
      * 주소 전체 조회
      */
     @GetMapping
-    public ResponseEntity<List<AddressResponse>> getAddressList(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<List<AddressResponse>> getAddressList() {
+        Long userId = UserContext.get().getUserId();
         return ResponseEntity.ok().body(addressService.getUserAddresses(userId)); // 200 OK + JSON
     }
 
@@ -50,7 +53,9 @@ public class AddressController {
      * 기본주소 조회
      */
     @GetMapping("/default")
-    public ResponseEntity<AddressResponse> getDefaultAddress(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<AddressResponse> getDefaultAddress() {
+        Long userId = UserContext.get().getUserId();
+
         return ResponseEntity.ok().body(addressService.getDefaultAddress(userId)); // 200 OK + JSON
     }
 
@@ -58,9 +63,9 @@ public class AddressController {
      * 주소 수정
      */
     @PutMapping("/{address-id}")
-    public ResponseEntity<AddressResponse> updateAddress(@RequestHeader("X-User-Id") Long userId,
-                                                         @PathVariable("address-id") Long addressId,
+    public ResponseEntity<AddressResponse> updateAddress(@PathVariable("address-id") Long addressId,
                                                          @Valid @RequestBody AddressRequest addressRequest) {
+        Long userId = UserContext.get().getUserId();
         return ResponseEntity.ok().body(addressService.updateAddress(userId, addressId, addressRequest));
     }
 
@@ -69,8 +74,8 @@ public class AddressController {
      * 기존 "/change-default/{addressId}"
      */
     @PutMapping("/{address-id}/default")
-    public ResponseEntity<Void> updateDefaultAddress(@RequestHeader("X-User-Id") Long userId,
-                                                     @PathVariable("address-id") Long addressId) {
+    public ResponseEntity<Void> updateDefaultAddress(@PathVariable("address-id") Long addressId) {
+        Long userId = UserContext.get().getUserId();
         addressService.updateDefaultAddress(userId, addressId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
@@ -79,8 +84,8 @@ public class AddressController {
      * 주소 삭제
      */
     @DeleteMapping("/{address-id}")
-    public ResponseEntity<Void> deleteAddress(@RequestHeader("X-User-Id") Long userId,
-                                                @PathVariable("address-id") Long addressId) {
+    public ResponseEntity<Void> deleteAddress(@PathVariable("address-id") Long addressId) {
+        Long userId = UserContext.get().getUserId();
         addressService.deleteAddress(userId, addressId);
         return ResponseEntity.ok().build(); // 204 No Content
     }

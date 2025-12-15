@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
@@ -20,7 +21,9 @@ public class LikeController {
      * 좋아요 리스트 조회
      */
     @GetMapping
-    public ResponseEntity<List<LikeResponse>> getLikeList(@RequestHeader("X-User-Id") Long userId){
+    public ResponseEntity<List<LikeResponse>> getLikeList(){
+        Long userId = UserContext.get().getUserId();
+
         return ResponseEntity.ok().body(likeService.getLikes(userId)); // 200 OK + JSON
     }
 
@@ -28,8 +31,9 @@ public class LikeController {
      * 좋아요 등록
      */
     @PostMapping("/{book-id}")
-    public ResponseEntity<Void> addLike(@RequestHeader("X-User-Id") Long userId,
-                                        @PathVariable("book-id") Long bookId) {
+    public ResponseEntity<Void> addLike(@PathVariable("book-id") Long bookId) {
+        Long userId = UserContext.get().getUserId();
+
         likeService.addLike(userId, bookId);
         return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
     }
@@ -38,8 +42,9 @@ public class LikeController {
      * 좋아요 삭제
      */
     @DeleteMapping("/{book-id}")
-    public ResponseEntity<Void> removeLike(@RequestHeader("X-User-Id") Long userId,
-                                           @PathVariable("book-id") Long bookId) {
+    public ResponseEntity<Void> removeLike(@PathVariable("book-id") Long bookId) {
+        Long userId = UserContext.get().getUserId();
+
         likeService.removeLike(userId, bookId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
@@ -48,7 +53,8 @@ public class LikeController {
      * 좋아요 전체 삭제
      */
     @DeleteMapping
-    public ResponseEntity<Void> removeAllLike(@RequestHeader("X-User-Id") Long userId){
+    public ResponseEntity<Void> removeAllLike(){
+        Long userId = UserContext.get().getUserId();
         List<Long> bookIds = likeService.getLikes(userId).stream()
                 .map(LikeResponse::bookId)
                 .toList();
