@@ -11,7 +11,7 @@ include::user.adoc[]
 include::grade.adoc[]
 
 === `주소(Address) 관리`
-// include::address.adoc[]
+include::address.adoc[]
 
 === `좋아요(Like) 관리`
 include::like.adoc[]
