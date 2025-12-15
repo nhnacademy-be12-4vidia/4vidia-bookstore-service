@@ -9,9 +9,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
-import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
-import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
@@ -34,7 +32,6 @@ import java.util.List;
 public class AdminRefundServiceImpl implements AdminRefundService {
     private final RefundRepository refundRepository;
     private final PointCommandService pointService;
-    private final PointDetailRepository pointDetailRepository;
     private final OrderItemService orderItemService;
     private final OrderItemRepository orderItemRepository;
 
@@ -120,7 +117,7 @@ public class AdminRefundServiceImpl implements AdminRefundService {
         int totalUsedPoint = order.getPointUsed(); // 주문 시 사용한 포인트 금액
         int totalQuantity = orderItemRepository.sumOrderItemQuantity(order.getOrderId()); // 주문한 도서 수량
 
-        // 이미 환불 완료된 수량 합계
+        // 이미 환불 완료된 수량
         int refundedQuantity = refundRepository.sumRefundedQuantity(order.getOrderId(), RefundStatus.ACCEPT);
 
         int unitPoint = totalUsedPoint / totalQuantity; // 도서 한 권당 반환 포인트 금액

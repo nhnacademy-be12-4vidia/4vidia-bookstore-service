@@ -2,15 +2,17 @@ package com.nhnacademy._vidiabookstoreservice.point.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.admin.repository.PointPolicyRepository;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
+import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
+import com.nhnacademy._vidiabookstoreservice.point.exception.PointCancelAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.PointDetailNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
-import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
@@ -29,8 +31,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     private final PointDetailRepository pointDetailRepository;
     private final PointPolicyRepository pointPolicyRepository;
     private final UserRepository userRepository;
-    private final OrderRepository orderRepository;
-    private final RefundRepository refundRepository;
+    private final OrderItemRepository orderItemRepository;
 
     /**
      *  1. 주문완료로 기본 적립 (구매 확정)
@@ -47,7 +48,7 @@ public class PointCommandServiceImpl implements PointCommandService {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         int gradeRate = user.getGrade().getPointRate(); // 적립률 (%)
-        int realPrice = orderRepository.calculateNetOrderPrice(order.getOrderId(), PointReason.ORDER_CANCEL_REFUND); // 실제 결제금액
+        int realPrice = orderItemRepository.calculateNetOrderPrice(order.getOrderId(), ConfirmStatus.CONFIRMED); // 순수 주문금액
 
         if (realPrice <= 0 || gradeRate <= 0) {
             return;
@@ -146,11 +147,15 @@ public class PointCommandServiceImpl implements PointCommandService {
      */
     @Override
     public void cancelUse(Long orderId, Long userId) {
-
         PointDetail used = pointDetailRepository.findByOrderIdAndReason(orderId, PointReason.ORDER_USE)
-                .orElseThrow(() -> new IllegalArgumentException("사용 포인트 이력이 없습니다."));
+                .orElseThrow(() -> new PointDetailNotFoundException(orderId));
 
-        int refundAmount = used.getPrice();
+        // 이미 취소 처리 + 환불인 경우
+        if(pointDetailRepository.existsByUserIdAndOrderIdAndReason(userId, orderId, PointReason.ORDER_CANCEL_REFUND)){
+            throw new PointCancelAlreadyExistsException(orderId);
+        }
+
+        int refundAmount = -used.getPrice();
 
         restoreRemainingPoint(userId, refundAmount);
 
@@ -199,18 +204,32 @@ public class PointCommandServiceImpl implements PointCommandService {
         // 정책에 따른 새로운 만료일
         LocalDate newExpiredDate = LocalDate.now().plusWeeks(1);
 
-        pointDetailRepository.save(PointDetail.damageRefund(
+        /**
+         * cash 만료일 없이 환불
+         */
+        pointDetailRepository.save(PointDetail.refund(
                         userId,
                         request.orderId(),
-                        refundAmount + request.cashPoint(),
-                        newExpiredDate
+                        request.cashPoint(),
+                        request.cashPoint()
                 )
         );
+
+        /**
+         * 사용한 포인트 새로운 만료일 생성해서 환불
+         */
+        pointDetailRepository.save(PointDetail.damageRefund(
+                userId,
+                request.orderId(),
+                request.refundPoint(),
+                newExpiredDate
+        ));
 
         userRepository.findById(userId).ifPresent(user ->
                         user.addPoint(refundAmount + request.cashPoint())
                 );
     }
+
     /**
      * 만료되지 않은 기존 적립 포인트의 remainingPrice를 복구
      */
