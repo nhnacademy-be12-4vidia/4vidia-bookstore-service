@@ -12,6 +12,7 @@ public class MultiRedisProperties {
     private RedisNode cart;
     private RedisNode dormant;
     private RedisNode bestseller;
+    private RedisNode ai;
 
     @Getter
     @Setter
