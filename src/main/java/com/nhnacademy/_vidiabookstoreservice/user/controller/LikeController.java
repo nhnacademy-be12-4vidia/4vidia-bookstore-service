@@ -15,7 +15,6 @@ import java.util.List;
 @RequestMapping("/users/me/likes") // 기존 "/my/likes"
 public class LikeController {
     private final LikeService likeService;
-    private final UserService userService;
 
     /**
      * 좋아요 리스트 조회
@@ -28,9 +27,9 @@ public class LikeController {
     /**
      * 좋아요 등록
      */
-    @PostMapping("/{bookId}")
+    @PostMapping("/{book-id}")
     public ResponseEntity<Void> addLike(@RequestHeader("X-User-Id") Long userId,
-                                        @PathVariable Long bookId) {
+                                        @PathVariable("book-id") Long bookId) {
         likeService.addLike(userId, bookId);
         return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
     }
@@ -38,9 +37,9 @@ public class LikeController {
     /**
      * 좋아요 삭제
      */
-    @DeleteMapping("/{bookId}")
+    @DeleteMapping("/{book-id}")
     public ResponseEntity<Void> removeLike(@RequestHeader("X-User-Id") Long userId,
-                                           @PathVariable Long bookId) {
+                                           @PathVariable("book-id") Long bookId) {
         likeService.removeLike(userId, bookId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }

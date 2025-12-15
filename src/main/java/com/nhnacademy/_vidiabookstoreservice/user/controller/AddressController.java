@@ -32,9 +32,9 @@ public class AddressController {
     /**
      * 주소 단일 조회
      */
-    @GetMapping("/{addressId}")
+    @GetMapping("/{address-id}")
     public ResponseEntity<AddressResponse> getAddress(@RequestHeader("X-User-Id") Long userId,
-                                                      @PathVariable Long addressId) {
+                                                      @PathVariable("address-id") Long addressId) {
         return ResponseEntity.ok().body(addressService.getAddress(userId, addressId)); // 200 OK + JSON
     }
 
@@ -57,9 +57,9 @@ public class AddressController {
     /**
      * 주소 수정
      */
-    @PutMapping("/{addressId}")
+    @PutMapping("/{address-id}")
     public ResponseEntity<AddressResponse> updateAddress(@RequestHeader("X-User-Id") Long userId,
-                                                         @PathVariable Long addressId,
+                                                         @PathVariable("address-id") Long addressId,
                                                          @Valid @RequestBody AddressRequest addressRequest) {
         return ResponseEntity.ok().body(addressService.updateAddress(userId, addressId, addressRequest));
     }
@@ -68,9 +68,9 @@ public class AddressController {
      * 기본주소 변경
      * 기존 "/change-default/{addressId}"
      */
-    @PutMapping("/{addressId}/default")
+    @PutMapping("/{address-id}/default")
     public ResponseEntity<Void> updateDefaultAddress(@RequestHeader("X-User-Id") Long userId,
-                                                     @PathVariable Long addressId) {
+                                                     @PathVariable("address-id") Long addressId) {
         addressService.updateDefaultAddress(userId, addressId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
@@ -78,9 +78,9 @@ public class AddressController {
     /**
      * 주소 삭제
      */
-    @DeleteMapping("/{addressId}")
+    @DeleteMapping("/{address-id}")
     public ResponseEntity<Void> deleteAddress(@RequestHeader("X-User-Id") Long userId,
-                                                @PathVariable Long addressId) {
+                                                @PathVariable("address-id") Long addressId) {
         addressService.deleteAddress(userId, addressId);
         return ResponseEntity.ok().build(); // 204 No Content
     }

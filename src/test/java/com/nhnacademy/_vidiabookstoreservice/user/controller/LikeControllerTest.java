@@ -95,7 +95,7 @@ class LikeControllerTest {
         Long userId = 1L; // nhn@naver.com
         Long targetBookId = bookService.getProxyById(29120L).getId(); // 임의의 도서
 
-        mockMvc.perform(post("/users/me/likes/{bookId}", targetBookId)
+        mockMvc.perform(post("/users/me/likes/{book-id}", targetBookId)
                         .header("X-User-Id", userId))
                 .andExpect(status().isCreated())
                 .andDo(document("user-like-post",
@@ -106,7 +106,7 @@ class LikeControllerTest {
                                 headerWithName("X-User-Id").description("사용자 식별 ID")
                         ),
                         pathParameters(
-                                parameterWithName("bookId").description("좋아요 등록할 도서 ID")
+                                parameterWithName("book-id").description("좋아요 등록할 도서 ID")
                         )
                 ));
     }
@@ -119,7 +119,7 @@ class LikeControllerTest {
         List<LikeResponse> likes = likeServiceImpl.getLikes(userId); // ㅇ?? 이상한데
         Long targetBookId = likes.stream().findFirst().get().bookId(); // userId에 해당하는 유저가 실제 db에 좋아요 등록해놓은게 없으면???
 
-        mockMvc.perform(delete("/users/me/likes/{bookId}", targetBookId)
+        mockMvc.perform(delete("/users/me/likes/{book-id}", targetBookId)
                         .header("X-User-Id", userId))
                 .andExpect(status().isNoContent())
                 .andDo(document("user-like-delete",
@@ -130,7 +130,7 @@ class LikeControllerTest {
                                 headerWithName("X-User-Id").description("사용자 식별 ID")
                         ),
                         pathParameters(
-                                parameterWithName("bookId").description("좋아요 삭제할 도서 ID")
+                                parameterWithName("book-id").description("좋아요 삭제할 도서 ID")
                         )
                 ));
     }
