@@ -36,8 +36,8 @@ public class Refund {
     @Column(name = "refund_status", nullable = false)
     private RefundStatus refundStatus;
 
-//    @Column(name = "reject_detail")
-//    private String rejectDetail; // 반품 거절 사유
+    @Column(name = "reject_detail")
+    private String rejectDetail; // 반품 거절 사유
 
     @Builder
     public Refund(OrderItem orderItem, boolean damaged, String description, RefundStatus refundStatus){

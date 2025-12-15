@@ -78,11 +78,12 @@ public class OrderServiceImpl implements OrderService {
                 .recipientPhone(request.recipientPhone())
                 .deliveryRequest(request.deliveryRequest())
                 .orderPassword(request.orderPassword())
+                .totalBookPrice(request.totalBookPrice())
+                .deliveryFee(request.deliveryFee())
+                .packagingFee(request.packagingFee())
                 .couponDiscount(request.couponDiscount())
                 .pointUsed(request.pointUsed())
                 .deliveryDate(request.deliveryDate())
-                .totalPrice(request.totalPrice() + request.deliveryCost() + request.packagingCost())
-                .payPrice(request.payPrice())
                 .build();
 
         Order savedOrder = orderRepository.save(order);
@@ -251,7 +252,8 @@ public class OrderServiceImpl implements OrderService {
 
         if (confirmRequest != null) { // 결제과정에서 성공해서 paymentKey값 있을때만
             // 멱등성 있어서 취소할 결제가 없어도 안전하게 무시되니 부르는게 안전성 굳
-            paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", order.getPayPrice());
+            int payPrice = order.getTotalBookPrice() + order.getPackagingFee() + order.getDeliveryFee() - order.getCouponDiscount() - order.getPointUsed();
+            paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", payPrice);
         }
 
         order.setOrderStatus(OrderStatus.REFUNDED);
@@ -306,8 +308,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
         bookService.increaseStock(requests);
 
-        // TODO 혹시 주문취소 시 포인트 환불 요청이 빠졌다면.. cancelUse() 호출해주세요!
-//        pointCommandService.cancelUse(orderId, order.getUser().getUserId());
+        pointCommandService.cancelUse(orderId, order.getUser().getUserId());
     }
 
     @Override
@@ -408,7 +409,9 @@ public class OrderServiceImpl implements OrderService {
 
         int finalTotalPrice = serverItemPrice + serverPackagingPrice + serverDeliveryPrice - serverCouponPrice - serverPointPrice;
 
-        if (finalTotalPrice != request.payPrice()) {
+        int reqPayPrice = request.totalBookPrice() + request.packagingFee() + request.deliveryFee() - request.couponDiscount() - request.pointUsed();
+
+        if (finalTotalPrice != reqPayPrice) {
             throw new OrderAmountMismatchException();
         }
     }
