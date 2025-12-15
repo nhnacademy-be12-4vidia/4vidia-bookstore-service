@@ -3,7 +3,6 @@ package com.nhnacademy._vidiabookstoreservice.order.repository;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
-import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -68,17 +67,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("toDt") LocalDateTime toDt,
             @Param("confirmedStatus") int confirmedStatus // 혹은 String (DB 저장 방식에 따라)
     );
-
-    @Query("""
-        select o.totalBookPrice - o.couponDiscount - COALESCE(SUM(pd.price), 0)
-        from Order o
-        left join PointDetail pd
-            on pd.orderId = o.orderId
-            and pd.reason= :cancelReason
-        where o.orderId = :orderId
-        group by o.totalBookPrice, o.couponDiscount
-        """)
-    int calculateNetOrderPrice(@Param("orderId") Long orderId,
-                               @Param("cancelReason")PointReason cancelReason);
 
 }

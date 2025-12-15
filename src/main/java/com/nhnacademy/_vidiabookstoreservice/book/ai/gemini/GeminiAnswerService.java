@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.service.search;
+package com.nhnacademy._vidiabookstoreservice.book.ai.gemini;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,6 +62,8 @@ public class GeminiAnswerService {
             .append("각 도서에는 내부 식별자 bookId가 있습니다.\n")
             .append("당신의 역할은, 이 목록 중에서 질문에 가장 잘 맞는 책들을 고르고, ")
             .append("관련성이 높은 순으로 rank를 매기고, 각 책별 추천 이유(summary)를 만드는 것입니다. 이유는 가능한 길게 만드는데 너무 과하지는 않고 책의 특징을 잘 잡아서 만들어주시면 좋겠습니다.\n\n")
+                .append("설명이 없는 도서는 우선순위를 낮춰주시기 바랍니다.\n")
+                .append("프로그래밍과 관련된 도서의 우선순위는 높여주시기 바랍니다.\n")
 
             .append("반드시 아래 JSON 형식만 출력하세요. 추가 설명/자연어 문장은 절대 쓰지 마세요.\n")
             .append("형식 예시:\n")

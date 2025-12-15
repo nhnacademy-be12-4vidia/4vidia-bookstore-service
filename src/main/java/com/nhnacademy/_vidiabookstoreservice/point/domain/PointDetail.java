@@ -115,7 +115,7 @@ public class PointDetail {
     }
 
     /**
-     * 결제 취소 || 결제 실패 || 단순 변심 반품-> 포인트 환불
+     * 결제 취소 || 결제 실패 || 단순 변심 반품-> 포인트 환불 (remaining=0, 기존 내역 증가-유효기간 때문에)
      */
     public static PointDetail cancelUse(Long userId, Long orderId, int price){
         LocalDateTime ldt = LocalDateTime.now();
@@ -142,11 +142,12 @@ public class PointDetail {
                 .createdAt(ldt)
                 .expiredDate(expiredDate)
                 .reason(PointReason.ORDER_CANCEL_REFUND)
+                .remainingPrice(price)
                 .build();
     }
 
     /**
-     * 반품금액 포인트로 환불 (만료일 없음)
+     * 반품금액 (cash) 포인트로 환불 (만료일 없음)
      */
     public static PointDetail refund(Long userId, Long orderId, int price, int remainingPrice) {
         LocalDateTime ldt = LocalDateTime.now();

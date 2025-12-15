@@ -78,7 +78,6 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
     /**
      * 중복 환불 방지 체크
      * 동일 orderId + 동일 Reason 로 이미 환불 이력이 있으면 true
-     * 환불 API 호출 시 중복 환불 차단에 필수
      */
     boolean existsByUserIdAndOrderIdAndReason(Long userId, Long orderId, PointReason reason);
 
@@ -93,5 +92,4 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
         order by p.expiredDate desc
     """)
     List<PointDetail> findPointForRefund(Long userId, LocalDate now);
-
 }

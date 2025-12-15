@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.cart.scheduler;
+package com.nhnacademy._vidiabookstoreservice.cart.service.scheduler;
 
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.DirtyCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;

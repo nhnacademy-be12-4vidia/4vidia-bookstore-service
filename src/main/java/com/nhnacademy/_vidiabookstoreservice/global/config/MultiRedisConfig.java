@@ -111,4 +111,22 @@ public class MultiRedisConfig {
     ) {
         return new StringRedisTemplate(cf);
     }
+
+    @Bean
+    public LettuceConnectionFactory aiRedisConnectionFactory() {
+        MultiRedisProperties.RedisNode a = props.getAi();
+        if (a == null) throw new IllegalStateException("data.redis.ai 설정이 없습니다");
+
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(a.getHost(), a.getPort());
+        config.setDatabase(a.getDatabase());
+        if (a.getPassword() != null && !a.getPassword().isBlank()) {
+            config.setPassword(RedisPassword.of(a.getPassword()));
+        }
+        return new LettuceConnectionFactory(config);
+    }
+
+    @Bean
+    public StringRedisTemplate aiRedisTemplate(@Qualifier("aiRedisConnectionFactory") LettuceConnectionFactory cf) {
+        return new StringRedisTemplate(cf);
+    }
 }
