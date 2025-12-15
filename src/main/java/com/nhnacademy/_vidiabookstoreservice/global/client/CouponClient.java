@@ -21,7 +21,7 @@ public interface CouponClient {
                                                  @RequestBody CouponRequest couponRequest);
 
     // TODO [주문] 주문 저장전 값 검증할때는 뭘 보내고 받으면 좋을까?
-    @PostMapping("/coupons/validate-order") //실제 선택된 쿠폰 검증하기
+    @PostMapping("/coupons/calculate") //실제 선택된 쿠폰 검증하기
     int calculateCoupons(@RequestHeader("X-User-Id") Long userId,
                          @RequestBody CouponCalculationRequest couponCalculationRequest);
 

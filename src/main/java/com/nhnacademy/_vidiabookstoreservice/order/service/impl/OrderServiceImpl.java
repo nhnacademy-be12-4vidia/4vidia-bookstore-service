@@ -308,8 +308,9 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
         bookService.increaseStock(requests);
 
-        // TODO 혹시 주문취소 시 포인트 환불 요청이 빠졌다면.. cancelUse() 호출해주세요!
-        pointCommandService.cancelUse(orderId, order.getUser().getUserId());
+        if (order.getUser() != null) {
+            pointCommandService.cancelUse(orderId, order.getUser().getUserId());
+        }
     }
 
     @Override
