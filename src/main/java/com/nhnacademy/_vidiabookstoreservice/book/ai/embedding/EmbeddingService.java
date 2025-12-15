@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.service.search.embedding;
+package com.nhnacademy._vidiabookstoreservice.book.ai.embedding;
 
 public interface EmbeddingService {
 
