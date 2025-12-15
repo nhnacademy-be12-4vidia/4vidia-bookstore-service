@@ -17,14 +17,14 @@ import java.util.Map;
 public class AiSearchRepository {
 
     @Qualifier("aiRedisTemplate")
-    private final StringRedisTemplate redis;
+    private final StringRedisTemplate aiRedisTemplate;
 
     private static final String ENTRY_PREFIX = "ai:entry";
     private static final String RECENT_KEY = "ai:recent";
     private static final String LOCK_PREFIX = "ai:lock";
 
     public boolean tryLock(String lockKey, Duration ttl) {
-        Boolean ok = redis.opsForValue().setIfAbsent(LOCK_PREFIX + lockKey, "1", ttl);
+        Boolean ok = aiRedisTemplate.opsForValue().setIfAbsent(LOCK_PREFIX + lockKey, "1", ttl);
         return Boolean.TRUE.equals(ok);
     }
 
@@ -37,15 +37,15 @@ public class AiSearchRepository {
         map.put("vec", e.vecBase64());
         map.put("createdAt", String.valueOf(e.createdAtMs()));
 
-        redis.opsForHash().putAll(key, map);
-        redis.expire(key, ttl);
+        aiRedisTemplate.opsForHash().putAll(key, map);
+        aiRedisTemplate.expire(key, ttl);
 
-        redis.opsForList().leftPush(RECENT_KEY, e.entryId());
-        redis.opsForList().trim(RECENT_KEY, 0, recentLimit - 1);
+        aiRedisTemplate.opsForList().leftPush(RECENT_KEY, e.entryId());
+        aiRedisTemplate.opsForList().trim(RECENT_KEY, 0, recentLimit - 1);
     }
 
     public List<String> getRecentEntryIdList(int limit) {
-        List<String> idList = redis.opsForList().range(RECENT_KEY, 0, limit - 1);
+        List<String> idList = aiRedisTemplate.opsForList().range(RECENT_KEY, 0, limit - 1);
         return idList == null ? List.of() : idList;
     }
 
@@ -55,7 +55,7 @@ public class AiSearchRepository {
         List<AiCacheEntry> out = new ArrayList<>(entryIdList.size());
         for (String id : entryIdList) {
             String key = ENTRY_PREFIX + id;
-            Map<Object, Object> m = redis.opsForHash().entries(key);
+            Map<Object, Object> m = aiRedisTemplate.opsForHash().entries(key);
             if (m == null || m.isEmpty()) continue;
 
             String kw = (String) m.get("kw");
