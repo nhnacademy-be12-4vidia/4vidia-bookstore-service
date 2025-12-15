@@ -35,7 +35,9 @@ public class UserController {
      * 회원 이름 조회
      */
     @GetMapping("/name")
-    public ResponseEntity<String> getUserName(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<String> getUserName() {
+        Long userId = UserContext.get().getUserId();
+
         String userName = userService.getUserName(userId);
         return ResponseEntity.ok().body(userName);
     }
@@ -44,8 +46,10 @@ public class UserController {
      * 회원정보 조회 (마이페이지)
      */
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileResponse> getUserProfile(@RequestHeader("X-User-Id") Long id) {
-        UserProfileResponse user = userService.getUserInfo(id);
+    public ResponseEntity<UserProfileResponse> getUserProfile() {
+        Long userId = UserContext.get().getUserId();
+
+        UserProfileResponse user = userService.getUserInfo(userId);
         return ResponseEntity.ok().body(user); // 200 OK + JSON
     }
 
@@ -53,9 +57,10 @@ public class UserController {
      * 회원정보 수정
      */
     @PutMapping("/profile")
-    public ResponseEntity<UserProfileResponse> updateUserProfile(@RequestHeader("X-User-Id") Long id,
-                                                                 @Valid @RequestBody UpdateUserRequest updateUserRequest) {
-        UserProfileResponse userProfileResponse = userService.updateUserProfile(id, updateUserRequest);
+    public ResponseEntity<UserProfileResponse> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        Long userId = UserContext.get().getUserId();
+
+        UserProfileResponse userProfileResponse = userService.updateUserProfile(userId, updateUserRequest);
         return ResponseEntity.ok().body(userProfileResponse); // 204 No Content ? 200 OK + JSON ??
     }
 
