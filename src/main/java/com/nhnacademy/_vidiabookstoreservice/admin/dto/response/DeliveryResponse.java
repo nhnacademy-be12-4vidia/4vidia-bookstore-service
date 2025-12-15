@@ -39,7 +39,7 @@ public record DeliveryResponse(
                 o.getAddressRoadname(),
                 o.getAddressDetail(),
                 o.getDeliveryStatus(),
-                o.getPayPrice(),
+                o.getTotalBookPrice(),
                 o.getRecipientPhone(),
                 o.getDeliveryRequest(),
                 o.getCreatedAt(),

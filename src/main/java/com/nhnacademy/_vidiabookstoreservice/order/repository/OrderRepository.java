@@ -70,13 +70,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     @Query("""
-        select o.totalPrice - o.couponDiscount - COALESCE(SUM(pd.price), 0)
+        select o.totalBookPrice - o.couponDiscount - COALESCE(SUM(pd.price), 0)
         from Order o
         left join PointDetail pd
             on pd.orderId = o.orderId
             and pd.reason= :cancelReason
         where o.orderId = :orderId
-        group by o.totalPrice, o.couponDiscount
+        group by o.totalBookPrice, o.couponDiscount
         """)
     int calculateNetOrderPrice(@Param("orderId") Long orderId,
                                @Param("cancelReason")PointReason cancelReason);
