@@ -6,4 +6,5 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeRespon
 public interface GradeService {
     GradeResponse getGrade(Long userId);
     void updateGrade(Long userId, Long gradeId/*Grade grade*/);
+    void updateUserGradesMonthly();
 }
