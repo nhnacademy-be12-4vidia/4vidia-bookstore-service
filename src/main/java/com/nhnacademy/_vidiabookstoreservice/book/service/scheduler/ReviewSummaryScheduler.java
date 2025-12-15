@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class ReviewSummaryScheduler {
     private final BookReviewSummaryService reviewSummaryService;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void runNightlyReviewSummary() {
         int threshold = 5;
         int limit = 200;
