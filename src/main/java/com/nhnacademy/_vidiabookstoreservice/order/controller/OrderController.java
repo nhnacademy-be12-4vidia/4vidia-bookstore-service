@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutListRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
@@ -38,30 +39,29 @@ public class OrderController {
 
     /**
      * 주문 화면에 보여줄 값
-     * @param xUserId : 회원이면 유저아이디, 비회원이면 null 값
      * @param key : 레디스에서 꺼낼 키값
      * @return 주문화면에 필요한 dto
      */
     @GetMapping // 프론트가 백엔드에 종속되는 단점 존재
-    public ResponseEntity<OrderCheckoutResponse> getOrderCheckout(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
+    public ResponseEntity<OrderCheckoutResponse> getOrderCheckout(
                                                                   @RequestParam String key) {
 
-        OrderCheckoutResponse response = orderCheckoutService.getOrderCheckoutResponse(xUserId, key);
+        Long userId = UserContext.get().getUserId();
+        OrderCheckoutResponse response = orderCheckoutService.getOrderCheckoutResponse(userId, key);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
      * 주문 생성 및 저장
-     * @param xUserId : 회원이면 유저아이디, 비회원이면 null
      * @param orderCreateRequest : 주문화면에서 넘어온
      * @return
      */
     @PostMapping // 주문 생성 및 저장
-    public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                           @RequestBody @Valid OrderCreateRequest orderCreateRequest) {
+    public ResponseEntity<OrderCreateResponse> createOrder(@RequestBody @Valid OrderCreateRequest orderCreateRequest) {
          //ArgumentResolver찾아보기
-        OrderCreateResponse orderId = orderService.saveOrder(xUserId, orderCreateRequest);
+        Long userId = UserContext.get().getUserId();
+        OrderCreateResponse orderId = orderService.saveOrder(userId, orderCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orderId);
     }

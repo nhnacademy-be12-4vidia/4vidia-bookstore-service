@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.refund.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryResponse;
@@ -39,9 +40,10 @@ public class RefundController {
      */
     @GetMapping("/users/me/refunds")
     public List<RefundHistoryResponse> getMyRefundHistories(
-            @RequestParam(value = "status", required = false) RefundStatus status,
-            @RequestHeader("X-User-Id") Long userId
+            @RequestParam(value = "status", required = false) RefundStatus status
     ) {
+        Long userId = UserContext.get().getUserId();
+
         return refundService.getMyRefunds(userId, status);
     }
 }

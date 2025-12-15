@@ -6,6 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequ
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.GuestCartStatusResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -78,7 +79,8 @@ public class CartController {
      * 장바구니 삭제
      */
     @DeleteMapping
-    public ResponseEntity<Void> deleteCart(@RequestHeader("X-User-Id") Long userId) { // MySQL에서 장바구니 삭제 (회원만)
+    public ResponseEntity<Void> deleteCart() { // MySQL에서 장바구니 삭제 (회원만)
+        Long userId = UserContext.get().getUserId();
         cartService.deleteCart(userId);
         return ResponseEntity.noContent().build();
     }
@@ -88,10 +90,10 @@ public class CartController {
      */
     @DeleteMapping("/items/{bookId}")
     public ResponseEntity<Void> deleteItem(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
             @PathVariable Long bookId
     ) {
+        Long userId = UserContext.get().getUserId();
+        Long guestId = UserContext.get().getGuestId();
         cartService.removeItem(resolveOwner(userId, guestId), bookId);
         return ResponseEntity.noContent().build();
     }
@@ -101,10 +103,10 @@ public class CartController {
      */
     @DeleteMapping("/items")
     public ResponseEntity<Void> deleteSelectItems(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
             @RequestParam("itemIds") List<Long> bookIds
     ){
+        Long userId = UserContext.get().getUserId();
+        Long guestId = UserContext.get().getGuestId();
         Long id = (userId == null) ? guestId : userId;
         if(bookIds == null || bookIds.isEmpty()){
             return ResponseEntity.badRequest().build();
@@ -116,23 +118,26 @@ public class CartController {
     // 비회원 -> 회원 로그인 시 merge (팝업에서 "예" 눌렀을 때 호출)
     @PostMapping("/merge-guest")
     public ResponseEntity<Void> mergeGuestToMember(
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-Guest-Id") Long guestId
     ) {
+
+        Long userId = UserContext.get().getUserId();
+        Long guestId = UserContext.get().getGuestId();
         cartService.mergeGuestCartToUser(guestId, userId);
         return ResponseEntity.ok().build();
     }
 
     // 정상 로그아웃 시 호출
     @PostMapping("/logout-sync")
-    public ResponseEntity<Void> logoutSync(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<Void> logoutSync() {
+        Long userId = UserContext.get().getUserId();
         cartService.logoutCart(userId);
         return ResponseEntity.noContent().build();
     }
 
     // 정상 로그인 직후 호출 (MySQL -> Redis 복원)
     @PostMapping("/login-sync")
-    public ResponseEntity<Void> loginSync(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<Void> loginSync() {
+        Long userId = UserContext.get().getUserId();
         cartService.loginSyncCart(userId);
         return ResponseEntity.noContent().build();
     }
@@ -140,8 +145,8 @@ public class CartController {
     // 비회원 장바구니만 삭제 (팝업에서 "아니오" 선택 시)
     @DeleteMapping("/guest")
     public ResponseEntity<Void> clearGuestCart(
-            @RequestHeader("X-Guest-Id") Long guestId
     ) {
+        Long guestId = UserContext.get().getGuestId();
         cartService.clear(CartOwner.guest(guestId));
         return ResponseEntity.noContent().build();
     }

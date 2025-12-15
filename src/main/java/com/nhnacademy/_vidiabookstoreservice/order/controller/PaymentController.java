@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCancelRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
@@ -47,18 +48,17 @@ public class PaymentController {
 
     /**
      * 결제 확정 및 저장
-     * @param xUserId : 회원아이디 or null
-     * @param xGuestId : 비회원아이디 or null
      * @param id : 주문아이디
      * @param confirmRequest : 결제 확정 요청 dto
      * @return
      */
     @PostMapping
-    public ResponseEntity<PaymentResponse> savePaymentDetail(@RequestHeader(value = "X-User-Id", required = false) Long xUserId,
-                                                             @RequestHeader(value = "X-Guest-Id", required = false) Long xGuestId,
-                                                             @RequestParam long id,
+    public ResponseEntity<PaymentResponse> savePaymentDetail(@RequestParam long id,
                                                              @RequestBody PaymentConfirmRequest confirmRequest) {
 
+
+        Long xUserId = UserContext.get().getUserId();
+        Long xGuestId = UserContext.get().getGuestId();
         Long userId = xUserId == null ? xGuestId : xUserId; //비회원이면 장바구니 삭제시 필요함
         PaymentResponse paymentResponse = orderService.payAndCompleteOrder(id, confirmRequest, userId);
 

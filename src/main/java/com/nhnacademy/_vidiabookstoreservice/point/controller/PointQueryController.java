@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.point.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointExpireSoon;
 import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointHistoryResponse;
 import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointTotalResponse;
@@ -21,8 +22,8 @@ public class PointQueryController {
     // 보유 포인트 조회
     @GetMapping("/remain")
     public ResponseEntity<PointTotalResponse> getRemainPoint(
-            @RequestHeader("X-User-Id") Long userId
     ){
+        Long userId = UserContext.get().getUserId();
         int remainPoint = userService.getUserByPoint(userId);
         return ResponseEntity.ok().body(new PointTotalResponse(remainPoint));
     }
@@ -30,9 +31,9 @@ public class PointQueryController {
     // 소멸 예정 포인트 조회 (30일 이내)
     @GetMapping("/expire-soon")
     public ResponseEntity<PointExpireSoon> getExpireSoon(
-            @RequestHeader("X-User-Id") Long userId,
             @RequestParam(defaultValue = "7") int days
     ){
+        Long userId = UserContext.get().getUserId();
         int result = pointQueryService.getExpiringPointWithinDays(userId, days);
         return ResponseEntity.ok().body(new PointExpireSoon(result));
     }
@@ -41,11 +42,11 @@ public class PointQueryController {
 
     @GetMapping("/history")
     public ResponseEntity<Page<PointHistoryResponse>> getHistory(
-            @RequestHeader("X-User-Id") Long userId,
             @RequestParam(defaultValue = "ALL") String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
+        Long userId = UserContext.get().getUserId();
         return ResponseEntity.ok(queryService.getHistory(userId, category,page, size));
     }
 }
