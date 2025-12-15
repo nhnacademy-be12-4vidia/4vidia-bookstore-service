@@ -394,7 +394,7 @@ public class OrderServiceImpl implements OrderService {
 
         }
 
-        int serverPointPrice = 0; // 서버에서 계산할 유저 할인 가능 금액
+        int serverPointPrice = request.pointUsed(); // 서버에서 계산할 유저 할인 가능 금액
         if (user != null) {
             if (request.pointUsed() > user.getPoint()) {
                 throw new NotEnoughPointException();
