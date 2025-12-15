@@ -5,6 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCancelRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentFailRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
@@ -31,21 +32,6 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
 
-//    @PostMapping("/{orderId}/cancel") //배송 전 전액취소 상황
-//    public ResponseEntity<PaymentResponse> cancelPayment(@PathVariable long orderId,
-//                                                         @RequestBody PaymentCancelRequest cancelRequest) {
-//
-//        TossPaymentResponse tossPaymentResponse = paymentService.cancelPayment(cancelRequest.paymentKey(), cancelRequest.reason(), cancelRequest.amount());
-//
-//        Order order = orderService.getOrder(orderId);
-//
-//        PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.cancels().getLast().cancelAmount());
-//
-//        PaymentResponse paymentResponse = paymentService.savePayment(paymentCreateRequest);
-//
-//        return ResponseEntity.status(HttpStatus.CREATED).body(paymentResponse);
-//    }
-
     /**
      * 결제 확정 및 저장
      * @param id : 주문아이디
@@ -63,6 +49,13 @@ public class PaymentController {
         PaymentResponse paymentResponse = orderService.payAndCompleteOrder(id, confirmRequest, userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
+    }
+
+    @PostMapping("/rollback")
+    public ResponseEntity<Void> rollbackPayment(@RequestBody PaymentFailRequest paymentFailRequest) {
+        orderService.cancelOrder(paymentFailRequest.orderId());
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

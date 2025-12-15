@@ -21,15 +21,18 @@ public record OrderResponse(
         String recipientPhone,
         String deliveryRequest,
         LocalDateTime createdAt,
+
+        int totalBookPrice,
+        int packagingFee,
+        int deliveryFee,
         int couponDiscount,
         int pointUsed,
+
         LocalDate deliveryDate,
-        DeliveryStatus deliveryStatus,
         LocalDate actualDeliveryDate, //null값 가져올수도있음
-        int totalPrice, //도서 + 포장 + 배송
-        int payPrice,   //도서 + 포장 + 배송 - 포인트 - 쿠폰
-        List<OrderBookResponse> orderItems,
-        int itemsPrice  //순수 도서 금액 (도서 * 수량)의 합
+        DeliveryStatus deliveryStatus,
+
+        List<OrderBookResponse> orderItems
 ) {
     public record OrderBookResponse(
             Long orderItemId,
@@ -67,7 +70,7 @@ public record OrderResponse(
     }
 
     public static OrderResponse from(Order order) {
-        Long userId = null; // ⭐ 비회원이면 null
+        Long userId = null;
         if (order.getUser() != null) {
             userId = order.getUser().getUserId();
         }
@@ -86,15 +89,15 @@ public record OrderResponse(
                 order.getRecipientPhone(),
                 order.getDeliveryRequest(),
                 order.getCreatedAt(),
+                order.getTotalBookPrice(),
+                order.getPackagingFee(),
+                order.getDeliveryFee(),
                 order.getCouponDiscount(),
                 order.getPointUsed(),
                 order.getDeliveryDate(),
-                order.getDeliveryStatus(),
                 order.getActualDeliveryDate(),
-                order.getTotalBookPrice(),
-                0,
-                orderItems,
-                order.getPointUsed()
+                order.getDeliveryStatus(),
+                orderItems
         );
     }
 }
