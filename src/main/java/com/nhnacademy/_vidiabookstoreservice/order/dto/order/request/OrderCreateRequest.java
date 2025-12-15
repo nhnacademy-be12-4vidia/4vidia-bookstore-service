@@ -12,21 +12,18 @@ public record OrderCreateRequest(
         String zipCode,
         String recipientPhone,
         String deliveryRequest,
-        LocalDate deliveryDate,
         String orderPassword,
+        LocalDate deliveryDate,
 
         @PositiveOrZero(message = "도서 가격은 0 이상이어야 합니다.")
-        int totalPrice, //도서 가격 합
-        @PositiveOrZero(message = "배송비는 0 이상이어야 합니다.")
-        int deliveryCost, //배송비
+        int totalBookPrice,
         @PositiveOrZero(message = "포장비는 0 이상이어야 합니다.")
-        int packagingCost, //포장비
-
+        int packagingFee,
+        @PositiveOrZero(message = "배송비는 0 이상이어야 합니다.")
+        int deliveryFee,
         int couponDiscount, //쿠폰할인금액
         @PositiveOrZero(message = "사용 포인트는 0 이상이어야 합니다.")
         int pointUsed,  //포인트사용금액
-        @PositiveOrZero(message = "최소 결제금액은 0 이상이어야 합니다.")
-        int payPrice, //도서가격 + 배송비 + 포장비 - 할인/포인트
 
         List<ItemRequestDto> orderItems,
         Long couponId

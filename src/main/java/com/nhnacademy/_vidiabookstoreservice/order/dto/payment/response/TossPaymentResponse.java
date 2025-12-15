@@ -1,5 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.payment.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
 public record TossPaymentResponse(

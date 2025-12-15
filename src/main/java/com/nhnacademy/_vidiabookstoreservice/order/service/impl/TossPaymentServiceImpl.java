@@ -1,10 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossErrorResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
@@ -89,7 +91,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
         try {
             response = sendRequest(requestData, API_SECRET_KEY, TOSS_CONFIRM_URL);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("토스 결제 취소 요청 중 통신 오류 발생", e);
         }
 
         if (response.containsKey("code")) {
@@ -114,10 +116,17 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
         try {
             response = sendRequest(requestData, API_SECRET_KEY, TOSS_URL + paymentKey + "/cancel");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("토스 결제 취소 요청 중 통신 오류 발생", e);
         }
 
-        return  objectMapper.convertValue(response, TossPaymentResponse.class);
+        //TODO 이미 취소 상태면 에러 응답 객체가 온다. (code: String, message: String)
+        if (response.containsKey("paymentKey")) { // 처리 성공시 토스응답객체로 반환
+            return objectMapper.convertValue(response, TossPaymentResponse.class);
+        } else if (response.containsKey("code")) { // 에러 객체로 돌아올때 처리
+
+            objectMapper.convertValue(response, TossErrorResponse.class);
+        }
+        return null; //수정 필요
     }
 
     private Map<String, Object> sendRequest(Map<String, Object> requestData, String secretKey, String urlString) throws IOException {

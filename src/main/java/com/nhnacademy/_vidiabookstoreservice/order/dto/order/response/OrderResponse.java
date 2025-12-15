@@ -91,10 +91,10 @@ public record OrderResponse(
                 order.getDeliveryDate(),
                 order.getDeliveryStatus(),
                 order.getActualDeliveryDate(),
-                order.getTotalPrice(),
-                order.getPayPrice(),
+                order.getTotalBookPrice(),
+                0,
                 orderItems,
-                orderItems.stream().mapToInt(item -> item.salePrice() * item.quantity()).sum()
+                order.getPointUsed()
         );
     }
 }

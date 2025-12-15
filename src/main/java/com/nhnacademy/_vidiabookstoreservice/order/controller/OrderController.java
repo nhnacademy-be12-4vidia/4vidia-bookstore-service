@@ -43,8 +43,7 @@ public class OrderController {
      * @return 주문화면에 필요한 dto
      */
     @GetMapping // 프론트가 백엔드에 종속되는 단점 존재
-    public ResponseEntity<OrderCheckoutResponse> getOrderCheckout(
-                                                                  @RequestParam String key) {
+    public ResponseEntity<OrderCheckoutResponse> getOrderCheckout(@RequestParam String key) {
 
         Long userId = UserContext.get().getUserId();
         OrderCheckoutResponse response = orderCheckoutService.getOrderCheckoutResponse(userId, key);
