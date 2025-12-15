@@ -23,9 +23,9 @@ public class GradeController {
     /**
      * 등급 변경
      */
-    @PutMapping("/{gradeId}")
+    @PutMapping("/{grade-id}")
     public ResponseEntity<String> updateGrade(@RequestHeader("X-User-Id") Long id,
-                                              @PathVariable Long gradeId) {
+                                              @PathVariable("grade-id") Long gradeId) {
 
         // todo : 아무때나 변경되면 안됨
         //  3개월 이내 순수 주문금액을 기준

@@ -90,7 +90,7 @@ class GradeControllerTest {
         Long userId = 1L; // nhn@naver.com 유저 (관리자)
         Long targetGradeId = gradeRepository.findByGradeName(GradeName.GOLD).getGradeId();
 
-        mockMvc.perform(put("/users/me/grade/{gradeId}", targetGradeId) // 경로 변수 포함
+        mockMvc.perform(put("/users/me/grade/{grade-id}", targetGradeId) // 경로 변수 포함
                         .header("X-User-Id", userId))
                 .andExpect(status().isNoContent())
                 .andDo(document("user-grade-put",
@@ -101,7 +101,7 @@ class GradeControllerTest {
                                 headerWithName("X-User-Id").description("사용자 식별 ID")
                         ),
                         pathParameters( // 경로 변수(Path Variable) 문서화
-                                parameterWithName("gradeId").description("변경할 등급 ID")
+                                parameterWithName("grade-id").description("변경할 등급 ID")
                         )
                 ));
     }
