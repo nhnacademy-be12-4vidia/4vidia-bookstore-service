@@ -1,0 +1,175 @@
+// 회원 R/C/U/D 기능
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 회원 조회 by email
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-by-email-get/http-request.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/user-by-email-get/query-parameters.adoc[]
+
+
+.응답 (Response)
+include::{snippets}/user-by-email-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/user-by-email-get/response-fields.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH) - 없으므로 생략
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------
+
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 회원 이름 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-name-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-name-get/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-name-get/http-response.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH) - 없으므로 생략
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------
+
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 회원 프로필 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-profile-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-profile-get/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-profile-get/http-response.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+==== 회원 프로필 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-profile-put/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-profile-put/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/user-profile-put/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-profile-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/user-profile-put/response-fields.adoc[]
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------
+
+
+
+// --------------------------------------------------------------
+// 1. 조회 (GET) - 없으므로 생략
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+==== 회원 비밀번호 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-password-put/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-password-put/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/user-password-put/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-password-put/http-response.adoc[]
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------
+
+
+
+
+// --------------------------------------------------------------
+// 1. 조회 (GET) - 없으므로 생략
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+==== 회원 탈퇴
+:table-number: 0
+// 회원탈퇴 -> 실제 = put맵핑 (db에서 삭제안함)
+.요청 (Request)
+include::{snippets}/user-me-delete/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-me-delete/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/user-me-delete/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-me-delete/http-response.adoc[]
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------
+
+
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 회원 권한 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-role-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-role-get/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-role-get/http-response.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH) - 없으므로 생략
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------
+
+
+
+// --------------------------------------------------------------
+// 1. 조회 (GET) - 없으므로 생략
+// --------------------------------------------------------------
+// 2. 생성 (POST) - 없으므로 생략
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+==== 회원 payco 로그인 후 필수 정보 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-payco-put/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-payco-put/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/user-payco-put/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-payco-put/http-response.adoc[]
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE) - 없으므로 생략
+// --------------------------------------------------------------
