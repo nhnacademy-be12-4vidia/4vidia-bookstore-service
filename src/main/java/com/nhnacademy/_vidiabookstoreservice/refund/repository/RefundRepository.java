@@ -37,13 +37,16 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
             @Param("status") RefundStatus status
     );
 
+    /**
+     * 반품 처리 된 도서 수량
+     */
     @Query("""
-    select coalesce(sum(oi.quantity), 0)
-    from Refund r
-    join r.orderItem oi
-    where oi.order.orderId = :orderId
-      and r.refundStatus = :refundStatus
-""")
+        select coalesce(sum(oi.quantity), 0)
+        from Refund r
+        join r.orderItem oi
+        where oi.order.orderId = :orderId
+          and r.refundStatus = :refundStatus
+    """)
     int sumRefundedQuantity(@Param("orderId") Long orderId,
                             @Param("refundStatus") RefundStatus refundStatus);
 

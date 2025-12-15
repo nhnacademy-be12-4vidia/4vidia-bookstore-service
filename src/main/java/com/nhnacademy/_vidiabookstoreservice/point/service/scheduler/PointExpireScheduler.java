@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.point.scheduler;
+package com.nhnacademy._vidiabookstoreservice.point.service.scheduler;
 
 
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;

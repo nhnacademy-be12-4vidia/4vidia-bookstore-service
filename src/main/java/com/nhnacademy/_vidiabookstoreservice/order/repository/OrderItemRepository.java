@@ -22,4 +22,17 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     where oi.order.orderId = :orderId
 """)
     Integer sumOrderItemQuantity(@Param("orderId") Long orderId);
+
+    /**
+     * 구매 확정 -> 순수 주문 금액 계산
+     */
+    @Query("""
+        select COALESCE(SUM(oi.salePrice * oi.quantity), 0) - o.couponDiscount
+        from OrderItem oi
+        join oi.order o
+        where o.orderId = :orderId
+          and oi.confirmStatus = :confirmStatus
+    """)
+    int calculateNetOrderPrice(@Param("orderId") Long orderId,
+                               @Param("confirmStatus")ConfirmStatus confirmStatus);
 }
