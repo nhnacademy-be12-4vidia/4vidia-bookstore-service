@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.service.search.embedding;
+package com.nhnacademy._vidiabookstoreservice.book.ai.embedding;
 
 import com.nhnacademy._vidiabookstoreservice.book.client.OllamaFeignClient;
 import lombok.RequiredArgsConstructor;

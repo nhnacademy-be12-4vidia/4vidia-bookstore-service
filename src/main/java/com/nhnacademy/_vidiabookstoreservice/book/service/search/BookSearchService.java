@@ -1,14 +1,15 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.search;
 
+import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
-import com.nhnacademy._vidiabookstoreservice.book.service.search.embedding.EmbeddingService;
+import com.nhnacademy._vidiabookstoreservice.book.ai.embedding.EmbeddingService;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.es.BookDocumentSearchClient;
-import com.nhnacademy._vidiabookstoreservice.book.service.search.rerank.BookDocumentReranker;
+import com.nhnacademy._vidiabookstoreservice.book.ai.rerank.BookDocumentReranker;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.result.BookSearchResultAssembler;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import java.util.Comparator;

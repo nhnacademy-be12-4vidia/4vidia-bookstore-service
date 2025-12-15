@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.service.search.rerank;
+package com.nhnacademy._vidiabookstoreservice.book.ai.rerank;
 
 import com.nhnacademy._vidiabookstoreservice.book.client.RerankerFeignClient;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
