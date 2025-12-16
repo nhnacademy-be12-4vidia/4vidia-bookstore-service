@@ -1,5 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.search;
 
+import com.nhnacademy._vidiabookstoreservice.book.ai.AiWarmupService;
+import com.nhnacademy._vidiabookstoreservice.book.ai.cache.AiCacheHitService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
@@ -38,26 +40,35 @@ public class BookSearchService {
     private final BookDocumentReranker reranker;
     private final BookSearchResultAssembler resultAssembler;
     private final GeminiAnswerService geminiAnswerService;
+    private final AiWarmupService aiWarmupService;
+    private final AiCacheHitService aiCacheHitService;
 
     public Page<BookSearchListResponse> searchBooks(EsBookSearchRequest request, Pageable pageable, Long userId) {
-        String keyword = request.getKeyword();
+        String rawKeyword = request.getKeyword();
+        String keyword = (rawKeyword == null) ? "" : rawKeyword.trim().toLowerCase();
         if (!StringUtils.hasText(keyword)) {
             return Page.empty(pageable);
         }
 
-        boolean useSemantic = Boolean.FALSE.equals(request.getUseSemantic());
-
-        float[] queryVector = null;
-
-        List<BookDocument> initialDocs = searchClient.search(request, queryVector, MAX_RESULTS);
+        List<BookDocument> initialDocs = searchClient.search(request, null, MAX_RESULTS);
 
         if (initialDocs.isEmpty()) {
             return Page.empty(pageable);
         }
+        float[] queryVector = embeddingService.embedOrNull(keyword);
+        boolean hit = false;
+        if (queryVector != null && queryVector.length > 0) {
+            String hitEntryId = aiCacheHitService.tryHit(queryVector);
+            hit = (hitEntryId != null);
+        }
 
-        List<BookDocument> rerankDocs = reranker.rerankSafely(keyword, initialDocs);
+        if (!hit) {
+            aiWarmupService.warmUpAndCache(keyword, initialDocs);
+        } else {
+            log.info("[SEARCH] skip warmup(cache hit) keyword = {}", keyword);
+        }
 
-        return resultAssembler.assemble(rerankDocs, userId, pageable);
+        return resultAssembler.assemble(initialDocs, userId, pageable);
     }
 
     public AiBookSearchResponse searchBookWithLlm(EsBookSearchRequest request, Pageable pageable,
