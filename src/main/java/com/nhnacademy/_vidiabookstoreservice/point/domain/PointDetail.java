@@ -39,6 +39,7 @@ public class PointDetail {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Setter
     @Column(name = "reason", nullable = false)
     @Convert(converter = PointReasonConverter.class)
     private PointReason reason;
@@ -165,12 +166,12 @@ public class PointDetail {
     /**
      * 만료일 지남 -> 소멸
      */
-    public static PointDetail expired(Long userId){
+    public static PointDetail expired(Long userId, int price){
         LocalDateTime ldt = LocalDateTime.now();
 
         return PointDetail.builder()
                 .userId(userId)
-                .price(0)
+                .price(price)
                 .createdAt(ldt)
                 .reason(PointReason.POINT_EXPIRE)
                 .build();
