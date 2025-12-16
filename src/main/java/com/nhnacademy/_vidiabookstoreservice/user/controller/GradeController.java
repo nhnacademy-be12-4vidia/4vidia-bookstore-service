@@ -30,10 +30,6 @@ public class GradeController {
     public ResponseEntity<String> updateGrade(@PathVariable("grade-id") Long gradeId) {
         Long userId = UserContext.get().getUserId();
 
-
-        // todo : 아무때나 변경되면 안됨
-        //  3개월 이내 순수 주문금액을 기준
-        //  순수 금액 = 주문 금액 - (쿠폰+배송비+취소금액+포장비)
         gradeService.updateGrade(userId, gradeId);
         return ResponseEntity.noContent().build(); // 204 No Content
     }

@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
+import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
@@ -70,7 +72,12 @@ public class UserServiceImpl implements UserService {
     public OrderUserResponse getOrderUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
-        return OrderUserResponse.fromEntity(user);
+
+        Address defaultAddress = user.getAddress();
+        if (defaultAddress == null) {
+            throw new DefaultAddressNotFoundException();
+        }
+        return OrderUserResponse.fromEntity(user, defaultAddress);
     }
 
     /**

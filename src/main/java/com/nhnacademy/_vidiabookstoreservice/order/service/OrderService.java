@@ -24,7 +24,7 @@ public interface OrderService {
 
     void cancelOrderIfPending(Long orderId);
 
-    void cancelOrder(Long orderId);
+    void cancelOrder(Long orderId, String message);
 
     Boolean validateGuest(OrderTrackingRequest orderTrackingRequest);
 

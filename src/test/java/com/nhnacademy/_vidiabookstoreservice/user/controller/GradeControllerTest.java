@@ -68,8 +68,8 @@ class GradeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.gradeName").exists())
                 .andExpect(jsonPath("$.pointRate").isNumber())
-                .andDo(document("user-grade-get", // target에 만들어질 패키지 이름!!! todo: 컨벤션 정해야함
-                        preprocessRequest(prettyPrint()), // 요청/응답 body를 보기 좋게 출력해준데요 (없으면 한줄로 출력)
+                .andDo(document("user-grade-get", // target에 만들어질 패키지 이름!!!
+                        preprocessRequest(prettyPrint()), // 요청/응답 body를 보기 좋게 출력해준대요 (없으면 한줄로 출력)
                         preprocessResponse(prettyPrint()),
 
                         requestHeaders( // 요청 헤더 문서화
@@ -80,8 +80,6 @@ class GradeControllerTest {
                                 fieldWithPath("pointRate").description("포인트 적립률 (%)")
                         )
                 ));
-                // todo : document(...) 안에 들어갈 이름을 정하는 규칙
-                //  규칙: "{도메인}-{기능}-{HTTP메서드}" 순서로 지으면, 생성된 스니펫들이 폴더 안에서 `보기 좋게 정렬되어 찾기 쉽다`고 합니다.
     }
 
     @Test

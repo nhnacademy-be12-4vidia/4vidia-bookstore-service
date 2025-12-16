@@ -6,6 +6,7 @@ public record OrderBookResponse(
             String bookTitle,
             String bookAuthor,
             String bookImageUrl,
+            String categoryKdc,
             Integer quantity,
             Integer salePrice
     ) {
@@ -15,6 +16,7 @@ public record OrderBookResponse(
                     book.title(),
                     book.author(),
                     book.imageUrl(),
+                    book.categoryKdc(),
                     quantity,
                     book.salePrice()
             );

@@ -29,6 +29,7 @@ import com.nhnacademy._vidiabookstoreservice.point.exception.NotEnoughPointExcep
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.CouponCalculationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -285,14 +286,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void cancelOrder(Long orderId) {
+    public void cancelOrder(Long orderId, String message) {
         Order order = getOrder(orderId);
 
         // OrderStatus -> PAID(1) 일때는 결제 취소해야함
         if (order.getOrderStatus() == OrderStatus.PAID) {
             Payment payment = paymentService.getPaymentEntity(orderId);
 
-            TossPaymentResponse tossPaymentResponse = paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+            TossPaymentResponse tossPaymentResponse = paymentService.cancelPayment(payment.getPaymentKey(), message,  payment.getAmount());
 
             PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.cancels().getLast().cancelAmount());
 
@@ -392,7 +393,8 @@ public class OrderServiceImpl implements OrderService {
                         request.couponId(),
                         itemInfos
                 );
-                serverCouponPrice = couponClient.calculateCoupons(Objects.requireNonNull(user).getUserId(), couponCalculationRequest);
+                CouponCalculationResponse couponCalculationResponse = couponClient.calculateCoupons(Objects.requireNonNull(user).getUserId(), couponCalculationRequest);
+                serverCouponPrice = couponCalculationResponse.discountPrice();
             }
 
         }
