@@ -13,17 +13,41 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiResponse;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GeminiAnswerService {
 
     private final RestClient geminiRestClient;
     private final GeminiProperties geminiProperties;
     private final ObjectMapper objectMapper;
+
+    @PostConstruct
+    void logGeminiConfig() {
+        String key = geminiProperties.getApiKey();
+        log.info("[LLM-CONFIG] gemini model={}, apiKeyPresent={}, apiKeyLen={}, apiKeyPreview={}",
+                geminiProperties.getModel(),
+                hasText(key),
+                key == null ? 0 : key.length(),
+                mask(key));
+    }
+
+    private boolean hasText(String s) {
+        return s != null && !s.trim().isEmpty();
+    }
+
+    private String mask(String s) {
+        if (!hasText(s)) return "<empty>";
+        int n = s.length();
+        if (n <= 6) return "<too-short>";
+        return s.substring(0, 2) + "****" + s.substring(n - 2);
+    }
 
     public List<GeminiBookSuggestion> generateSuggestions(String userQuestion, List<BookDocument> rerankedDocs) {
 
@@ -128,8 +152,21 @@ public class GeminiAnswerService {
     }
 
     private Optional<String> getGeminiText(GeminiRequest request) {
-        GeminiResponse response = getGeminiResponse(request);
-        return extractFirstText(response);
+//        GeminiResponse response = getGeminiResponse(request);
+//        return extractFirstText(response);
+
+        try {
+            GeminiResponse response = getGeminiResponse(request);
+            return extractFirstText(response);
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            log.error("[LLM-CALL] Gemini failed. status={}, body={}",
+                    e.getStatusCode(), e.getResponseBodyAsString());
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error("[LLM-CALL] Gemini failed. exClass={}, msg={}",
+                    e.getClass().getName(), e.getMessage(), e);
+            return Optional.empty();
+        }
     }
 
     private Optional<String> extractFirstText(GeminiResponse response) {
