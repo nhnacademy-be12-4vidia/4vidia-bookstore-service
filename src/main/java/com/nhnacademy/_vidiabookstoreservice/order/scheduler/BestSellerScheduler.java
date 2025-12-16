@@ -32,8 +32,8 @@ public class BestSellerScheduler {
      * 2. VIEW_KEY(List)에 덮어쓰기
      * 3. SOURCE_KEY -> BACKUP_KEY로 백업 후 초기화
      */
-    @Scheduled(cron = "0 0/10 * * * *") // 테스트용 10분마다 스케줄링
-//    @Scheduled(cron = "0 0 * * * *")
+//    @Scheduled(cron = "0 0/10 * * * *") // 테스트용 10분마다 스케줄링
+    @Scheduled(cron = "0 0 * * * *")
     public void updateBestsellerRanking() {
 
         ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
@@ -97,8 +97,8 @@ public class BestSellerScheduler {
     /**
      * 베스트셀러 초기화&백업 - 하루1회 자정에
      */
-    @Scheduled(cron = "0 0 * * * *") // 테스트용 매 시간마다 초기화
-//    @Scheduled(cron = "0 0 * * * *")
+//    @Scheduled(cron = "0 0 * * * *") // 테스트용 매 시간마다 초기화
+    @Scheduled(cron = "0 0 0 * * *")
     public void dailyReset() {
         log.info("[Scheduler] 데이터 초기화 수행");
 
