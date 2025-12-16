@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.*;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
+import com.nhnacademy._vidiabookstoreservice.order.dto.event.BestSellerUpdateEvent;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
@@ -17,10 +18,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCr
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
-import com.nhnacademy._vidiabookstoreservice.order.exception.OrderAmountMismatchException;
-import com.nhnacademy._vidiabookstoreservice.order.exception.OrderFailedException;
-import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.*;
 import com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProducer;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.*;
@@ -29,10 +27,11 @@ import com.nhnacademy._vidiabookstoreservice.point.exception.NotEnoughPointExcep
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,10 +56,10 @@ public class OrderServiceImpl implements OrderService {
     private final RabbitTemplate rabbitTemplate;
     private final OrderMessageProducer orderMessageProducer;
     private final CartService cartService;
-    private final StringRedisTemplate bestsellerRedisTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request) {
+    public OrderCreateResponse saveOrder(Long userId, @Valid OrderCreateRequest request) {
         User user = null;
         if (userId != null) {
             user = userService.getUserById(userId);
@@ -159,11 +158,7 @@ public class OrderServiceImpl implements OrderService {
             List<Long> orderBooks = order.getOrderItems().stream().map(OrderItem::getBook).map(Book::getId).toList();
             cartService.removeItemByOrder(userId, orderBooks);
 
-            List<OrderItem> orderItems = order.getOrderItems();
-
-            orderItems.stream().forEach(orderItem ->
-                    bestsellerRedisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getBook().getId().toString(), orderItem.getQuantity())
-            ); // TODO 의미가? 분리하는게 비동기 event 처리하기
+            eventPublisher.publishEvent(new BestSellerUpdateEvent(orderId));
 
             return paymentResponse;
 
@@ -173,8 +168,8 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderFailedException("결제실패" + e.getMessage());
         }
 
-        //TODO orders 테이블 주문상태 수정해야하는데 가상계좌가 들어오니 status 뜯어보고 그거에 따라 바꿔줘야하나?
-        // 가상계좌면 계좌정보 담아서 보내야함?. 근데 일단 pass
+        // 추가 1. orders 테이블 주문상태 수정해야하는데 가상계좌가 들어오니 status 뜯어보고 그거에 따라 바꿔줘야하나?
+        // 추가 2. 가상계좌면 계좌정보 담아서 보여줘야함?. 근데 일단 pass
     }
 
     @Override
@@ -253,7 +248,11 @@ public class OrderServiceImpl implements OrderService {
         if (confirmRequest != null) { // 결제과정에서 성공해서 paymentKey값 있을때만
             // 멱등성 있어서 취소할 결제가 없어도 안전하게 무시되니 부르는게 안전성 굳
             int payPrice = order.getTotalBookPrice() + order.getPackagingFee() + order.getDeliveryFee() - order.getCouponDiscount() - order.getPointUsed();
-            paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", payPrice);
+            try {
+                paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", payPrice);
+            } catch (PaymentConfirmException e) {
+
+            }
         }
 
         order.setOrderStatus(OrderStatus.REFUNDED);
@@ -285,18 +284,25 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void cancelOrder(Long orderId) {
+    public void cancelOrder(Long orderId, String message) {
         Order order = getOrder(orderId);
 
         // OrderStatus -> PAID(1) 일때는 결제 취소해야함
         if (order.getOrderStatus() == OrderStatus.PAID) {
             Payment payment = paymentService.getPaymentEntity(orderId);
 
-            TossPaymentResponse tossPaymentResponse = paymentService.cancelPayment(payment.getPaymentKey(), "배송 전 취소",  payment.getAmount());
+            TossPaymentResponse tossPaymentResponse = null;
+            PaymentCreateRequest paymentCreateRequest = null;
+            try {
+                tossPaymentResponse = paymentService.cancelPayment(payment.getPaymentKey(), message,  payment.getAmount());
 
-            PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.cancels().getLast().cancelAmount());
+                paymentCreateRequest = PaymentCreateRequest.from(order, tossPaymentResponse, tossPaymentResponse.cancels().getLast().cancelAmount());
 
-            paymentService.savePayment(paymentCreateRequest);
+                paymentService.savePayment(paymentCreateRequest);
+            } catch (PaymentConfirmException e) { // 실제 결제는 취소인데 상태가 업데이트 안되었을때
+                paymentCreateRequest = new PaymentCreateRequest(order, "CANCELED", payment.getPayMethod(), payment.getAmount(), payment.getPaymentKey(), payment.getSendOrderId());
+                paymentService.savePayment(paymentCreateRequest);
+            }
         }
 
         // OrderStatus -> PENDING(0)에도 상태 변경 해줘야함 (if문 밖으로 뺌)
