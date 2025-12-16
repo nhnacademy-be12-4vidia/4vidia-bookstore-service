@@ -2,6 +2,8 @@ package com.nhnacademy._vidiabookstoreservice.order.repository;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
+import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,33 +41,45 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                       @Param("keyword") String keyword,
                                       Pageable pageable);
 
+    List<Order> findByUserAndCreatedAtBetweenAndDeliveryStatus(
+            User user,
+            LocalDateTime from,
+            LocalDateTime to,
+            DeliveryStatus deliveryStatus
+    );
 
-    // [수정] 3개월 순수주문금액 산정 (Native Query)
-    // 공식: SUM( (확정된 아이템 가격 합계) - (해당 주문의 쿠폰 할인액) )
+
+
+    // 3개월 순수 주문금액 계산
     @Query(value = """
+    SELECT
+        o.user_id AS userId,
+        COALESCE(SUM(
+            o.total_book_price
+            - o.coupon_discount
+            - o.delivery_fee
+            - o.packaging_fee
+            - COALESCE(pd.cancel_point, 0)
+        ), 0) AS netSum
+    FROM orders o
+    LEFT JOIN (
         SELECT
-            T.user_id AS userId,
-            SUM(T.order_net_amount) AS netSum
-        FROM (
-            SELECT
-                o.user_id,
-                o.order_id,
-                -- (확정된 아이템 총액) - (쿠폰 할인액)
-                -- GREATEST(0, ...): 혹시 부분 반품 등으로 음수가 나오면 0 처리
-                GREATEST(0, SUM(oi.sale_price * oi.quantity) - o.coupon_discount) AS order_net_amount
-            FROM orders o
-            JOIN order_item oi ON o.order_id = oi.order_id
-            WHERE o.created_at >= :fromDt
-              AND o.created_at < :toDt
-              AND oi.confirm_status = :confirmedStatus -- 구매확정 상태값
-            GROUP BY o.order_id, o.user_id, o.coupon_discount
-        ) T
-        GROUP BY T.user_id
-    """, nativeQuery = true)
+            order_id,
+            SUM(price) AS cancel_point
+        FROM point_detail
+        WHERE reason = :reasonCode 
+        GROUP BY order_id
+    ) pd ON o.order_id = pd.order_id
+    WHERE o.created_at >= :fromDt
+      AND o.created_at < :toDt
+    GROUP BY o.user_id
+""", nativeQuery = true)
     List<UserNetSum> findUserNetSumLast3Months(
             @Param("fromDt") LocalDateTime fromDt,
             @Param("toDt") LocalDateTime toDt,
-            @Param("confirmedStatus") int confirmedStatus // 혹은 String (DB 저장 방식에 따라)
+            @Param("reasonCode") int reasonCode
     );
+
+
 
 }
