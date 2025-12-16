@@ -37,6 +37,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -62,6 +64,7 @@ public class BookServiceImpl implements BookService {
     private final TagService tagService;
     private final ReviewRepository reviewRepository;
     private final BookTagService bookTagService;
+    private final LikeService likeService;
 
     @Value("${image.default.thumbnail}")
     private String defaultThumbnailUrl;
@@ -347,17 +350,28 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList) { // 랭킹 순으로 정렬되있는 bookIdList
+    public List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList, Long userId) { // 랭킹 순으로 정렬되있는 bookIdList
         List<Book> bookList = bookRepository.findAllById(bookIdList);
 
         // 받아온 bookIdList 순서 그대로 넘겨줘야함
         Map<Long, Book> bookMap = bookList.stream()
                 .collect(Collectors.toMap(Book::getId, book -> book));
 
+        List<Long> likedBookIds;
+        if (userId != null) {
+            likedBookIds = likeService.getLikes(userId).stream().map(LikeResponse::bookId).toList();
+        } else {
+            likedBookIds = Collections.emptyList();
+        }
+
+
         return bookIdList.stream()
                 .map(bookMap::get)
                 .filter(Objects::nonNull)
-                .map(BookListResponse::from)
+                .map(book -> {
+                    boolean isLiked = likedBookIds.contains(book.getId());
+                    return BookListResponse.from(book, isLiked);
+                })
                 .toList();
     }
 

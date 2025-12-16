@@ -84,6 +84,11 @@ public class BookController {
 
     @GetMapping("/best-seller")
     public ResponseEntity<List<BookListResponse>> getBestSellers() {
+        Long userId = null;
+        if (UserContext.get() != null) {
+            userId = UserContext.get().getUserId();
+        }
+
         ListOperations<String, String> listOps = bestsellerRedisTemplate.opsForList();
         List<String> savedTop10 = listOps.range("top10", 0, -1);
         if (savedTop10 == null || savedTop10.isEmpty()) {
@@ -94,7 +99,7 @@ public class BookController {
                 .map(Long::parseLong)
                 .toList();
 
-        List<BookListResponse> bestSellerList = bookService.getBookListResponseByIdList(bookIdList);
+        List<BookListResponse> bestSellerList = bookService.getBookListResponseByIdList(bookIdList, userId);
 
         return ResponseEntity.ok().body(bestSellerList);
     }
