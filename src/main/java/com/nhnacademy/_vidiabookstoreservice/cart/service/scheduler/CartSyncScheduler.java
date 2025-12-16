@@ -28,7 +28,8 @@ public class CartSyncScheduler {
             try {
                 cartService.flushCartFromRedisToMySql(userId); // redis -> mysql
             } catch (Exception e) {
-                log.error("cart scheduler 실패 userId={}", userId, e);
+                // 실패 시 로그 + 다시 dirty로 되돌리기
+                log.error("[장바구니 스케줄러] 실패 userId={}", userId, e);
                 dirtyCartRepository.markDirty(userId);
             }
         }

@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface PointPolicyRepository extends JpaRepository<PointPolicy, Long> {
-    PointPolicy findByPointPolicyId(Long pointPolicyId);
+    Optional<PointPolicy> findByPointPolicyId(Long pointPolicyId);
 }

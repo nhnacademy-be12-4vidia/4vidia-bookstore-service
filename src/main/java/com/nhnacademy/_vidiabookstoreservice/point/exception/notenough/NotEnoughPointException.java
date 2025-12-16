@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.point.exception;
+package com.nhnacademy._vidiabookstoreservice.point.exception.notenough;
 
 import com.nhnacademy._vidiabookstoreservice.global.exception.NotEnoughException;
 

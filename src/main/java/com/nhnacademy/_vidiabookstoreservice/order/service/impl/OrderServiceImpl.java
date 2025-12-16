@@ -23,7 +23,8 @@ import com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProdu
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.*;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
-import com.nhnacademy._vidiabookstoreservice.point.exception.NotEnoughPointException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.GuestPointUseException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.notenough.NotEnoughPointException;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
@@ -405,17 +406,20 @@ public class OrderServiceImpl implements OrderService {
 
         }
 
-        int serverPointPrice = request.pointUsed(); // 서버에서 계산할 유저 할인 가능 금액
-        if (user != null) {
-            if (request.pointUsed() > user.getPoint()) {
-                throw new NotEnoughPointException();
-            }
-        } else {
-            if (request.pointUsed() != 0) {
-                throw new NotEnoughPointException();
+        int serverPointPrice = 0;
+        if(user!=null){
+            // 주문 직전 포인트 보정
+            pointCommandService.expireIfNeeded(user.getUserId());
+
+            pointCommandService.validateUsablePoint(user.getUserId(), request.pointUsed());
+
+            serverPointPrice = request.pointUsed();
+
+        }else{
+            if(request.pointUsed()!=0){
+                throw new GuestPointUseException();
             }
         }
-
 
         int finalTotalPrice = serverItemPrice + serverPackagingPrice + serverDeliveryPrice - serverCouponPrice - serverPointPrice;
 

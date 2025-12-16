@@ -21,15 +21,8 @@ public class PointQueryServiceImpl implements PointQueryService {
 
     private final PointDetailRepository pointDetailRepository;
 
-    // 현재 잔여 포인트 조회
+    // 일정기간 내 만료 예정 포인트 금액 조회
     @Override
-    public int getRemainPoint(Long userId) {
-        return pointDetailRepository.getRemainPoint(userId);
-    }
-
-    // 일장기간 내 만료 예정 포인트 금액 조회
-    @Override
-    @Transactional(readOnly = true)
     public int getExpiringPointWithinDays(Long userId, int days) {
         LocalDate now = LocalDate.now();
         LocalDate limit = now.plusDays(days);
@@ -38,19 +31,6 @@ public class PointQueryServiceImpl implements PointQueryService {
 
     // 포인트 내역 조회 ( 최신순)
     @Override
-    @Transactional(readOnly = true)
-//    public Page<PointHistoryResponse> getHistory(Long userId,String category, int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-//
-//        return pointDetailRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-//                .map(detail -> new PointHistoryResponse(
-//                        detail.getCreatedAt(),
-//                        detail.getPrice(),
-//                        detail.getReason().getTitle(),
-//                        detail.getPointPolicy() != null ? detail.getPointPolicy().getPointName() : null,
-//                        detail.getExpiredDate()
-//                ));
-//    }
     public Page<PointHistoryResponse> getHistory(Long userId, String category, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
@@ -86,5 +66,4 @@ public class PointQueryServiceImpl implements PointQueryService {
                 detail.getExpiredDate()
         ));
     }
-
 }

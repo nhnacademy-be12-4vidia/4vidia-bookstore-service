@@ -48,11 +48,11 @@ public class GlobalExceptionHandler {
                 HttpStatus.FORBIDDEN,
                 e.getMessage()
         );
-        detail.setTitle("Mismatch Exception");
+        detail.setTitle("Forbidden error");
         return detail;
     }
 
-    @ExceptionHandler(RequiredException.class)
+    @ExceptionHandler({RequiredException.class, InvalidException.class})
     public ProblemDetail requiredException(RequiredException e){
         log.warn(e.getMessage());
 
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 e.getMessage()
         );
-        detail.setTitle("RequiredException");
+        detail.setTitle("Bad Request error");
         return detail;
     }
 }
