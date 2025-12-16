@@ -19,9 +19,9 @@ public class AiSearchRepository {
     @Qualifier("aiRedisTemplate")
     private final StringRedisTemplate aiRedisTemplate;
 
-    private static final String ENTRY_PREFIX = "ai:entry";
-    private static final String RECENT_KEY = "ai:recent";
-    private static final String LOCK_PREFIX = "ai:lock";
+    private static final String ENTRY_PREFIX = "ai:entry:";
+    private static final String RECENT_KEY = "ai:recent:";
+    private static final String LOCK_PREFIX = "ai:lock:";
 
     public boolean tryLock(String lockKey, Duration ttl) {
         Boolean ok = aiRedisTemplate.opsForValue().setIfAbsent(LOCK_PREFIX + lockKey, "1", ttl);
