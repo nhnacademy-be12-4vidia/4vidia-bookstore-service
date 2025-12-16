@@ -1,12 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.scheduler;
 
-import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookReviewSummary;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookReviewSummaryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.impl.BookReviewSummaryServiceImpl;
+import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
