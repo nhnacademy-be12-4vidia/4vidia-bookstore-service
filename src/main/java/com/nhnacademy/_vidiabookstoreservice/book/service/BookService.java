@@ -43,5 +43,5 @@ public interface BookService {
 
     List<BookOrderResponse> getOrderBookByBookIds(List<Long> bookIds);
 
-    List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList);
+    List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList, Long userId);
 }

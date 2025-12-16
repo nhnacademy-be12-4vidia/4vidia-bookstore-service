@@ -22,6 +22,7 @@ public class BookListResponse {
     private String publisherName;
     private String imageUrl;
 
+    private boolean liked;
 
     public static BookListResponse from(Book book) {
         return BookListResponse.builder()
@@ -35,6 +36,23 @@ public class BookListResponse {
             .publisherName(book.getPublisher().getName())
             .imageUrl(book.getBookImageList().stream().filter(i -> i.getImageType().equals(
                 ImageType.THUMBNAIL)).findFirst().map(BookImage::getImageUrl).orElse(null))
+            .build();
+    }
+
+    // 회원용
+    public static BookListResponse from(Book book, boolean isLiked) {
+        return BookListResponse.builder()
+            .id(book.getId())
+            .title(book.getTitle())
+            .isbn(book.getIsbn())
+            .priceStandard(book.getPriceStandard())
+            .priceSales(book.getPriceSales())
+            .authorNames(book.getBookAuthorList().stream().map(BookAuthor::getAuthor).map(
+                Author::getName).toList())
+            .publisherName(book.getPublisher().getName())
+            .imageUrl(book.getBookImageList().stream().filter(i -> i.getImageType().equals(
+                ImageType.THUMBNAIL)).findFirst().map(BookImage::getImageUrl).orElse(null))
+            .liked(isLiked) // 넘겨줄거
             .build();
     }
 }

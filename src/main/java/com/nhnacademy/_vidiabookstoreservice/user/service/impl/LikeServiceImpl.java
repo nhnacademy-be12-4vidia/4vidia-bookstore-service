@@ -3,7 +3,6 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
-import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
@@ -27,7 +26,6 @@ import java.util.List;
 public class LikeServiceImpl implements LikeService {
 
     private final UserService userService;
-    private final BookService bookService;
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
@@ -87,7 +85,7 @@ public class LikeServiceImpl implements LikeService {
         }
 
         User user = userService.getProxyById(userId);
-        Book book = bookService.getProxyById(bookId);
+        Book book = bookRepository.getReferenceById(bookId);
 
         // 좋아요 저장
         Like like = Like.builder()
