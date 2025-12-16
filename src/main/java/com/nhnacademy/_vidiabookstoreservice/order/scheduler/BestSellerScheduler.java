@@ -32,14 +32,17 @@ public class BestSellerScheduler {
      * 2. VIEW_KEY(List)에 덮어쓰기
      * 3. SOURCE_KEY -> BACKUP_KEY로 백업 후 초기화
      */
-    @Scheduled(cron = "0 0/5 * * * *") // 테스트용 5분마다 스케줄링
+    @Scheduled(cron = "0 0/10 * * * *") // 테스트용 10분마다 스케줄링
 //    @Scheduled(cron = "0 0 * * * *")
     public void updateBestsellerRanking() {
-        log.info("[Scheduler] 베스트셀러 일일 집계 및 초기화 시작");
 
         ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
         ListOperations<String, String> listOps = bestsellerRedisTemplate.opsForList();
-        
+
+        Long sourceSize = zSetOps.zCard(SOURCE_KEY);
+        log.info("[Scheduler] 베스트셀러 랭킹 갱신 시작");
+        log.info("현재 누적된 책 종류: {}개", sourceSize);
+
         // 1. 오늘의 Top 10 조회 (점수 높은 순)
         // reverseRangeWithScores를 쓰면 LinkedHashSet으로 반환되어 순서가 유지됩니다.
         Set<ZSetOperations.TypedTuple<String>> top10Tuples =
@@ -53,7 +56,9 @@ public class BestSellerScheduler {
                     .collect(Collectors.toList());
         }
 
-        // 2. (선택사항) 데이터가 10개 미만일 때 어제 데이터(백업)에서 채우기 로직
+        log.info("[Scheduler] 조회된 베스트셀러(순수 판매량): {}", newRankingList);
+
+        // 2. 데이터가 10개 미만일 때 어제 데이터(백업)에서 채우기 로직
         if (newRankingList.size() < 10) {
             fillInsufficientData(newRankingList);
         }
@@ -61,19 +66,11 @@ public class BestSellerScheduler {
         // 3. 결과 저장 (List 구조 사용 -> 순서 100% 보장)
         if (!newRankingList.isEmpty()) {
             bestsellerRedisTemplate.delete(VIEW_KEY); // 기존 랭킹 삭제
-            listOps.rightPushAll(VIEW_KEY, newRankingList); // 새 랭킹 저장
-            log.info("새로운 Top 10 랭킹 반영 완료: {}", newRankingList);
+            listOps.rightPushAll(VIEW_KEY, newRankingList);
+            log.info("[Scheduler] Top 10 갱신 완료 (1시간동안 총 {}권): {}", newRankingList.size(), newRankingList);
         } else {
-            log.warn("판매 데이터가 0건입니다.");
+            log.warn("[Scheduler] 1시간동안 판매 데이터 없음 (0건)");
         }
-
-        // 4. 원본 데이터 백업 및 초기화 (bestseller -> bestseller:prev)
-        if (Boolean.TRUE.equals(bestsellerRedisTemplate.hasKey(SOURCE_KEY))) {
-            bestsellerRedisTemplate.rename(SOURCE_KEY, BACKUP_KEY);
-        }
-
-
-        log.info("[Scheduler] 일일 집계 완료. 데이터 초기화 됨.");
     }
 
     // 부족한 개수만큼 백업 키(어제 랭킹 등)에서 가져와 채우는 메서드
@@ -93,6 +90,24 @@ public class BestSellerScheduler {
                 }
             }
         }
-        log.info("부족한 데이터를 백업에서 {}개 채웠습니다.", 10 - currentList.size() - needCount);
+        log.info("[보정] 백업 데이터에서 {}개 추가됨", 10 - currentList.size() - needCount);
+    }
+
+
+    /**
+     * 베스트셀러 초기화&백업 - 하루1회 자정에
+     */
+    @Scheduled(cron = "0 0 * * * *") // 테스트용 매 시간마다 초기화
+//    @Scheduled(cron = "0 0 * * * *")
+    public void dailyReset() {
+        log.info("[Scheduler] 데이터 초기화 수행");
+
+        // 4. 원본 데이터 백업 및 초기화 (bestseller -> bestseller:prev)
+        if (Boolean.TRUE.equals(bestsellerRedisTemplate.hasKey(SOURCE_KEY))) {
+            bestsellerRedisTemplate.rename(SOURCE_KEY, BACKUP_KEY);
+            log.info("이동완료");
+        } else {
+            log.warn("하루 판매량 없음. 백업데이터 유지");
+        }
     }
 }
