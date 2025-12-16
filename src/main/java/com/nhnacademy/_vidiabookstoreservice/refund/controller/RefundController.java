@@ -20,8 +20,8 @@ public class RefundController {
     /**
      * 반품 신청 가능한 도서 리스트 불러오기
      */
-    @GetMapping("/orders/{orderId}/refunds")
-    public ResponseEntity<RefundResponse> getRefundList(@PathVariable long orderId){
+    @GetMapping("/orders/{order-id}/refunds")
+    public ResponseEntity<RefundResponse> getRefundList(@PathVariable("order-id") long orderId){
         RefundResponse response = refundService.getRefundList(orderId);
         return ResponseEntity.ok().body(response);
     }

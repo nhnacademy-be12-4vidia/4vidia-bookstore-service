@@ -23,13 +23,13 @@ public class PointPolicyController {
         return ResponseEntity.ok().body(service.getAll());
     }
 
-    @GetMapping("/{policyId}")
-    public ResponseEntity<PointPolicyResponse> get(@PathVariable Long policyId){
+    @GetMapping("/{policy-id}")
+    public ResponseEntity<PointPolicyResponse> get(@PathVariable("policy-id") Long policyId){
         return ResponseEntity.ok().body(service.get(policyId));
     }
 
-    @PutMapping("/{policyId}")
-    public ResponseEntity<Void> update(@PathVariable Long policyId,
+    @PutMapping("/{policy-id}")
+    public ResponseEntity<Void> update(@PathVariable("policy-id") Long policyId,
                                       @Valid @RequestBody PointPolicyUpdateRequest request){
         service.update(policyId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();

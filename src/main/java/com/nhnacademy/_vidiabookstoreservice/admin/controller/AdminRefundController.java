@@ -33,8 +33,8 @@ public class AdminRefundController {
     /**
      * 반품 상세 조회 (관리자)
      */
-    @GetMapping("/{refundId}")
-    public ResponseEntity<RefundDetailResponse> getRefundDetail(@PathVariable Long refundId) {
+    @GetMapping("/{refund-id}")
+    public ResponseEntity<RefundDetailResponse> getRefundDetail(@PathVariable("refund-id") Long refundId) {
         RefundDetailResponse detail = adminRefundService.getRefundDetail(refundId);
         return ResponseEntity.ok(detail);
     }
@@ -42,8 +42,8 @@ public class AdminRefundController {
     /**
      * 관리자 반품 승인
      */
-    @PostMapping("/{refundId}/accept")
-    public ResponseEntity<Void> acceptRefund(@PathVariable Long refundId) {
+    @PostMapping("/{refund-id}/accept")
+    public ResponseEntity<Void> acceptRefund(@PathVariable("refund-id") Long refundId) {
         adminRefundService.acceptRefund(refundId);
         return ResponseEntity.ok().build();
     }
@@ -51,8 +51,8 @@ public class AdminRefundController {
     /**
      * 관리자 반품 거절
      */
-    @PostMapping("/{refundId}/reject")
-    public ResponseEntity<Void> rejectRefund(@PathVariable Long refundId) {
+    @PostMapping("/{refund-id}/reject")
+    public ResponseEntity<Void> rejectRefund(@PathVariable("refund-id") Long refundId) {
         adminRefundService.rejectRefund(refundId);
         return ResponseEntity.ok().build();
     }

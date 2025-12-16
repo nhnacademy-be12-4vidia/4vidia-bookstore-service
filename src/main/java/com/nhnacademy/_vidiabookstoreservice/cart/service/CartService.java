@@ -24,7 +24,6 @@ public interface CartService {
 
     // Redis ↔ MySQL 동기화 / 로그인·로그아웃
     void flushCartFromRedisToMySql(Long userId);
-    void logoutCart(Long userId);
     void loginSyncCart(Long userId);
 }
 

@@ -31,20 +31,20 @@ public class AdminDeliveryController {
                 .map(DeliveryResponse::from);
     }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<DeliveryResponse> getOrderDetail(@PathVariable long orderId){
+    @GetMapping("/{order-id}")
+    public ResponseEntity<DeliveryResponse> getOrderDetail(@PathVariable("order-id") Long orderId){
         Order o = orderService.getOrder(orderId);
         return ResponseEntity.ok().body(DeliveryResponse.from(o));
     }
 
-    @PutMapping("/{orderId}/start-delivery")
-    public ResponseEntity<DeliveryResponse> startDelivery(@PathVariable Long orderId) {
+    @PutMapping("/{order-id}/start-delivery")
+    public ResponseEntity<DeliveryResponse> startDelivery(@PathVariable("order-id") Long orderId) {
         Order o = adminDeliveryService.startDelivery(orderId);
         return ResponseEntity.ok().body(DeliveryResponse.from(o));
     }
 
-    @PutMapping("/{orderId}/complete-delivery")
-    public ResponseEntity<DeliveryResponse> completeDelivery(@PathVariable Long orderId) {
+    @PutMapping("/{order-id}/complete-delivery")
+    public ResponseEntity<DeliveryResponse> completeDelivery(@PathVariable("order-id") Long orderId) {
         Order o = adminDeliveryService.completeDelivery(orderId);
         return ResponseEntity.ok().body(DeliveryResponse.from(o));
     }
