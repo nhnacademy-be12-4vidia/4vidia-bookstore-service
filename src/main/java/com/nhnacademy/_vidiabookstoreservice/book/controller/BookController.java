@@ -15,6 +15,8 @@ import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchServi
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import jakarta.validation.Valid;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.web.PageableDefault;
@@ -81,10 +84,14 @@ public class BookController {
 
     @GetMapping("/best-seller")
     public ResponseEntity<List<BookListResponse>> getBestSellers() {
-        ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
-        Set<ZSetOperations.TypedTuple<String>> savedTop10 = zSetOps.reverseRangeWithScores("top10", 0, -1);
+        ListOperations<String, String> listOps = bestsellerRedisTemplate.opsForList();
+        List<String> savedTop10 = listOps.range("top10", 0, -1);
+        if (savedTop10 == null || savedTop10.isEmpty()) {
+            return ResponseEntity.ok().body(Collections.emptyList());
+        }
+
         List<Long> bookIdList = savedTop10.stream()
-                .map(top10 -> Long.parseLong(top10.getValue()))
+                .map(Long::parseLong)
                 .toList();
 
         List<BookListResponse> bestSellerList = bookService.getBookListResponseByIdList(bookIdList);
