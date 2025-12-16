@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
@@ -31,6 +32,17 @@ public class UserController {
     public ResponseEntity<UserInfoResponse> getUserByEmail(@RequestParam String email) {
         UserInfoResponse user = userService.getUserByEmail(email);
         return ResponseEntity.ok().body(user); // 200 OK + JSON
+    }
+
+    /**
+     * 아이디로 회원 조회
+     */
+    @GetMapping("/id")
+    public ResponseEntity<UserProfileResponse> getUserById() {
+        Long userId = UserContext.get().getUserId();
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok().body(UserProfileResponse.fromEntity(user));
+
     }
 
     /**

@@ -16,6 +16,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResp
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
+import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.springframework.stereotype.Service;
@@ -77,6 +78,7 @@ public class UserServiceImpl implements UserService {
         if (defaultAddress == null) {
             throw new DefaultAddressNotFoundException();
         }
+
         return OrderUserResponse.fromEntity(user, defaultAddress);
     }
 
