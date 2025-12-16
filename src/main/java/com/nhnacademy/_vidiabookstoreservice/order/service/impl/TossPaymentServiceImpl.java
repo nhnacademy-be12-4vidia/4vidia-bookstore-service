@@ -107,7 +107,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
                 "cancelReason", reason,
                 "cancelAmount", amount
         );
-        /* TODO 가상계좌 사용시 환불 계좌 "refundReceiveAccount"
+        /* 가상계좌 사용시 환불 계좌 "refundReceiveAccount"
         bank 필수 · string - 취소 금액을 환불받을 계좌의 은행 코드입니다. 은행 코드와 증권사 코드를 참고하세요.
         accountNumber 필수 · string - 취소 금액을 환불받을 계좌의 계좌번호입니다. - 없이 숫자만 넣어야 합니다. 최대 길이는 20자입니다.
         holderName 필수 · string - 취소 금액을 환불받을 계좌의 예금주입니다. 최대 길이는 60자입니다.
@@ -119,14 +119,11 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
             throw new RuntimeException("토스 결제 취소 요청 중 통신 오류 발생", e);
         }
 
-        //TODO 이미 취소 상태면 에러 응답 객체가 온다. (code: String, message: String)
         if (response.containsKey("paymentKey")) { // 처리 성공시 토스응답객체로 반환
             return objectMapper.convertValue(response, TossPaymentResponse.class);
-        } else if (response.containsKey("code")) { // 에러 객체로 돌아올때 처리
-
-            objectMapper.convertValue(response, TossErrorResponse.class);
+        } else { // 에러 객체로 돌아올때 처리
+            throw new PaymentConfirmException(response.toString());
         }
-        return null; //수정 필요
     }
 
     private Map<String, Object> sendRequest(Map<String, Object> requestData, String secretKey, String urlString) throws IOException {

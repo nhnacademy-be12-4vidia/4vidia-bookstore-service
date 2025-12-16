@@ -10,7 +10,7 @@ public enum GradeName {
     GOLD(3),
     PLATINUM(4);
 
-    private final int code; // todo : 현재... code != gradeId (gradeId는 1부터 시작해요. auto increasement에요)
+    private final int code;
 
     GradeName(int code){
         this.code = code;
