@@ -4,6 +4,6 @@ import java.util.List;
 
 public record CouponUseRequest(
         Long orderId,
-        Long couponIds
+        Long couponId
 ) {
 }

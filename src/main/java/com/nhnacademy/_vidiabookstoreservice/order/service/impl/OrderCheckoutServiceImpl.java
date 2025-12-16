@@ -4,15 +4,12 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundExceptio
 import com.nhnacademy._vidiabookstoreservice.book.exception.BookStockNotEnoughException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
-import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.global.exception.NoSuchElementException;
 import com.nhnacademy._vidiabookstoreservice.order.domain.CheckoutSession;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.CouponRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderCheckoutService;
 import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -35,7 +32,6 @@ public class OrderCheckoutServiceImpl implements OrderCheckoutService {
     private final PackagingOptionService packagingOptionService;
     private final BookService bookService;
 
-    private final CouponClient couponClient;
     private final RedisTemplate<String, Object> orderRedisTemplate;
 
     private static final String SESSION_PREFIX = "checkout:session:";
@@ -119,23 +115,15 @@ public class OrderCheckoutServiceImpl implements OrderCheckoutService {
 
         String orderName = createOrderName(bookItems);
 
-        OrderUserResponse orderUserResponse = new OrderUserResponse("", "", "", 0, null);
-        CouponResult couponResult = CouponResult.empty();
-        if (userId != null) { //회원인경우 회원 정보와 쿠폰 가져오기
-            orderUserResponse = userService.getOrderUser(userId);
-            couponResult = fetchCoupons(userId, finalAmount, bookIds, books);
-        }
-
         List<DeliveryDateResponse> deliveryDateResponses = getDeliveryDates();
         List<PackagingOptionResponse> packagingOptions = packagingOptionService.getPackagingOptions();
 
-        return OrderCheckoutResponse.from(orderUserResponse,
+        return OrderCheckoutResponse.from(
                 bookItems,
                 orderName,
                 finalAmount,
-                couponResult.possibleCoupons,
-                couponResult.impossibleCoupons,
-                deliveryDateResponses, packagingOptions);
+                deliveryDateResponses,
+                packagingOptions);
     }
 
 
@@ -184,37 +172,6 @@ public class OrderCheckoutServiceImpl implements OrderCheckoutService {
                 .toList();
 
         return bookItems;
-    }
-
-    // 쿠폰 리스트 가져오기
-    private CouponResult fetchCoupons(Long userId, int finalAmount, List<Long> bookIds, List<BookOrderResponse> books) {
-        if (userId == null) {
-            return CouponResult.empty();
-        }
-
-        List<String> categoryIds = books.stream()
-                .map(BookOrderResponse::categoryKdc)
-                .toList();
-
-        CouponRequest couponRequest = new CouponRequest(finalAmount, bookIds, categoryIds);
-        List<OrderPageCouponResponse> allCoupons = couponClient.getUserCoupons(userId, couponRequest);
-
-        Map<Boolean, List<OrderPageCouponResponse>> partition = allCoupons.stream()
-                .collect(Collectors.partitioningBy(OrderPageCouponResponse::available));
-
-        return new CouponResult(
-                partition.getOrDefault(true, Collections.emptyList()),
-                partition.getOrDefault(false, Collections.emptyList())
-        );
-    }
-
-    private record CouponResult(
-            List<OrderPageCouponResponse> possibleCoupons,
-            List<OrderPageCouponResponse> impossibleCoupons
-    ) {
-        public static CouponResult empty() {
-            return new CouponResult(Collections.emptyList(), Collections.emptyList());
-        }
     }
 }
 

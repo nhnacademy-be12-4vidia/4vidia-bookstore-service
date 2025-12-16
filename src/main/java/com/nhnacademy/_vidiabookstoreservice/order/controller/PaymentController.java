@@ -51,9 +51,14 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
 
+    /**
+     * 프론트 결제 처리 중 실패
+     * @param paymentFailRequest : 실패한 주문 아이디
+     * @return NO_CONTENT
+     */
     @PostMapping("/rollback")
     public ResponseEntity<Void> rollbackPayment(@RequestBody PaymentFailRequest paymentFailRequest) {
-        orderService.cancelOrder(paymentFailRequest.orderId());
+        orderService.cancelOrder(paymentFailRequest.orderId(), "결제 중 실패");
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

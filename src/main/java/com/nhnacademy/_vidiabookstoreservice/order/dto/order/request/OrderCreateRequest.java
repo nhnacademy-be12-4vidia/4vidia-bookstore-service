@@ -1,15 +1,22 @@
 package com.nhnacademy._vidiabookstoreservice.order.dto.order.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public record OrderCreateRequest(
+        @NotBlank
         String recipientName,
+        @NotBlank
         String addressRoadname,
+        @NotBlank
         String addressDetail,
+        @NotBlank
         String zipCode,
+        @NotBlank
         String recipientPhone,
         String deliveryRequest,
         String orderPassword,
@@ -25,6 +32,7 @@ public record OrderCreateRequest(
         @PositiveOrZero(message = "사용 포인트는 0 이상이어야 합니다.")
         int pointUsed,  //포인트사용금액
 
+        @NotNull
         List<ItemRequestDto> orderItems,
         Long couponId
 ) {
