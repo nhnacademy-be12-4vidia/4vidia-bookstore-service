@@ -31,11 +31,10 @@ import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.PublisherService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import lombok.RequiredArgsConstructor;
@@ -348,11 +347,18 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList) {
+    public List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList) { // 랭킹 순으로 정렬되있는 bookIdList
         List<Book> bookList = bookRepository.findAllById(bookIdList);
 
-        return bookList.stream().map(BookListResponse::from)
-            .toList();
+        // 받아온 bookIdList 순서 그대로 넘겨줘야함
+        Map<Long, Book> bookMap = bookList.stream()
+                .collect(Collectors.toMap(Book::getId, book -> book));
+
+        return bookIdList.stream()
+                .map(bookMap::get)
+                .filter(Objects::nonNull)
+                .map(BookListResponse::from)
+                .toList();
     }
 
     private Integer parseIntegerSafe(String value) {
