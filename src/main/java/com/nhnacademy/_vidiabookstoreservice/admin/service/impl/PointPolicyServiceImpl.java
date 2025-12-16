@@ -28,7 +28,7 @@ public class PointPolicyServiceImpl implements PointPolicyService {
     @Transactional(readOnly = true)
     public PointPolicyResponse get(Long pointPolicyId) {
         PointPolicy policy = repository.findById(pointPolicyId)
-                .orElseThrow(() -> new PointPolicyNotFoundException(pointPolicyId)); // => NOT_FOUND(404)
+                .orElseThrow(() -> new PointPolicyNotFoundException(pointPolicyId));
         return PointPolicyResponse.from(policy);
     }
 

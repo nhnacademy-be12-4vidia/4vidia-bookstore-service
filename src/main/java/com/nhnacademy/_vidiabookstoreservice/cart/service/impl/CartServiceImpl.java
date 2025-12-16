@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.cart.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.domain.Cart;
 import com.nhnacademy._vidiabookstoreservice.cart.domain.CartBook;
@@ -10,6 +11,7 @@ import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequ
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.BookSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartBookResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
+import com.nhnacademy._vidiabookstoreservice.cart.exception.CartNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.DirtyCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.RedisCartRepository;
@@ -54,7 +56,7 @@ public class CartServiceImpl implements CartService {
                     int quantity = entry.getValue();
 
                     Book book = bookRepository.findById(bookId)
-                            .orElseThrow(() -> new IllegalArgumentException("도서를 찾을 수 없습니다."));
+                            .orElseThrow(() -> new BookNotFoundException(bookId));
 
                     BookSummaryResponse bookDto = BookSummaryResponse.from(book);
                     return CartBookResponse.of(bookDto, quantity);
@@ -62,7 +64,7 @@ public class CartServiceImpl implements CartService {
                 .toList();
 
         if(owner.isUser()){
-            return new CartResponse(Long.valueOf(owner.id()),items);
+            return new CartResponse(owner.id(),items);
         }
         return new CartResponse(null,items);
     }
@@ -77,7 +79,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void addItem(CartOwner owner, AddCartItemRequest addItemRequest) {
         if(!bookRepository.existsById(addItemRequest.bookId())){
-            throw new IllegalArgumentException("도서를 찾을 수 없습니다.");
+            throw new BookNotFoundException(addItemRequest.bookId());
         }
 
         // Redis 기준 수량 증가
@@ -99,7 +101,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest) {
         if(!bookRepository.existsById(bookId)){
-            throw new IllegalArgumentException("도서를 찾을 수 없습니다.");
+            throw new BookNotFoundException(bookId);
         }
 
         Map<Long, Integer> items = redisCartRepository.getCartItems(owner);
@@ -110,7 +112,7 @@ public class CartServiceImpl implements CartService {
         // Redis
         redisCartRepository.setItemQuantity(owner, bookId, updateRequest.quantity());
         if (owner.isUser()) {
-            dirtyCartRepository.markDirty(Long.valueOf(owner.id()));
+            dirtyCartRepository.markDirty(owner.id());
         }
     }
 
@@ -123,7 +125,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void removeItem(CartOwner owner, Long bookId){
         if(!bookRepository.existsById(bookId)){
-            throw new IllegalArgumentException("도서를 찾을 수 없습니다.");
+            throw new BookNotFoundException(bookId);
         }
 
         redisCartRepository.removeItem(owner,bookId);
@@ -151,7 +153,7 @@ public class CartServiceImpl implements CartService {
     public void clear(CartOwner owner) {
         redisCartRepository.clearCart(owner);
         if (owner.isUser()) {
-            dirtyCartRepository.markDirty(Long.valueOf(owner.id()));
+            dirtyCartRepository.markDirty(owner.id());
         }
     }
 
@@ -191,7 +193,7 @@ public class CartServiceImpl implements CartService {
     @Transactional(readOnly = true)
     protected Cart findCart(Long userId){ // 장바구니 없으면 에러
         return cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("userId: " + userId + "의 장바구니가 존재하지 않습니다."));
+                .orElseThrow(() -> new CartNotFoundException(userId));
     }
 
     private Cart findOrCreateCart(Long userId){ // 장바구니 없으면 생성
@@ -257,7 +259,7 @@ public class CartServiceImpl implements CartService {
             } else {
                 Book book = bookRepository.findById(bookId)
                         .orElseThrow(() ->
-                                new IllegalStateException("도서를 찾을 수 없습니다. bookId=" + bookId)
+                                new BookNotFoundException(bookId)
                         );
                 cart.addItem(book, quantity);
             }
@@ -268,22 +270,15 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void logoutCart(Long userId) {
-        CartOwner owner = CartOwner.user(userId);
-
-        flushCartFromRedisToMySql(userId);
-        redisCartRepository.clearCart(owner);
-        dirtyCartRepository.remove(userId);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public void loginSyncCart(Long userId) {
         CartOwner owner = CartOwner.user(userId);
 
-        cartRepository.findByUserId(userId).ifPresent(cart -> {
-            redisCartRepository.clearCart(owner);
+        if(redisCartRepository.existsKey(owner)){
+            return;
+        }
 
+        cartRepository.findByUserId(userId).ifPresent(cart -> {
             cart.getCartBooks().forEach(cartBook -> {
                 Long bookId = cartBook.getBook().getId();
                 int quantity = cartBook.getQuantity();
@@ -292,6 +287,4 @@ public class CartServiceImpl implements CartService {
             });
         });
     }
-
-
 }

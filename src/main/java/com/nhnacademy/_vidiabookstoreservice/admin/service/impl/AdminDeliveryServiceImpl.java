@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.admin.exception.InvalidOrderStateEx
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminDeliveryService;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,10 +34,10 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     @Override
     public Order startDelivery(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getDeliveryStatus() != DeliveryStatus.WAITING) {
-            throw new RuntimeException("배송 시작은 WAITING 상태에서만 가능합니다. 현재: " + order.getDeliveryStatus());
+            throw new InvalidOrderStateException("배송 시작은 WAITING 상태에서만 가능합니다. 현재 상태: %s".formatted(order.getDeliveryStatus()));
         }
 
         order.setDeliveryStatus(DeliveryStatus.SHIPPING);
@@ -50,7 +51,9 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
 
         if (order.getDeliveryStatus() != DeliveryStatus.SHIPPING) {
-            throw new InvalidOrderStateException("배송 완료는 SHIPPING 상태에서만 가능합니다. 현재: " + order.getDeliveryStatus());
+            throw new InvalidOrderStateException("배송 완료는 SHIPPING 상태에서만 가능합니다. 현재 상태: %s"
+                    .formatted(order.getDeliveryStatus())
+            );
         }
 
         order.setDeliveryStatus(DeliveryStatus.DELIVERED);

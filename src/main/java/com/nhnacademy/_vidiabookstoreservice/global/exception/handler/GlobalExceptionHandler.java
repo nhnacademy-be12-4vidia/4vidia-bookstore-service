@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler({AlreadyExistsException.class, NotEnoughException.class, AlreadyResignedUserException.class})
+    @ExceptionHandler({AlreadyExistsException.class, NotEnoughException.class})
     public ProblemDetail handleBadRequest(RuntimeException e) {
         log.warn(e.getMessage());
 
@@ -63,7 +63,4 @@ public class GlobalExceptionHandler {
         detail.setTitle("RequiredException");
         return detail;
     }
-
-
-
 }

@@ -35,18 +35,18 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<CartResponse> getCart(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId
-    ) {
+    public ResponseEntity<CartResponse> getCart() {
+        Long userId = UserContext.get().getUserId();
+        Long guestId = UserContext.get().getGuestId();
+
         return ResponseEntity.ok(cartService.getCart(resolveOwner(userId, guestId)));
     }
 
     // 비회원 장바구니 상태 확인용
     @GetMapping("/guest/status")
-    public ResponseEntity<GuestCartStatusResponse> guestCartStatus(
-            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId
-    ) {
+    public ResponseEntity<GuestCartStatusResponse> guestCartStatus() {
+        Long guestId = UserContext.get().getGuestId();
+
         int itemCount = cartService.countGuestCartItems(guestId);
         boolean hasGuestCart = itemCount > 0;
 
@@ -55,22 +55,22 @@ public class CartController {
 
 
     @PostMapping("/items")
-    public ResponseEntity<Void> addItem(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
-            @RequestBody @Valid AddCartItemRequest addItemRequest
-    ) {
+    public ResponseEntity<Void> addItem(@RequestBody @Valid AddCartItemRequest addItemRequest) {
+        Long userId = UserContext.get().getUserId();
+        Long guestId = UserContext.get().getGuestId();
+
         cartService.addItem(resolveOwner(userId, guestId), addItemRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PutMapping("/items/{bookId}")
+    @PutMapping("/items/{book-id}")
     public ResponseEntity<Void> updateCartBook(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Guest-Id", required = false) Long guestId,
-            @PathVariable Long bookId,
+            @PathVariable("book-id") Long bookId,
             @RequestBody @Valid UpdateCartItemRequest updateCartItemRequest
     ) {
+        Long userId = UserContext.get().getUserId();
+        Long guestId = UserContext.get().getGuestId();
+
         cartService.updateItem(resolveOwner(userId, guestId), bookId, updateCartItemRequest);
         return ResponseEntity.ok().build();
     }
@@ -88,9 +88,9 @@ public class CartController {
     /**
      * 장바구니 특정 도서 삭제
      */
-    @DeleteMapping("/items/{bookId}")
+    @DeleteMapping("/items/{book-id}")
     public ResponseEntity<Void> deleteItem(
-            @PathVariable Long bookId
+            @PathVariable("book-id") Long bookId
     ) {
         Long userId = UserContext.get().getUserId();
         Long guestId = UserContext.get().getGuestId();
@@ -107,7 +107,9 @@ public class CartController {
     ){
         Long userId = UserContext.get().getUserId();
         Long guestId = UserContext.get().getGuestId();
+
         Long id = (userId == null) ? guestId : userId;
+
         if(bookIds == null || bookIds.isEmpty()){
             return ResponseEntity.badRequest().build();
         }
@@ -130,11 +132,11 @@ public class CartController {
     @PostMapping("/logout-sync")
     public ResponseEntity<Void> logoutSync() {
         Long userId = UserContext.get().getUserId();
-        cartService.logoutCart(userId);
+        cartService.flushCartFromRedisToMySql(userId);
         return ResponseEntity.noContent().build();
     }
 
-    // 정상 로그인 직후 호출 (MySQL -> Redis 복원)
+    // 정상 로그인 직후 호출 (redis에 없으면 MySQL -> Redis 복원)
     @PostMapping("/login-sync")
     public ResponseEntity<Void> loginSync() {
         Long userId = UserContext.get().getUserId();
