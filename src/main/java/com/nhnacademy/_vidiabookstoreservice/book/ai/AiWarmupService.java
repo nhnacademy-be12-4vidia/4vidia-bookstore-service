@@ -39,6 +39,8 @@ public class AiWarmupService {
             return;
         }
 
+        log.warn("[AI-WARMUP] kw='{}' calledFrom=", keywordNormal, new RuntimeException("trace"));
+
         List<BookDocument> topForLlm = reranker.rerankSafely(keywordNormal, initialDocs).stream().limit(10).toList();
         List<GeminiBookSuggestion> suggestionList = geminiAnswerService.generateSuggestions(keywordNormal, topForLlm);
 
