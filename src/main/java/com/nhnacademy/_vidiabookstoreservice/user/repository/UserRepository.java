@@ -27,12 +27,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserId(Long userId);
 
     // 3개월 이전 + active 사용자 조회
-    @Query("""
-select u
-from User u
-where u.status = :status
-  and (u.lastLoginAt is null or u.lastLoginAt < :threshold)
-""")
+        @Query("""
+    select u
+    from User u
+    where u.status = :status
+      and (u.lastLoginAt is null or u.lastLoginAt < :threshold)
+    """)
     List<User> findActiveUsersNotLoggedInSince(@Param("status") UserStatus status,
                                                @Param("threshold") LocalDateTime threshold);
     Optional<User> findByProviderAndSocialId(String provider, String socialId);

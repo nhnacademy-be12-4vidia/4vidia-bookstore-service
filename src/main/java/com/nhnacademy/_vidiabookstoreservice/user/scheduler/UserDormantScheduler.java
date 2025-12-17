@@ -20,15 +20,11 @@ public class UserDormantScheduler {
      * 매일 새벽 3시 실행
      */
     @Scheduled(cron = "0 0 3 * * *")
+
     public void markDormantUsers(){
         LocalDateTime threeMonthAgo = LocalDateTime.now().minusMonths(3);
         int count = authService.convertDormantUsers(threeMonthAgo);
         log.info("[DormantScheduler] 휴면 전환 완료 - 대상: {}명", count);
     }
-
-
-
-
-
 
 }
