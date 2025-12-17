@@ -180,7 +180,7 @@ public class AuthServiceImpl implements AuthService {
     private User createTempOAuthUser(String provider, PaycoUserRequest paycoUserRequest) {
         String name = "PAYCO임시이름";
         String email = provider + "_" + paycoUserRequest.id() + "@temp.4vidia.shop";
-        String phone = "010-0000-0000";
+        String phone = "01012345678";
         Grade defaultGrade = gradeRepository.findByGradeName(GradeName.WELCOME);
 
         String rawPassword = java.util.UUID.randomUUID().toString();
