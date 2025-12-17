@@ -8,10 +8,8 @@ import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.rerank.BookDocumentReranker;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
-import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.redis.dto.AiCacheEntry;
 import com.nhnacademy._vidiabookstoreservice.book.redis.repository.AiSearchRepository;
-import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -37,16 +35,25 @@ public class AiWarmupService {
 
     @Async("aiExecutor")
     public void warmUpAndCache(String keywordNormal, List<BookDocument> initialDocs) {
-        String lockKey = Integer.toHexString(keywordNormal.hashCode());
-        if (!aiSearchRepository.tryLock(lockKey, LOCK_TTL)) {
-            log.debug("[AI-WARMUP] skip(lock exists) key={}", lockKey);
+        if (alreadyWarmingUp(keywordNormal)) {
+            return;
+        }
+
+        List<BookDocument> topForLlm = reranker.rerankSafely(keywordNormal, initialDocs).stream().limit(10).toList();
+        List<GeminiBookSuggestion> suggestionList = geminiAnswerService.generateSuggestions(keywordNormal, topForLlm);
+
+        cacheGeminiAnswer(keywordNormal, suggestionList);
+
+    }
+
+    public void cacheGeminiAnswer(String keywordNormal, List<GeminiBookSuggestion> suggestionList) {
+
+        if (suggestionList == null || suggestionList.isEmpty()) {
+            log.warn("[AI-WARMUP] skip cache: empty result");
             return;
         }
 
         try {
-            List<BookDocument> topForLlm = reranker.rerankSafely(keywordNormal, initialDocs).stream().limit(10).toList();
-            List<GeminiBookSuggestion> suggestionList = geminiAnswerService.generateSuggestions(keywordNormal, topForLlm);
-
             String answerJson = objectMapper.writeValueAsString(suggestionList);
 
             float[] vec = ollamaEmbeddingService.embedOrNull(keywordNormal);
@@ -76,5 +83,14 @@ public class AiWarmupService {
             log.warn("[AI-WARMUP] failed. keyword={} msg={}", keywordNormal, e.getMessage(), e);
             return;
         }
+    }
+
+    public boolean alreadyWarmingUp(String keywordNormal) {
+        String lockKey = "ai:warmup:" + keywordNormal;
+        if (!aiSearchRepository.tryLock(lockKey, LOCK_TTL)) {
+            log.debug("[AI-WARMUP] skip(lock exists) key={}", lockKey);
+            return true;
+        }
+        return false;
     }
 }

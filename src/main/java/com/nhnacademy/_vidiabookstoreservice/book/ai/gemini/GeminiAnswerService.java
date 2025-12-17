@@ -34,7 +34,7 @@ public class GeminiAnswerService {
 
     @PostConstruct
     void logGeminiConfig() {
-        List<String> keyList = geminiProperties.getApiKeys();
+        List<String> keyList = geminiProperties.getApiKeyList();
         int keyCount = (keyList == null) ? 0 : keyList.size();
 
         List<String> previews = new ArrayList<>();
@@ -215,7 +215,7 @@ public class GeminiAnswerService {
 
         int keyCount = 0;
         try {
-            List<String> keyList = geminiProperties.getApiKeys();
+            List<String> keyList = geminiProperties.getApiKeyList();
             keyCount = (keyList == null) ? 0 : keyList.size();
         } catch (Exception ignored) {}
 
