@@ -18,8 +18,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Component
 public class BestSellerScheduler {
-
-    @Qualifier("bestsellerRedisTemplate")
     private final StringRedisTemplate bestsellerRedisTemplate;
 
     private static final String SOURCE_KEY = "bestseller"; // 오늘 하루 실시간으로 주문이 들어올 때마다 쌓이는 누적 판매량(ZSet)
@@ -98,13 +96,27 @@ public class BestSellerScheduler {
     public void dailyReset() {
         log.info("========== [Scheduler] 일일 데이터 초기화 및 백업 수행 ==========");
 
-        // 4. 원본 데이터 백업 및 초기화 (bestseller -> bestseller:prev)
-        if (Boolean.TRUE.equals(bestsellerRedisTemplate.hasKey(SOURCE_KEY))) {
-            bestsellerRedisTemplate.rename(SOURCE_KEY, BACKUP_KEY); // bestseller 키의 이름을 bestseller:prev로 바꿈 -> bestseller 키는 사라지므로, 00:01분부터 들어오는 주문은 새롭게 집계됨
-            log.info(">> [성공] 오늘 판매량({}) -> 어제 백업({})으로 이동 완료.", SOURCE_KEY, BACKUP_KEY);
+        ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
+        ListOperations<String, String> listOps = bestsellerRedisTemplate.opsForList();
+
+        // 1. 어제 랭킹(top10) 백업
+        List<String> yesterdayTop10 = listOps.range(VIEW_KEY, 0, 9);
+
+        if (yesterdayTop10 != null && !yesterdayTop10.isEmpty()) {
+            bestsellerRedisTemplate.delete(BACKUP_KEY);
+
+            for (String bookId : yesterdayTop10) {
+                zSetOps.add(BACKUP_KEY, bookId, 0);
+            }
+
+            log.info(">> 어제 랭킹 {}권 백업 완료", yesterdayTop10.size());
         } else {
-            log.info(">> [Pass] 오늘 판매 기록이 없어 백업을 수행하지 않습니다. (기존 백업 유지)");
+            log.warn(">> 어제 랭킹 데이터 없음");
         }
+
+        // 2. 오늘 집계 초기화
+        bestsellerRedisTemplate.delete(SOURCE_KEY);
+        log.info(">> 오늘 판매 집계 초기화 완료");
 
         log.info("=============================================================");
     }

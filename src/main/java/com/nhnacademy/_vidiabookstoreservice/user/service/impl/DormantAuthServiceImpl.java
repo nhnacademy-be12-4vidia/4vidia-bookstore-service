@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DormantAuthServiceImpl implements DormantAuthService {
 
     private final RedisDormantAutoRepository autoRepository;
@@ -48,7 +49,6 @@ public class DormantAuthServiceImpl implements DormantAuthService {
     }
 
     @Override
-    @Transactional
     public void verifyAuthCode(String email, String code) {
         String savedCode = autoRepository.getCode(email);
 
