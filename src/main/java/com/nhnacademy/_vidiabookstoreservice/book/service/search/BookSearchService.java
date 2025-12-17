@@ -13,6 +13,9 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestio
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.ai.embedding.EmbeddingService;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiCacheResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.SearchBooksResponse;
+import com.nhnacademy._vidiabookstoreservice.book.redis.repository.AiSearchRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.es.BookDocumentSearchClient;
 import com.nhnacademy._vidiabookstoreservice.book.ai.rerank.BookDocumentReranker;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.result.BookSearchResultAssembler;
@@ -26,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -46,35 +50,49 @@ public class BookSearchService {
     private final AiWarmupService aiWarmupService;
     private final AiCacheHitService aiCacheHitService;
     private final ObjectMapper objectMapper;
+    private final AiSearchRepository aiSearchRepository;
 
-    public Page<BookSearchListResponse> searchBooks(EsBookSearchRequest request, Pageable pageable, Long userId) {
+    public SearchBooksResponse searchBooks(EsBookSearchRequest request, Pageable pageable, Long userId) {
         String rawKeyword = request.getKeyword();
         String keyword = (rawKeyword == null) ? "" : rawKeyword.trim().toLowerCase();
+        List<GeminiBookSuggestion> suggestionList = null;
         if (!StringUtils.hasText(keyword)) {
-            return Page.empty(pageable);
+            return new SearchBooksResponse(PageResponse.from(Page.empty(pageable)), null);
         }
 
         List<BookDocument> initialDocs = searchClient.search(request, null, MAX_RESULTS);
 
         if (initialDocs.isEmpty()) {
-            return Page.empty(pageable);
+            return new SearchBooksResponse(PageResponse.from(Page.empty(pageable)), null);
         }
         float[] queryVector = embeddingService.embedOrNull(keyword);
         boolean hit = false;
+        String hitEntryId = "";
         if (queryVector != null && queryVector.length > 0) {
-            String hitEntryId = aiCacheHitService.tryHit(queryVector);
-            hit = (hitEntryId != null);
+            hitEntryId = aiCacheHitService.tryHit(queryVector);
+            hit = (StringUtils.hasText(hitEntryId));
+            if (hit) {
+                log.info("[SEARCH] skip warmup(cache hit) keyword = {}", keyword);
+                String rawSuggestion = aiSearchRepository.getAnswerJson(hitEntryId);
+                try {
+                    suggestionList = objectMapper.readValue(rawSuggestion, new TypeReference<List<GeminiBookSuggestion>>() {
+                    });
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                log.warn("[AI-WARMUP-CALL] kw='{}' thread={} userId={}",
+                        keyword, Thread.currentThread().getName(), userId);
+                aiWarmupService.warmUpAndCache(keyword, initialDocs);
+            }
         }
+        Page<BookSearchListResponse> pageResponse = resultAssembler.assemble(initialDocs, userId, pageable);
 
-        if (!hit) {
-            log.warn("[AI-WARMUP-CALL] kw='{}' thread={} userId={}",
-                    keyword, Thread.currentThread().getName(), userId);
-            aiWarmupService.warmUpAndCache(keyword, initialDocs);
-        } else {
-            log.info("[SEARCH] skip warmup(cache hit) keyword = {}", keyword);
+        if (suggestionList != null && !suggestionList.isEmpty()) {
+            List<AiCacheResponse> aiCacheList = resultAssembler.assembleCache(suggestionList);
+            return new SearchBooksResponse(PageResponse.from(pageResponse), aiCacheList);
         }
-
-        return resultAssembler.assemble(initialDocs, userId, pageable);
+        return new SearchBooksResponse(PageResponse.from(pageResponse), null);
     }
 
     public AiBookSearchResponse searchBookWithLlm(EsBookSearchRequest request, Pageable pageable,
