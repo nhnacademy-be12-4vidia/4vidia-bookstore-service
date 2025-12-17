@@ -5,6 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfi
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -65,7 +66,7 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 조회 by email]")
     void getUserByEmail() throws Exception {
-        String email = "test@test.com";
+        String email = "user1@naver.com";
 
         mockMvc.perform(get("/users")
                         .param("email", email)
@@ -92,10 +93,54 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("[회원 조회 by id]")
+    void getUserById() throws Exception {
+        Long userId = 14L;
+
+        mockMvc.perform(get("/users/id")
+                        .header("X-User-Id", userId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("userId").isNumber())
+                .andExpect(jsonPath("email").isString())
+                .andExpect(jsonPath("name").isString())
+                .andExpect(jsonPath("phone").isString())
+                .andExpect(jsonPath("birthDate").isString())
+                .andExpect(jsonPath("point").isNumber())
+                .andExpect(jsonPath("defaultAddress").exists())
+                .andExpect(jsonPath("gradeName").isString())
+                .andDo(document("user-by-id-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName("X-User-Id").description("사용자 식별 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("userId").description("회원 PK"),
+                                fieldWithPath("email").description("이메일"),
+                                fieldWithPath("name").description("이름"),
+                                fieldWithPath("phone").description("전화번호"),
+                                fieldWithPath("birthDate").description("생년월일"),
+                                fieldWithPath("point").description("포인트"),
+                                fieldWithPath("defaultAddress").description("기본 주소"),
+
+                                fieldWithPath("defaultAddress.addressId").description("주소 PK"),
+                                fieldWithPath("defaultAddress.alias").description("별칭"),
+                                fieldWithPath("defaultAddress.roadAddress").description("도로명주소"),
+                                fieldWithPath("defaultAddress.zipCode").description("우편번호"),
+                                fieldWithPath("defaultAddress.addressDetail").description("상세주소"),
+
+                                fieldWithPath("gradeName").description("회원 등급")
+                        )
+                ));
+    }
+
+    @Test
     @DisplayName("[회원 이름 조회]")
     void getUserName() throws Exception {
-        Long userId = 10L;
-        String expectedName = "배종ok";
+        Long userId = 14L;
+        String expectedName = "유저1";
 
         mockMvc.perform(get("/users/name")
                     .header("X-User-Id", userId)
@@ -115,7 +160,7 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 프로필 조회]")
     void getUserProfile() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
         mockMvc.perform(get("/users/profile")
                     .header("X-User-Id", userId)
@@ -159,9 +204,9 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 프로필 수정]")
     void updateUserProfile() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
-        UpdateUserRequest request = new UpdateUserRequest("배종옥", "01012345678");
+        UpdateUserRequest request = new UpdateUserRequest("루저1", "01012345678");
 
         mockMvc.perform(put("/users/profile")
                         .header("X-User-Id", userId)
@@ -211,7 +256,7 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 비밀번호 수정]")
     void changePassword() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
         ChangePasswordRequest request = new ChangePasswordRequest(
                 "1234qwer!",
@@ -243,7 +288,7 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 탈퇴]")
     void deleteUser() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
         DeleteUserRequest request = new DeleteUserRequest("1234qwer!");
 
@@ -269,7 +314,7 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 권한 조회]")
     void getUserRole() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
         String expectedRole = "USER";
 
         mockMvc.perform(get("/users/role")
@@ -290,7 +335,7 @@ class UserControllerTest {
     @Test
     @DisplayName("[Payco 로그인 후 필수 정보 수정]")
     void updateCompleteProfile() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
         CompleteProfileRequest request = new CompleteProfileRequest(
                 "update_email@payco.com",

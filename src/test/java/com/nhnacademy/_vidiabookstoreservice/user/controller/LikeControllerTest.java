@@ -64,7 +64,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("[좋아요 리스트 조회]")
     void getLikeList() throws Exception {
-        Long userId = 1L; // nhn@naver.com
+        Long userId = 14L; // user1@naver.com
 
         mockMvc.perform(get("/users/me/likes")
                         .header("X-User-Id", userId)
@@ -92,7 +92,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("[좋아요 등록]")
     void addLike() throws Exception {
-        Long userId = 1L; // nhn@naver.com
+        Long userId = 14L; // user1@naver.com
         Long targetBookId = bookService.getProxyById(29120L).getId(); // 임의의 도서
 
         mockMvc.perform(post("/users/me/likes/{book-id}", targetBookId)
@@ -114,7 +114,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("[좋아요 삭제]")
     void removeLike() throws Exception {
-        Long userId = 1L; // nhn@naver.com
+        Long userId = 14L; // user1@naver.com
 
         List<LikeResponse> likes = likeServiceImpl.getLikes(userId); // ㅇ?? 이상한데
         Long targetBookId = likes.stream().findFirst().get().bookId(); // userId에 해당하는 유저가 실제 db에 좋아요 등록해놓은게 없으면???
@@ -138,7 +138,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("[좋아요 전체 삭제]")
     void removeAllLike() throws Exception {
-        Long userId = 1L; // nhn@naver.com
+        Long userId = 14L; // user1@naver.com
 
         mockMvc.perform(delete("/users/me/likes")
                         .header("X-User-Id", userId))

@@ -59,7 +59,7 @@ class GradeControllerTest {
     @Test
     @DisplayName("[등급 조회]")
     void getGrade() throws Exception {
-        Long userId = 1L; // nhn@naver.com 유저 (관리자)
+        Long userId = 14L; // user1@naver.com 유저
 
         // 요청 수행 및 결과 검증
         mockMvc.perform(get("/users/me/grade")
@@ -85,7 +85,7 @@ class GradeControllerTest {
     @Test
     @DisplayName("[등급 변경]")
     void updateGrade() throws Exception {
-        Long userId = 1L; // nhn@naver.com 유저 (관리자)
+        Long userId = 14L; // user1@naver.com 유저
         Long targetGradeId = gradeRepository.findByGradeName(GradeName.GOLD).getGradeId();
 
         mockMvc.perform(put("/users/me/grade/{grade-id}", targetGradeId) // 경로 변수 포함

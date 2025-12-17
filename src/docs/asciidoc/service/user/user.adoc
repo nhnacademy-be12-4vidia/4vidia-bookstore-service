@@ -15,6 +15,20 @@ include::{snippets}/user-by-email-get/query-parameters.adoc[]
 include::{snippets}/user-by-email-get/http-response.adoc[]
 .응답 필드 (Response Fields)
 include::{snippets}/user-by-email-get/response-fields.adoc[]
+
+==== 회원 조회 by id
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-by-id-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-by-id-get/request-headers.adoc[]
+
+
+.응답 (Response)
+include::{snippets}/user-by-id-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/user-by-id-get/response-fields.adoc[]
 // --------------------------------------------------------------
 // 2. 생성 (POST) - 없으므로 생략
 // --------------------------------------------------------------
@@ -57,6 +71,8 @@ include::{snippets}/user-profile-get/request-headers.adoc[]
 
 .응답 (Response)
 include::{snippets}/user-profile-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/user-profile-get/response-fields.adoc[]
 // --------------------------------------------------------------
 // 2. 생성 (POST) - 없으므로 생략
 // --------------------------------------------------------------

@@ -14,6 +14,20 @@ include::{snippets}/user-me-orders-get/request-headers.adoc[]
 include::{snippets}/user-me-orders-get/http-response.adoc[]
 .응답 필드 (Response Fields)
 include::{snippets}/user-me-orders-get/response-fields.adoc[]
+
+
+==== 회원 주문화면에 필요한 정보 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-me-order-info-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/user-me-order-info-get/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-me-order-info-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/user-me-order-info-get/response-fields.adoc[]
 // --------------------------------------------------------------
 // 2. 생성 (POST) - 없으므로 생략
 // --------------------------------------------------------------

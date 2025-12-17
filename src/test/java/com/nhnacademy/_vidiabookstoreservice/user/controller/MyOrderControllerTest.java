@@ -50,12 +50,12 @@ class MyOrderControllerTest {
     @Test
     @DisplayName("[주문내역 미리보기]")
     void getOrderPreview() throws Exception {
-        Long userId = 71L; // docs@naver.com (다른 회원은 테스트하느라 주문내역이 너무 많음)
+        Long userId = 15L;
 
         mockMvc.perform(get("/users/me/orders")
                         .header("X-User-Id", userId)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andDo(document("user-me-orders-get",
                         preprocessRequest(prettyPrint()), // 요청/응답 body를 보기 좋게 출력해준데요 (없으면 한줄로 출력)
                         preprocessResponse(prettyPrint()),
@@ -81,6 +81,45 @@ class MyOrderControllerTest {
                                 fieldWithPath("[].orderItems[].salePrice").description("구매 당시 가격"), // ?
                                 fieldWithPath("[].orderItems[].confirmStatus").description("주문 확정 상태"),
                                 fieldWithPath("[].orderItems[].isReviewed").description("리뷰 작성 여부")
+                        )
+                ));
+    }
+
+
+    @Test
+    @DisplayName("[주문화면에 필요한 유저 정보 조회]")
+    void getOrderInfo() throws Exception {
+        Long userId = 14L;
+
+        mockMvc.perform(get("/users/me/order-info")
+                        .header("X-User-Id", userId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("user-me-order-info-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName("X-User-Id").description("사용자 식별 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("email").description("이메일"),
+                                fieldWithPath("name").description("이름"),
+                                fieldWithPath("phone").description("전화번호"),
+                                fieldWithPath("point").description("포인트"),
+                                fieldWithPath("addressId").description("기본주소 PK"),
+                                fieldWithPath("alias").description("별칭"),
+                                fieldWithPath("roadAddress").description("도로명 주소"),
+                                fieldWithPath("zipCode").description("우편번호"),
+                                fieldWithPath("addressDetail").description("상세주소"),
+
+                                fieldWithPath("addressResponses[]").description("주소 리스트"),
+
+                                fieldWithPath("addressResponses[].addressId").description("주소 PK들"),
+                                fieldWithPath("addressResponses[].alias").description("별칭들"),
+                                fieldWithPath("addressResponses[].roadAddress").description("도로명 주소들"),
+                                fieldWithPath("addressResponses[].zipCode").description("우편번호들"),
+                                fieldWithPath("addressResponses[].addressDetail").description("상세주소들")
                         )
                 ));
     }

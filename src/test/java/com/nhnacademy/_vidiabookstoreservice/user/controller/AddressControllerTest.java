@@ -61,7 +61,7 @@ class AddressControllerTest {
     @Test
     @DisplayName("[주소 등록]")
     void registerAddress() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
         CreateAddressRequest request = new CreateAddressRequest(
                 "우리집",
@@ -95,7 +95,7 @@ class AddressControllerTest {
     @Test
     @DisplayName("[주소 단일 조회]")
     void getAddress() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
         Long addressId = addressRepository.findAllByUser_UserId(userId).getFirst().getAddressId();
 
         mockMvc.perform(get("/users/me/addresses/{address-id}", addressId)
@@ -130,7 +130,7 @@ class AddressControllerTest {
     @Test
     @DisplayName("[주소 전체 조회]")
     void getAddressList() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
         mockMvc.perform(get("/users/me/addresses")
                         .header("X-User-Id", userId)
@@ -156,7 +156,7 @@ class AddressControllerTest {
     @Test
     @DisplayName("[기본주소 조회]")
     void getDefaultAddress() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
 
         mockMvc.perform(get("/users/me/addresses/default")
                         .header("X-User-Id", userId)
@@ -182,7 +182,7 @@ class AddressControllerTest {
     @Test
     @DisplayName("[주소 수정]")
     void updateAddress() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
         Long addressId = addressRepository.findAllByUser_UserId(userId).getLast().getAddressId();
 
         AddressRequest request = new AddressRequest(
@@ -231,7 +231,7 @@ class AddressControllerTest {
     @Test
     @DisplayName("[기본주소 변경]")
     void updateDefaultAddress() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
         Long addressId = addressRepository.findAllByUser_UserId(userId).getLast().getAddressId();
 
         mockMvc.perform(put("/users/me/addresses/{address-id}/default", addressId)
@@ -254,7 +254,7 @@ class AddressControllerTest {
     @Test
     @DisplayName("[주소 삭제]")
     void deleteAddress() throws Exception {
-        Long userId = 10L;
+        Long userId = 14L;
         Long addressId = addressRepository.findAllByUser_UserId(userId).getLast().getAddressId();
 
         mockMvc.perform(delete("/users/me/addresses/{address-id}", addressId)
