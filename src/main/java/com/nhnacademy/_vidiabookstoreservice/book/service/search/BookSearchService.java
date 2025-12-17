@@ -67,6 +67,9 @@ public class BookSearchService {
         }
 
         if (!hit) {
+            log.warn("[AI-WARMUP-CALL] kw='{}' thread={} uri=? userId={}",
+                    keyword, Thread.currentThread().getName(), userId,
+                    new RuntimeException("caller-trace"));
             aiWarmupService.warmUpAndCache(keyword, initialDocs);
         } else {
             log.info("[SEARCH] skip warmup(cache hit) keyword = {}", keyword);
