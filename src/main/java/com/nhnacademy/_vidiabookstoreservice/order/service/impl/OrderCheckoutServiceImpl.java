@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @Transactional
 public class OrderCheckoutServiceImpl implements OrderCheckoutService {
     private final BookRepository bookRepository;
-    private final UserService userService;
     private final PackagingOptionService packagingOptionService;
     private final BookService bookService;
 

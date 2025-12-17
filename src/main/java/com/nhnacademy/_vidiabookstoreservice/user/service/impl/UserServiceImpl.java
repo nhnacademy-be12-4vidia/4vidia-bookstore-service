@@ -70,9 +70,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public OrderUserResponse getOrderUser(Long userId) {
-        if (userId == null) {
-            return null;
-        }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
 
