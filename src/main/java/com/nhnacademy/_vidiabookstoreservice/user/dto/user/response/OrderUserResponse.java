@@ -20,16 +20,28 @@ public record OrderUserResponse(
         List<AddressResponse> addressResponses
 ) {
     public static OrderUserResponse fromEntity(User user, Address defaultAddress) {
+        Long addressId = null;
+        String alias = null;
+        String roadAddress = null;
+        String zipCode = null;
+        String addressDetail = null;
+        if (defaultAddress != null) {
+            addressId = defaultAddress.getAddressId();
+            alias = defaultAddress.getAlias();
+            roadAddress = defaultAddress.getRoadAddress();
+            zipCode = defaultAddress.getZipCode();
+            addressDetail = defaultAddress.getAddressDetail();
+        }
         return new OrderUserResponse(
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
                 user.getPoint(),
-                defaultAddress.getAddressId(),
-                defaultAddress.getAlias(),
-                defaultAddress.getRoadAddress(),
-                defaultAddress.getZipCode(),
-                defaultAddress.getAddressDetail(),
+                addressId,
+                alias,
+                roadAddress,
+                zipCode,
+                addressDetail,
                 user.getAddresses().stream().map(AddressResponse::fromEntity).toList()
         );
     }

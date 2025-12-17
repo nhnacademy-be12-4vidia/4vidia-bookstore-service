@@ -70,13 +70,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public OrderUserResponse getOrderUser(Long userId) {
+        if (userId == null) {
+            return null;
+        }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
 
         Address defaultAddress = user.getAddress();
-        if (defaultAddress == null) {
-            throw new DefaultAddressNotFoundException();
-        }
 
         return OrderUserResponse.fromEntity(user, defaultAddress);
     }
