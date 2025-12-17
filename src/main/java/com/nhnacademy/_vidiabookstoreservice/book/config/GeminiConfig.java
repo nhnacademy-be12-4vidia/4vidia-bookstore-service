@@ -8,6 +8,7 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -16,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GeminiConfig {
 
     private final GeminiProperties geminiProperties;
-    private final AtomicInteger keyCursor = new AtomicInteger(0);
 
     @Bean
     public RestClient geminiRestClient() {
@@ -33,16 +33,20 @@ public class GeminiConfig {
     }
 
     private String resolveApiKey() {
-        try {
-            List<String> keys = geminiProperties.getApiKeyList();
-            if (keys != null && !keys.isEmpty()) {
-                int i = Math.floorMod(keyCursor.getAndIncrement(), keys.size());
-                return keys.get(i);
+        List<String> keyList = geminiProperties.getApiKeyList();
+        if (keyList != null && !keyList.isEmpty()) {
+            int idx = ThreadLocalRandom.current().nextInt(keyList.size());
+            String k = keyList.get(idx);
+            if (StringUtils.hasText(k)) {
+                return k;
             }
-        } catch (NoSuchMethodError | Exception ignored) {
-
         }
-        return Objects.requireNonNull(geminiProperties.getApiKeyList()).getFirst();
+        for (String candidate : keyList) {
+            if (StringUtils.hasText(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
     }
 }
 
