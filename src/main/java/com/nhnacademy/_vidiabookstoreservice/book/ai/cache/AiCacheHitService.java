@@ -17,6 +17,10 @@ public class AiCacheHitService {
     private static final int CANDIDATE_LIMIT = 500;
     private static final double SIM_THRESHOLD = 0.88;
 
+    public String getAnswerJson(String entryId) {
+        return repository.getEntry(entryId).answerJson();
+    }
+
     public String tryHit(float[] queryVec) {
         List<String> idList = repository.getRecentEntryIdList(CANDIDATE_LIMIT);
         if (idList.isEmpty()) return null;
@@ -36,7 +40,7 @@ public class AiCacheHitService {
         }
 
         if (bestEntry != null && best >= SIM_THRESHOLD) {
-            return bestEntry.answerJson();
+            return bestEntry.entryId();
         }
         return null;
     }

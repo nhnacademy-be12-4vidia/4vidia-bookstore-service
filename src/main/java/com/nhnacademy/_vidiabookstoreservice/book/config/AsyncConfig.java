@@ -36,7 +36,10 @@ public class AsyncConfig implements AsyncConfigurer {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(4);
-        executor.setQueueCapacity(200);
+        executor.setQueueCapacity(0);
+        executor.setRejectedExecutionHandler((r, exec) -> {
+            log.warn("[AI-EXECUTOR] task rejected. queueSize={}", exec.getQueue().size());
+        });
         executor.setThreadNamePrefix("AI-");
         executor.initialize();
         return executor;
