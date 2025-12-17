@@ -4,14 +4,13 @@ import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiCacheResponse;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +63,15 @@ public class BookSearchResultAssembler {
             .toList();
 
         return new PageImpl<>(responseList, pageable, total);
+    }
+
+    public List<AiCacheResponse> assembleCache(List<GeminiBookSuggestion> suggestionList) {
+        List<Long> bookIdList = suggestionList.stream().map(GeminiBookSuggestion::getBookId).toList();
+
+        List<Book> bookList = bookRepository.findAllById(bookIdList);
+        Map<Long, GeminiBookSuggestion> suggestionMap = suggestionList.stream().collect(Collectors.toMap(GeminiBookSuggestion::getBookId, Function.identity()));
+
+        return bookList.stream().map(b -> AiCacheResponse.of(b, suggestionMap.get(b.getId()))).sorted(Comparator.comparingInt(AiCacheResponse::getRank)).toList();
     }
 
 }

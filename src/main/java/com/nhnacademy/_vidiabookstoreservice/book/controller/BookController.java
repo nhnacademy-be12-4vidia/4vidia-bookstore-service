@@ -8,6 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewList
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.SearchBooksResponse;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
@@ -45,15 +46,16 @@ public class BookController {
 
 
     @GetMapping("/search")
-    public ResponseEntity<PageResponse<BookSearchListResponse>> searchBooks(
+    public ResponseEntity<SearchBooksResponse> searchBooks(
         @Valid @ModelAttribute EsBookSearchRequest request,
         @PageableDefault(size = 20) Pageable pageable,
         @RequestHeader(name = "X-User-Id", required = false) Long userId
     ) {
-        Page<BookSearchListResponse> result = bookSearchService.searchBooks(request, pageable,
+        SearchBooksResponse result = bookSearchService.searchBooks(request, pageable,
             userId);
 
-        return ResponseEntity.ok(PageResponse.from(result));
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/search/ai")

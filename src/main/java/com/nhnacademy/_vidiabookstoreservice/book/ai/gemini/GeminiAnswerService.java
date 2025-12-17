@@ -11,6 +11,12 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiPart;
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiResponse;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +72,7 @@ public class GeminiAnswerService {
         String prompt = buildSearchPrompt(userQuestion, rerankedDocs);
 
         String json = getGeminiText(buildGeminiRequest(prompt, 0.7, 0.8)).orElse(null);
+//        dumpJsonToProjectFile("gemini_search", json);
         if (json == null || json.isBlank()) {
             return List.of();
         }
@@ -78,7 +85,7 @@ public class GeminiAnswerService {
         } catch (Exception e) {
             // JSON 형식 안 지킨 경우 대비
             // 로그 찍고 그냥 빈 리스트 반환
-            // log.warn("Failed to parse Gemini JSON: {}", json, e);
+             log.warn("Failed to parse Gemini JSON: {}", json, e);
             return List.of();
         }
     }
@@ -128,18 +135,20 @@ public class GeminiAnswerService {
                 .append("프로그래밍과 관련된 도서의 우선순위는 높여주시기 바랍니다.\n")
                 .append("목록에 없는 bookId는 절대 만들지 마세요.\n")
 
-            .append("반드시 '유효한 JSON'만 출력하세요. JSON 이외의 글자(설명/자연어/코드블록/마크다운/백틱/괄호/접두사/접미사)를 절대 출력하지 마세요.\n")
-            .append("출력은 반드시 '[' 로 시작해서 ']' 로 끝나야 합니다. (앞뒤 공백/개행 포함 금지)\n")
-            .append("반드시 JSON 배열(array)만 반환하세요. (객체 단독 반환 금지)\n")
-            .append("문법 규칙: 키는 큰따옴표(\")를 사용, 문자열도 큰따옴표 사용, 마지막 요소에 트레일링 콤마 금지\n")
-            .append("값 규칙: bookId/rank는 정수, relevanceScore는 0~1 실수, recommended는 true/false, summary는 한국어 문자열\n")
-            .append("만약 규칙을 지키기 어렵다면 빈 배열 [] 만 출력하세요.\n\n")
+                .append("반드시 '유효한 JSON'만 출력하세요. JSON 이외의 글자(설명/자연어/코드블록/마크다운/백틱/괄호/접두사/접미사)를 절대 출력하지 마세요.\n")
+                .append("특히 매우 중요: 아래 문자를 절대 출력하지 마세요: ``` , ` (백틱), json (코드펜스 언어표시), Markdown 형식\n")
+                .append("출력은 반드시 '[' 로 시작해서 ']' 로 끝나야 합니다. (앞뒤 공백/개행 포함 금지)\n")
+                .append("반드시 JSON 배열(array)만 반환하세요. (객체 단독 반환 금지)\n")
+                .append("문법 규칙: 키는 큰따옴표(\")를 사용, 문자열도 큰따옴표 사용, 마지막 요소에 트레일링 콤마 금지\n")
+                .append("값 규칙: bookId/rank는 정수, relevanceScore는 0~1 실수, recommended는 true/false, summary는 한국어 문자열\n")
+                .append("검증 규칙: 첫 글자가 '[' 가 아니면 실패이며, 마지막 글자가 ']' 가 아니면 실패입니다. 실패 시 반드시 [] 만 출력하세요.\n")
+                .append("만약 출력에 ``` 또는 ` 또는 어떤 자연어 설명이 섞이려 한다면, 즉시 출력을 [] 로 바꾸세요.\n\n")
 
-            .append("JSON 형식 예시(그대로 따라하세요):\n")
-            .append("[\n")
-            .append("  {\"bookId\":31518,\"rank\":1,\"relevanceScore\":0.95,\"recommended\":true,\"summary\":\"...\"},\n")
-            .append("  {\"bookId\":12345,\"rank\":2,\"relevanceScore\":0.87,\"recommended\":true,\"summary\":\"...\"}\n")
-            .append("]\n\n")
+                .append("JSON 형식 예시(그대로 따라하세요, 코드펜스 금지):\n")
+                .append("[\n")
+                .append("  {\"bookId\":31518,\"rank\":1,\"relevanceScore\":0.95,\"recommended\":true,\"summary\":\"...\"},\n")
+                .append("  {\"bookId\":12345,\"rank\":2,\"relevanceScore\":0.87,\"recommended\":true,\"summary\":\"...\"}\n")
+                .append("]\n\n")
 
             .append("필드 설명:\n")
             .append("- bookId: 아래 목록에 있는 책의 id 그대로 사용\n")
@@ -325,5 +334,23 @@ public class GeminiAnswerService {
         }
         return null;
     }
+//
+//    private void dumpJsonToProjectFile(String prefix, String json) {
+//        if (json == null) return;
+//
+//        try {
+//            String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
+//
+//            Path dir = Paths.get(System.getProperty("user.dir"), "llm-dumps");
+//            Files.createDirectories(dir);
+//
+//            Path file = dir.resolve(prefix + "_" + ts + ".txt");
+//            Files.writeString(file, json, StandardCharsets.UTF_8);
+//
+//            log.info("[LLM-DUMP] saved: {}", file.toAbsolutePath());
+//        } catch (Exception e) {
+//            log.warn("[LLM-DUMP] failed to save json. msg={}", e.getMessage(), e);
+//        }
+//        }
 
 }
