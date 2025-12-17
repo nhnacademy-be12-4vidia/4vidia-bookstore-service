@@ -31,13 +31,8 @@ public class OrderItemServiceImpl implements OrderItemService {
         OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItemId).orElseThrow(
                 () -> new OrderItemNotFoundException(orderItemId));
 
-        if (findOrderItem.getConfirmStatus().equals(ConfirmStatus.REFUND_REQUEST)) {
-            //TODO 반품신청중인게 있으면 예외
-            return;
-        }
-
         if (findOrderItem.getConfirmStatus().equals(ConfirmStatus.UNCONFIRMED)) {
-            // 반품됨 제외하고 미확정인것만 확정 상태로 변경
+            //미확정인것만 확정 상태로 변경, 반품 완료, 반품 신청 중인 것도 제외
             findOrderItem.setConfirmStatus(confirmStatus);
         }
     }

@@ -344,7 +344,6 @@ public class OrderServiceImpl implements OrderService {
             orderItemService.changeStatusOrderItem_byUser(orderItem.getOrderItemId(), confirmStatus);
         }
 
-        //TODO 포인트 지급도 해야됨 - 서비스 부르기(오더Entity) -> 추가했습니다.
         pointCommandService.reward(order);
     }
 

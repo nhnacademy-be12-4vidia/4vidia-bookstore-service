@@ -45,4 +45,8 @@ public record OrderUserResponse(
                 user.getAddresses().stream().map(AddressResponse::fromEntity).toList()
         );
     }
+
+    public static OrderUserResponse empty() {
+        return new OrderUserResponse(null, null, null, null, null, null, null, null, null, null);
+    }
 }
