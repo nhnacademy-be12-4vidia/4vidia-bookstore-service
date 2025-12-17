@@ -34,7 +34,7 @@ public class GeminiConfig {
 
     private String resolveApiKey() {
         try {
-            List<String> keys = geminiProperties.getApiKeys();
+            List<String> keys = geminiProperties.getApiKeyList();
             if (keys != null && !keys.isEmpty()) {
                 int i = Math.floorMod(keyCursor.getAndIncrement(), keys.size());
                 return keys.get(i);
@@ -42,7 +42,7 @@ public class GeminiConfig {
         } catch (NoSuchMethodError | Exception ignored) {
 
         }
-        return Objects.requireNonNull(geminiProperties.getApiKeys()).getFirst();
+        return Objects.requireNonNull(geminiProperties.getApiKeyList()).getFirst();
     }
 }
 

@@ -20,7 +20,7 @@ public class AiSearchRepository {
     private final StringRedisTemplate aiRedisTemplate;
 
     private static final String ENTRY_PREFIX = "ai:entry:";
-    private static final String RECENT_KEY = "ai:recent:";
+    private static final String RECENT_KEY = "ai:recent";
     private static final String LOCK_PREFIX = "ai:lock:";
 
     public boolean tryLock(String lockKey, Duration ttl) {
@@ -74,5 +74,19 @@ public class AiSearchRepository {
             out.add(new AiCacheEntry(id, kw, answer, vec, createdAtMs));
         }
         return out;
+    }
+
+    public AiCacheEntry getEntry(String entryId) {
+        String key = ENTRY_PREFIX + entryId;
+
+        Map<Object, Object> m = aiRedisTemplate.opsForHash().entries(key);
+        if (m == null || m.isEmpty()) return null;
+
+        String kw = (String) m.get("kw");
+        String answer = (String) m.get("answer");
+        String vec = (String) m.get("vec");
+        String createdAt = (String) m.get("createdAt");
+
+        return new AiCacheEntry(key, kw, answer, vec, Long.parseLong(createdAt));
     }
 }

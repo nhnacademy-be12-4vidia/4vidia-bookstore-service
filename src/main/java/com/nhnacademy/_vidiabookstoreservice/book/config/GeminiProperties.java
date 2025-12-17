@@ -12,6 +12,6 @@ import java.util.List;
 @Getter
 @Setter
 public class GeminiProperties {
-    private List<String> apiKeys;
+    private List<String> apiKeyList;
     private String model;   // default: gemini-2.5-flash
 }

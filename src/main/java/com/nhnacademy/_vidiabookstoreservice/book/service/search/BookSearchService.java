@@ -1,5 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.search;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.book.ai.AiWarmupService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.cache.AiCacheHitService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
@@ -42,6 +45,7 @@ public class BookSearchService {
     private final GeminiAnswerService geminiAnswerService;
     private final AiWarmupService aiWarmupService;
     private final AiCacheHitService aiCacheHitService;
+    private final ObjectMapper objectMapper;
 
     public Page<BookSearchListResponse> searchBooks(EsBookSearchRequest request, Pageable pageable, Long userId) {
         String rawKeyword = request.getKeyword();
@@ -63,6 +67,8 @@ public class BookSearchService {
         }
 
         if (!hit) {
+            log.warn("[AI-WARMUP-CALL] kw='{}' thread={} userId={}",
+                    keyword, Thread.currentThread().getName(), userId);
             aiWarmupService.warmUpAndCache(keyword, initialDocs);
         } else {
             log.info("[SEARCH] skip warmup(cache hit) keyword = {}", keyword);
@@ -82,11 +88,13 @@ public class BookSearchService {
                 .build();
         }
 
+        String keywordNormal = keyword.trim().toLowerCase();
+
         boolean useSemantic = Boolean.TRUE.equals(request.getUseSemantic());
         float[] queryVector = null;
 
         if (useSemantic) {
-            queryVector = embeddingService.embedOrNull(keyword);
+            queryVector = embeddingService.embedOrNull(keywordNormal);
         }
 
         List<BookDocument> initialDocs = searchClient.search(request, queryVector, MAX_RESULTS);
@@ -98,7 +106,7 @@ public class BookSearchService {
                 .build();
         }
 
-        List<BookDocument> rerankDocs = reranker.rerankSafely(keyword, initialDocs);
+        List<BookDocument> rerankDocs = reranker.rerankSafely(keywordNormal, initialDocs);
 
         Page<BookSearchListResponse> pageResult = resultAssembler.assemble(rerankDocs, userId,
             pageable);
@@ -107,14 +115,35 @@ public class BookSearchService {
             .limit(10)
             .toList();
 
-        List<GeminiBookSuggestion> suggestions = geminiAnswerService.generateSuggestions(keyword,
-            topForLlm);
+
+        boolean hit = false;
+        String hitEntryId = "";
+        List<GeminiBookSuggestion> suggestionList;
+
+        if (queryVector != null && queryVector.length > 0) {
+            hitEntryId= aiCacheHitService.tryHit(queryVector);
+            hit = (hitEntryId != null);
+        }
+
+        if (hit) {
+            String hitEntryAnswer = aiCacheHitService.getAnswerJson(hitEntryId);
+            try {
+                suggestionList = objectMapper.readValue(hitEntryAnswer, new TypeReference<List<GeminiBookSuggestion>>() {});
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            suggestionList = geminiAnswerService.generateSuggestions(keyword,
+                    topForLlm);
+            aiWarmupService.cacheGeminiAnswer(keywordNormal, suggestionList);
+        }
 
         Map<Long, BookSearchListResponse> dtoMap = pageResult.getContent().stream()
             .collect(Collectors.toMap(BookSearchListResponse::getId, dto -> dto));
 
 
-        List<BookSearchListResponse> rankedDtos = suggestions.stream()
+        List<BookSearchListResponse> rankedDtos = suggestionList.stream()
             .sorted(Comparator.comparingInt(GeminiBookSuggestion::getRank))
             .map(s -> {
                 BookSearchListResponse base = dtoMap.get(s.getBookId());
