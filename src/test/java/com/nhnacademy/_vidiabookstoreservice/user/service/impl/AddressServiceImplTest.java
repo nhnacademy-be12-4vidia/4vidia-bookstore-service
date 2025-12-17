@@ -5,10 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
-import com.nhnacademy._vidiabookstoreservice.user.exception.AddressNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressCannotBeDeletedException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -74,7 +71,7 @@ class AddressServiceImplTest {
         given(addressRepository.countByUser_userId(userId)).willReturn(10);
 
         assertThatThrownBy(() -> addressService.createAddress(userId, mock(CreateAddressRequest.class)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(MaxAddressLimitExceededException.class);
     }
 
     // --------------------
