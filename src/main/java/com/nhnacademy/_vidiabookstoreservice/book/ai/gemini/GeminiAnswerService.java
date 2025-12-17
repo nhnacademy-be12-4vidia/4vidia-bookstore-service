@@ -219,7 +219,7 @@ public class GeminiAnswerService {
             keyCount = (keyList == null) ? 0 : keyList.size();
         } catch (Exception ignored) {}
 
-        int maxAttempts = Math.max(1, Math.min(5, keyCount == 0 ? 1 : keyCount));
+        int maxAttempts = keyCount == 0 ? 1 : keyCount;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
