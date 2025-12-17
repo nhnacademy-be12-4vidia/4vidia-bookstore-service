@@ -89,4 +89,13 @@ public class AiSearchRepository {
 
         return new AiCacheEntry(key, kw, answer, vec, Long.parseLong(createdAt));
     }
+
+    public String getAnswerJson(String entryId) {
+        String key = ENTRY_PREFIX + entryId;
+
+        Map<Object, Object> m = aiRedisTemplate.opsForHash().entries(key);
+        if (m == null || m.isEmpty()) return null;
+
+        return (String) m.get("answer");
+    }
 }
