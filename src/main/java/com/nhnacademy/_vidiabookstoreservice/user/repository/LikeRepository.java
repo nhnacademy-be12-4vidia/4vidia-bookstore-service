@@ -33,6 +33,8 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     // => 3️⃣ 실무 추천
     //작은 데이터는 fetch join으로 충분
     //목록 조회 등 N이 커질 가능성이 있는 경우는 DTO 직조회가 안전하고 효율적
+
+    일단 yml에 Bath Size 설정으로 성능 해결
 */
     List<Like> findAllByUser_UserId(Long userUserId); // n+1문제...?
 

@@ -26,7 +26,7 @@ public class GradeUpdateScheduler {
     @Scheduled(cron = "0 0 0 1 * *", zone = "Asia/Seoul")
     //테스트용
 //    @Scheduled(initialDelay = 10_000, fixedDelay = Long.MAX_VALUE)
-    @Transactional
+
     public void updateUserGrade(){
         long startTime = System.currentTimeMillis();
 

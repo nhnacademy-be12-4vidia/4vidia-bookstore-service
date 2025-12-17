@@ -6,10 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
-import com.nhnacademy._vidiabookstoreservice.user.exception.AddressNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressCannotBeDeletedException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
@@ -37,7 +34,7 @@ public class AddressServiceImpl implements AddressService {
         // 주소 개수 제한
         int addrCount = addressRepository.countByUser_userId(userId);
         if(addrCount>=10){
-            throw new IllegalArgumentException("주소는 최대 10개까지만 등록할 수 있습니다. 주소개수: " + addrCount);
+            throw new MaxAddressLimitExceededException(10);
         }
 
         Address address = request.toEntity(user);

@@ -1,26 +1,40 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
+import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
+import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
 import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
 import com.nhnacademy._vidiabookstoreservice.user.exception.GradeNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -37,6 +51,12 @@ class GradeServiceImplTest {
 
     @InjectMocks
     private GradeServiceImpl gradeService;
+
+
+    @Mock
+    private OrderRepository orderRepository;
+    @Mock
+    private EntityManager em;
 
     // 테스트용 User 생성 메서드
     private User createDummyUser(Long userId, Grade grade) {
@@ -161,6 +181,98 @@ class GradeServiceImplTest {
         assertThrows(GradeNotFoundException.class,
                 () -> gradeService.updateGrade(userId, invalidGradeId) // 서비스로직(등급변경) 호출
         );
+    }
+
+    @Test
+    @DisplayName("[월간 등급 산정] - 금액별 등급 변경 및 날짜 계산 검증")
+    void recalculateMonthlyGrades_success() {
+        // given
+        // 1. 모든 등급 정보 Mocking (Service의 loadGradeMap() 통과를 위해 필수)
+        // PLATINUM(40만), GOLD(30만), ROYAL(20만), REGULAR(10만), WELCOME(0)
+        Grade platinum = createDummyGrade(5L, GradeName.PLATINUM, 5);
+        Grade gold = createDummyGrade(4L, GradeName.GOLD, 4);
+        Grade royal = createDummyGrade(3L, GradeName.ROYAL, 3);
+        Grade regular = createDummyGrade(2L, GradeName.REGULAR, 2);
+        Grade welcome = createDummyGrade(1L, GradeName.WELCOME, 1);
+
+        given(gradeRepository.findByGradeName(GradeName.PLATINUM)).willReturn(platinum);
+        given(gradeRepository.findByGradeName(GradeName.GOLD)).willReturn(gold);
+        given(gradeRepository.findByGradeName(GradeName.ROYAL)).willReturn(royal);
+        given(gradeRepository.findByGradeName(GradeName.REGULAR)).willReturn(regular);
+        given(gradeRepository.findByGradeName(GradeName.WELCOME)).willReturn(welcome);
+
+        // 2. 테스트용 유저 준비
+        // User A: 현재 WELCOME -> 45만원 사용 (PLATINUM 승급 예정)
+        User userA = createDummyUser(100L, welcome);
+        // User B: 현재 PLATINUM -> 5만원 사용 (WELCOME 강등 예정)
+        User userB = createDummyUser(200L, platinum);
+        // User C: 아예 주문 내역 없음 (WELCOME 유지)
+        User userC = createDummyUser(300L, welcome);
+
+        List<User> userList = List.of(userA, userB, userC);
+
+        // Page mocking: 첫 호출엔 리스트 반환, 두 번째엔 빈 페이지(Loop 종료)
+        Page<User> userPage = new PageImpl<>(userList);
+        given(userRepository.findAll(any(PageRequest.class)))
+                .willReturn(userPage)
+                .willReturn(Page.empty());
+
+        // 3. 주문 통계 데이터 Mocking (UserNetSum 인터페이스 구현체 사용)
+        List<UserNetSum> netSums = List.of(
+                createNetSum(100L, 450_000L), // User A
+                createNetSum(200L, 50_000L)   // User B
+                // User C는 리스트에 없으므로 0원으로 처리됨
+        );
+
+        given(orderRepository.findUserNetSumLast3Months(any(), any(), anyInt()))
+                .willReturn(netSums);
+
+        // when
+        int updatedCount = gradeService.recalculateMonthlyGrades();
+
+        // then
+        // 1. 변경된 유저 수 검증 (UserA, UserB 2명 변경됨. UserC는 그대로라 카운트 X)
+        assertThat(updatedCount).isEqualTo(2);
+
+        // 2. 등급 변경 결과 검증
+        assertThat(userA.getGrade().getGradeName()).isEqualTo(GradeName.PLATINUM); // 승급 확인
+        assertThat(userB.getGrade().getGradeName()).isEqualTo(GradeName.WELCOME);  // 강등 확인
+        assertThat(userC.getGrade().getGradeName()).isEqualTo(GradeName.WELCOME);  // 유지 확인
+
+        // 3. 날짜 계산 로직 검증 (ArgumentCaptor 사용)
+        // 서비스가 레포지토리에 넘긴 날짜가 진짜 "이번달 1일 ~ 3개월 전 1일"인지 확인
+        ArgumentCaptor<LocalDateTime> fromCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+        ArgumentCaptor<LocalDateTime> toCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+
+        verify(orderRepository).findUserNetSumLast3Months(
+                fromCaptor.capture(),
+                toCaptor.capture(),
+                eq(PointReason.ORDER_CANCEL_REFUND.getCode())
+        );
+
+        LocalDateTime capturedFrom = fromCaptor.getValue();
+        LocalDateTime capturedTo = toCaptor.getValue();
+
+        // 날짜 검증: from이 to보다 과거여야 하고, 1일이어야 함
+        assertThat(capturedFrom).isBefore(capturedTo);
+        assertThat(capturedFrom.getDayOfMonth()).isEqualTo(1);
+        assertThat(capturedTo.getDayOfMonth()).isEqualTo(1);
+
+        // EntityManager 동작 검증
+        verify(em).flush();
+        verify(em).clear();
+    }
+
+    // --- Helper Methods & Inner Classes ---
+
+    // UserNetSum 인터페이스 가짜 구현체 (테스트용)
+    private UserNetSum createNetSum(Long userId, Long netSum) {
+        return new UserNetSum() {
+            @Override
+            public Long getUserId() { return userId; }
+            @Override
+            public Long getNetSum() { return netSum; }
+        };
     }
 
 }
