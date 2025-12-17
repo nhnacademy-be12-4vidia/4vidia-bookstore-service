@@ -5,6 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.event.BestSellerUpdateEve
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,8 @@ public class BestSellerEventListener {
     private final OrderItemRepository orderItemRepository;
     private final StringRedisTemplate bestsellerRedisTemplate;
 
+    private static final String KEY_DAILY_SALES_STATS = "stats:bestseller:daily";
+
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleBestSellerUpdate(BestSellerUpdateEvent event) {
@@ -29,7 +32,7 @@ public class BestSellerEventListener {
             List<OrderItem> orderItems = orderItemRepository.findByOrder_orderId(event.orderId());
 
             orderItems.forEach(orderItem ->
-                    bestsellerRedisTemplate.opsForZSet().incrementScore("bestseller", orderItem.getBook().getId().toString(), orderItem.getQuantity())
+                    bestsellerRedisTemplate.opsForZSet().incrementScore(KEY_DAILY_SALES_STATS, orderItem.getBook().getId().toString(), orderItem.getQuantity())
             );
         } catch (Exception e) {
             log.error("베스트셀러 업데이트 실패");
