@@ -13,9 +13,9 @@ import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserId
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -50,6 +50,7 @@ public class AddressServiceImpl implements AddressService {
      * 주소 단건 조회
      */
     @Override
+    @Transactional(readOnly = true)
     public AddressResponse getAddress(Long userId, Long addressId){
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundByUserIdException(userId);
@@ -68,6 +69,7 @@ public class AddressServiceImpl implements AddressService {
      * 주소 전체 조회
      */
     @Override
+    @Transactional(readOnly = true)
     public List<AddressResponse> getUserAddresses(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundByUserIdException(userId);
@@ -154,6 +156,7 @@ public class AddressServiceImpl implements AddressService {
      * 기본 주소 조회
      */
     @Override
+    @Transactional(readOnly = true)
     public AddressResponse getDefaultAddress(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundByUserIdException(userId));

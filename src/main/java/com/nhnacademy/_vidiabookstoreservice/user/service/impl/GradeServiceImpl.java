@@ -45,6 +45,7 @@ public class GradeServiceImpl implements GradeService {
      * 등급 조회
      */
     @Override
+    @Transactional(readOnly = true)
     public GradeResponse getGrade(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
@@ -67,11 +68,12 @@ public class GradeServiceImpl implements GradeService {
 
         user.setGrade(grade);
     }
+
     /**
      * 월간 등급 산정 (최근 3개월 순수 주문금액 기준)
      * - 스케줄러/수동 실행 어디서든 호출 가능하도록 서비스로 분리
      */
-    @Transactional
+//    @Transactional
     public int recalculateMonthlyGrades() {
         ZoneId zone = ZoneId.of("Asia/Seoul");
 

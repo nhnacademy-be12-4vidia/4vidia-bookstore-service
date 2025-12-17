@@ -3,11 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
-import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
@@ -16,7 +12,6 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResp
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
-import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.springframework.stereotype.Service;
@@ -42,6 +37,7 @@ public class UserServiceImpl implements UserService {
      * 이메일로 회원 조회
      * */
     @Override
+    @Transactional(readOnly = true)
     public UserInfoResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundByEmailException(email));
@@ -53,6 +49,7 @@ public class UserServiceImpl implements UserService {
      * 회원 포인트 반환
      */
     @Override
+    @Transactional(readOnly = true)
     public Integer getUserByPoint(Long userId){
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);
@@ -63,6 +60,7 @@ public class UserServiceImpl implements UserService {
      * 회원 이름 조회
      */
     @Override
+    @Transactional(readOnly = true)
     public String getUserName(Long userId) {
         return userRepository.findById(userId)
                 .map(User::getName)
@@ -70,6 +68,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderUserResponse getOrderUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
@@ -118,6 +117,7 @@ public class UserServiceImpl implements UserService {
      * 이건 뭐죠? 지연로딩??
      */
     @Override
+    @Transactional(readOnly = true)
     public User getProxyById(Long userId) {
         return userRepository.getReferenceById(userId);
     }
@@ -126,6 +126,7 @@ public class UserServiceImpl implements UserService {
      * 회원 pk 조회
      * */
     @Override
+    @Transactional(readOnly = true)
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
@@ -179,11 +180,10 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundByEmailException(email));
 
         user.setLastLoginAt(LocalDateTime.now());
-
-
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String getUserRole(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByUserIdException(userId));

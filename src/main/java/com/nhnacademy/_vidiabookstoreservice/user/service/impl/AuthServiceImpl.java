@@ -33,6 +33,7 @@ import java.util.Random;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -46,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
      * 회원가입
      */
     @Override
-    @Transactional // 이거 없으면 롤백이 안됩니다요 (근데 지금 생일쿠폰 호출 오류나서 transaction 있으면 회원가입 안됨.. 쿠폰 호출 주석처리 하세요.. )
+//    @Transactional // 이거 없으면 롤백이 안됩니다요 (근데 지금 생일쿠폰 호출 오류나서 transaction 있으면 회원가입 안됨.. 쿠폰 호출 주석처리 하세요.. )
     public Long register(UserSignupRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException(request.email());
@@ -78,6 +79,7 @@ public class AuthServiceImpl implements AuthService {
      * 아이디 찾기 (이름 + 생일 + 전화번호)
      */
     @Override
+    @Transactional(readOnly = true)
     public String findUserId(FindIdRequest request) {
         LocalDate birthday = LocalDate.parse(request.birthday());
         User user = userRepository.findByNameAndBirthDateAndPhone(
@@ -113,6 +115,7 @@ public class AuthServiceImpl implements AuthService {
 
     // 이메일 중복 체크
     @Override
+    @Transactional(readOnly = true)
     public Boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -132,6 +135,7 @@ public class AuthServiceImpl implements AuthService {
 
     // 로그인 아이디,비번 체크 -> 맞으면 -> 회원상태 확인 후 휴먼상태 여부 보내기
     @Override
+    @Transactional(readOnly = true)
     public Boolean isDormant(String email) {
 
         // 1. 이메일로 회원 찾기
