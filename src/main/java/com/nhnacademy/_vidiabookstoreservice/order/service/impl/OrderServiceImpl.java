@@ -315,7 +315,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
         bookService.increaseStock(requests);
 
-        if (order.getUser() != null) {
+        if (order.getPointUsed() != 0) {
             pointCommandService.cancelUse(orderId, order.getUser().getUserId());
         }
     }
