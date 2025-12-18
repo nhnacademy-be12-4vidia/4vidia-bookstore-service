@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.refund.dto.response;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundStatus;
 
 import java.time.LocalDate;
 

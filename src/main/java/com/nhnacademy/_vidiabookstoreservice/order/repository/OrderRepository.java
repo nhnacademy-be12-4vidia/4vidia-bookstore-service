@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.order.repository;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
-import com.nhnacademy._vidiabookstoreservice.order.domain.enums.OrderStatus;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
 import org.springframework.data.domain.Page;
@@ -41,15 +40,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                       @Param("keyword") String keyword,
                                       Pageable pageable);
 
-    List<Order> findByUserAndCreatedAtBetweenAndDeliveryStatus(
-            User user,
-            LocalDateTime from,
-            LocalDateTime to,
-            DeliveryStatus deliveryStatus
-    );
-
-
-
     // 3개월 순수 주문금액 계산
     @Query(value = """
     SELECT
@@ -79,6 +69,33 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("toDt") LocalDateTime toDt,
             @Param("reasonCode") int reasonCode
     );
+
+    /**
+     * 구매 확정 -> 순수 주문 금액 계산
+     */
+    @Query("""
+        SELECT
+            o.totalBookPrice
+            - o.couponDiscount
+            - o.deliveryFee
+            - o.packagingFee
+            - COALESCE(
+                (SELECT SUM(pd.price)
+                 FROM PointDetail pd
+                 WHERE pd.orderId = o.orderId
+                   AND pd.reason = :reason), 0
+            )
+        FROM Order o
+        LEFT JOIN PointDetail pd
+            ON pd.orderId = o.orderId
+            AND pd.reason = :reason
+        WHERE o.orderId = :orderId
+    """)
+    int calculateNetOrderPrice(
+            @Param("orderId") Long orderId,
+            @Param("reason") int reason
+    );
+
 
 
 

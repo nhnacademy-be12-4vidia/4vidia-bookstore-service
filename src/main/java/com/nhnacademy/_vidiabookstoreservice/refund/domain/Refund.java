@@ -1,11 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.refund.domain;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundAlreadyAcceptException;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,13 +22,13 @@ public class Refund {
     private OrderItem orderItem;
 
     @Column(name = "damaged", nullable = false)
-    private boolean damaged;
+    private Boolean damaged;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "description", length = 250)
-    private String description;
+    private String description; // 반품 신청 사유
 
     @Setter
     @Convert(converter = RefundStatusConverter.class)
@@ -39,41 +38,51 @@ public class Refund {
     @Column(name = "reject_detail")
     private String rejectDetail; // 반품 거절 사유
 
+    @Column(name = "refund_price", nullable = false)
+    private Integer refundPrice; // 환불 금액
+
     @Builder
-    public Refund(OrderItem orderItem, boolean damaged, String description, RefundStatus refundStatus){
+    public Refund(OrderItem orderItem, boolean damaged, String description, RefundStatus refundStatus, String rejectDetail, Integer refundPrice){
         this.orderItem = orderItem;
         this.damaged = damaged;
         this.createdAt = LocalDateTime.now();
         this.description = description;
         this.refundStatus = refundStatus;
+        this.rejectDetail = rejectDetail;
+        this.refundPrice = (refundPrice == null) ? 0 : refundPrice;
     }
 
+    // 관리자 반품 승인 (update)
     public void accept() {
         if (this.refundStatus == RefundStatus.ACCEPT) {
-            throw new IllegalStateException("이미 승인된 반품입니다.");
+            throw new RefundAlreadyAcceptException();
         }
         this.refundStatus = RefundStatus.ACCEPT;
     }
 
-    public void reject() {
+    // 관리자 반품 거절 (update)
+    public void reject(String rejectDetail) {
         this.refundStatus = RefundStatus.REJECT;
+        this.rejectDetail = rejectDetail;
     }
 
-    public static Refund reject(OrderItem item, String reason) {
+    public static Refund reject(OrderItem item, String reason, String refundDetail) {
         return Refund.builder()
                 .orderItem(item)
                 .damaged(false)
                 .description(reason)
                 .refundStatus(RefundStatus.REJECT)
+                .rejectDetail(refundDetail)
                 .build();
     }
 
-    public static Refund accept(OrderItem item, String reason) {
+    public static Refund accept(OrderItem item, String reason, Integer refundPrice) {
         return Refund.builder()
                 .orderItem(item)
                 .damaged(false)
                 .description(reason)
                 .refundStatus(RefundStatus.ACCEPT)
+                .refundPrice(refundPrice)
                 .build();
     }
 

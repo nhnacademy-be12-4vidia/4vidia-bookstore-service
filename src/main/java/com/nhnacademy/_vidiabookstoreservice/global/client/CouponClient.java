@@ -3,12 +3,13 @@ package com.nhnacademy._vidiabookstoreservice.global.client;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.CouponCalculationRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.CouponUseRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.CouponCalculationResponse;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundCouponRequest;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.response.UseCouponResponse;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-
-import java.util.List;
 
 @FeignClient(name = "4vidia-coupon-service")
 public interface CouponClient {
@@ -27,5 +28,9 @@ public interface CouponClient {
     // 회원가입 시 welcome 쿠폰 요청
     @PostMapping("/coupons/welcome")
     void getRegisterCoupon(@RequestHeader("X-User-Id") Long userId);
+
+    // 반품 : 주문에 사용한 쿠폰 정보 요청
+    @GetMapping("/coupons/useRefund")
+    UseCouponResponse getUseCouponDetail(@RequestBody RefundCouponRequest refundCouponRequest);
 
 }

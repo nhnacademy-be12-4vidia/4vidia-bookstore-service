@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.refund.domain;
 
-import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
