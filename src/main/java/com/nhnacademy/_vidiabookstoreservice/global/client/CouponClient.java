@@ -30,7 +30,7 @@ public interface CouponClient {
     void getRegisterCoupon(@RequestHeader("X-User-Id") Long userId);
 
     // 반품 : 주문에 사용한 쿠폰 정보 요청
-    @GetMapping("/coupons/useRefund")
+    @PostMapping("/coupons/use-refund")
     UseCouponResponse getUseCouponDetail(@RequestBody RefundCouponRequest refundCouponRequest);
 
 }
