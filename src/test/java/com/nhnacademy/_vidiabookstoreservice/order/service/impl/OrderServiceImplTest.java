@@ -1,19 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class OrderServiceImplTest {
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @Test
-    void getDeliveryDates() {
-    }
 
     @Test
     void saveOrder() {
@@ -36,10 +27,6 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void getOrderCheckoutResponse() {
-    }
-
-    @Test
     void useCouponAndDecreaseStockAndPoint() {
     }
 
@@ -53,5 +40,13 @@ class OrderServiceImplTest {
 
     @Test
     void validateGuest() {
+    }
+
+    @Test
+    void changeOrderStatus() {
+    }
+
+    @Test
+    void changeOrderStatus_ByUser() {
     }
 }

@@ -5,7 +5,6 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.event.BestSellerUpdateEve
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
