@@ -1,8 +1,7 @@
-package com.nhnacademy._vidiabookstoreservice.order.scheduler;
+package com.nhnacademy._vidiabookstoreservice.book.service.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
