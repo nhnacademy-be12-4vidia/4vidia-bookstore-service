@@ -256,7 +256,7 @@ public class GeminiAnswerService {
 
     private boolean isQuotaOrRateLimit(HttpClientErrorException e, String body) {
         int code = e.getStatusCode().value();
-        if (code == 429) return true;
+        if (code == 429 || code == 503) return true;
         if (body == null) return false;
         String b = body.toLowerCase();
         return b.contains("resource_exhausted")
