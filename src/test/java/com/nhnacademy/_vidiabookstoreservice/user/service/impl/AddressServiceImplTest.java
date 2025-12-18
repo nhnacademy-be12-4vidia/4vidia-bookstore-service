@@ -15,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -111,6 +113,52 @@ class AddressServiceImplTest {
                 .isInstanceOf(AddressNotFoundException.class);
     }
 
+    @Test
+    @DisplayName("주소 전체 조회 성공 - 주소 있을 때")
+    void getAddresses_success() {
+        Long userId = 1L;
+
+        Address address1 = addressIdOnly(10L);
+        Address address2 = addressIdOnly(11L);
+        Address address3 = addressIdOnly(12L);
+        List<Address> addressList = List.of(address1, address2, address3);
+
+        given(userRepository.existsById(userId)).willReturn(true);
+        given(addressRepository.findAllByUser_UserId(userId)).willReturn(addressList);
+
+        List<AddressResponse> result = addressService.getUserAddresses(userId);
+
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(3);
+    }
+
+    @Test
+    @DisplayName("주소 전체 조회 성공 - 주소 등록 안되있을 때(빈리스트)")
+    void getAddresses_success_emptyList() {
+        Long userId = 1L;
+
+        List<Address> emptyAddressList = new ArrayList<>();
+
+        given(userRepository.existsById(userId)).willReturn(true);
+        given(addressRepository.findAllByUser_UserId(userId)).willReturn(emptyAddressList);
+
+        List<AddressResponse> result = addressService.getUserAddresses(userId);
+
+        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("주소 전체 조회 실패 - 유저 없음")
+    void getAddresses_fail_userNotFound() {
+        Long userId = 1L;
+
+        given(userRepository.existsById(userId)).willReturn(false);
+
+        assertThatThrownBy(() -> addressService.getUserAddresses(userId))
+                .isInstanceOf(UserNotFoundByUserIdException.class);
+    }
+
     // --------------------
     // updateAddress
     // --------------------
@@ -131,13 +179,24 @@ class AddressServiceImplTest {
     }
 
     @Test
+    @DisplayName("주소 수정 실패 - 유저 없음")
+    void updateAddress_fail_userNotFound() {
+        Long userId = 1L;
+        given(userRepository.existsById(userId)).willReturn(false);
+
+        assertThatThrownBy(() -> addressService.updateAddress(userId, 10L,
+                new AddressRequest("별칭", "도로명", "12345", "상세")))
+                .isInstanceOf(UserNotFoundByUserIdException.class);
+    }
+
+    @Test
     @DisplayName("주소 수정 실패 - 주소 없음")
     void updateAddress_fail_addressNotFound() {
         given(userRepository.existsById(1L)).willReturn(true);
         given(addressRepository.findByUser_UserIdAndAddressId(1L, 10L)).willReturn(null);
 
         assertThatThrownBy(() -> addressService.updateAddress(1L, 10L,
-                new AddressRequest("a", "r", "z", "d")))
+                new AddressRequest("별칭", "도로명", "12345", "상세")))
                 .isInstanceOf(AddressNotFoundException.class);
     }
 
@@ -162,19 +221,61 @@ class AddressServiceImplTest {
     }
 
     @Test
+    @DisplayName("주소 삭제 실패 - 주소 없음(주소가 빈리스트)")
+    void deleteAddress_fail_addressNotFound() {
+        Long userId = 1L;
+        Long addressId = 10L;
+
+        User user = mock(User.class);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(null);
+
+        assertThatThrownBy(() -> addressService.deleteAddress(userId, addressId))
+                .isInstanceOf(AddressNotFoundException.class);
+
+        verify(addressRepository, never()).deleteByUser_UserIdAndAddressId(anyLong(), anyLong());
+    }
+
+    @Test
+    @DisplayName("주소 삭제 실패 - 주소 없음(기본주소 없음)")
+    void deleteAddress_fail_defaultAddressIsNull() {
+        Long userId = 1L;
+        Long addressId = 10L;
+
+        User user = mock(User.class);
+        given(user.getAddress()).willReturn(null);
+
+        Address address = mock(Address.class);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(address);
+
+        addressService.deleteAddress(userId, addressId);
+
+        verify(addressRepository).deleteByUser_UserIdAndAddressId(anyLong(), anyLong());
+    }
+
+    @Test
     @DisplayName("주소 삭제 실패 - 기본주소 삭제 불가")
     void deleteAddress_fail_defaultCannotDelete() {
         Long userId = 1L;
         Long addressId = 10L;
 
-        Address defaultAddr = addressIdAndAlias(addressId, "기본집");
-        User user = userWithDefault(defaultAddr);
+        User user = mock(User.class);
+
+        Address defaultAddr = mock(Address.class);
+        given(defaultAddr.getAddressId()).willReturn(addressId);
+        given(defaultAddr.getAlias()).willReturn("기본집");
+
+        given(user.getAddress()).willReturn(defaultAddr);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(defaultAddr);
 
         assertThatThrownBy(() -> addressService.deleteAddress(userId, addressId))
-                .isInstanceOf(DefaultAddressCannotBeDeletedException.class);
+                .isInstanceOf(DefaultAddressCannotBeDeletedException.class)
+                .hasMessageContaining("기본집");
 
         verify(addressRepository, never()).deleteByUser_UserIdAndAddressId(anyLong(), anyLong());
     }
@@ -205,8 +306,73 @@ class AddressServiceImplTest {
         verify(user).setDefaultAddress(selected);
     }
 
+    @Test
+    @DisplayName("기본주소 변경 성공 - 기존 기본 주소 없음")
+    void updateDefaultAddress_success_noCurrentDefault() {
+        Long userId = 1L;
+        Long addressId = 10L;
 
+        User user = mock(User.class);
+        given(user.getAddress()).willReturn(null);
 
+        Address selected = mock(Address.class);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(selected);
+
+        addressService.updateDefaultAddress(userId, addressId);
+
+        verify(user).setDefaultAddress(selected);
+    }
+
+    @Test
+    @DisplayName("기본주소 변경 실패 - 유저 없음")
+    void updateDefaultAddress_fail_userNotFound() {
+        Long userId = 1L;
+        Long addressId = 10L;
+
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> addressService.updateDefaultAddress(userId, addressId))
+                .isInstanceOf(UserNotFoundByUserIdException.class);
+    }
+
+    @Test
+    @DisplayName("기본주소 변경 실패 - 선택된 주소 없음")
+    void updateDefaultAddress_fail_selectedAddressNotFound() {
+        Long userId = 1L;
+        Long addressId = 10L;
+        User user = mock(User.class);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(null);
+
+        assertThatThrownBy(() -> addressService.updateDefaultAddress(userId, addressId))
+                .isInstanceOf(AddressNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("기본주소 변경 실패 - 선택한 주소가 이미 기본주소임")
+    void updateDefaultAddress_fail_alreadyDefaultAddress() {
+        Long userId = 1L;
+        Long addressId = 10L;
+
+        User user = mock(User.class);
+
+        Address currentDefaultAddr = mock(Address.class);
+        given(currentDefaultAddr.getAddressId()).willReturn(addressId);
+
+        Address selected = mock(Address.class);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(selected);
+
+        given(user.getAddress()).willReturn(currentDefaultAddr);
+
+        addressService.updateDefaultAddress(userId, addressId);
+
+        verify(user, never()).setDefaultAddress(any());
+    }
     // --------------------
     // getDefaultAddress
     // --------------------
