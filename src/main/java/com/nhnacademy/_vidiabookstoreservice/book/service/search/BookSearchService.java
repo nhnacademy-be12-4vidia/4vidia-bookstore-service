@@ -11,6 +11,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchLi
 
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchWithTagRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.ai.embedding.EmbeddingService;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiCacheResponse;
@@ -190,6 +191,17 @@ public class BookSearchService {
             .results(pageResponse)
             .aiAnswer(aiAnswer)
             .build();
+    }
+
+    public SearchBooksResponse searchBooksByTags(EsBookSearchWithTagRequest request, Pageable pageable, Long userId) {
+        List<BookDocument> docs = searchClient.searchByTag(request, MAX_RESULTS);
+
+        if (docs == null || docs.isEmpty()) {
+            return new SearchBooksResponse(PageResponse.from(Page.empty(pageable)), null);
+        }
+
+        Page<BookSearchListResponse> pageResponse = resultAssembler.assemble(docs, userId, pageable);
+        return new SearchBooksResponse(PageResponse.from(pageResponse), null);
     }
 
 }

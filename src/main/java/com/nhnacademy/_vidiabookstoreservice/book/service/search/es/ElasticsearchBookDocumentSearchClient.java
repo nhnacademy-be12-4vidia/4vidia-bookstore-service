@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.search.es;
 
+import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.KnnSearch;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
@@ -8,6 +9,8 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearc
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchWithTagRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +58,52 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
             BookDocument.class);
 
         return searchHits.stream().map(SearchHit::getContent).toList();
+
+    }
+
+    @Override
+    public List<BookDocument> searchByTag(EsBookSearchWithTagRequest request, int maxResult) {
+        List<String> tagNameList = request.getTagNameList();
+        if (tagNameList == null || tagNameList.isEmpty()) {
+            return List.of();
+        }
+
+        Query tagQuery = buildTagQuery(request);
+
+        NativeQuery nativeQuery = new NativeQueryBuilder()
+                .withQuery(tagQuery)
+                .withPageable(PageRequest.of(0, maxResult))
+                .build();
+
+        SearchHits<BookDocument> hits = elasticsearchOperations.search(nativeQuery, BookDocument.class);
+
+        return hits.stream().map(SearchHit::getContent).toList();
+    }
+
+    private Query buildTagQuery(EsBookSearchWithTagRequest request) {
+        List<String> tags = request.getTagNameList();
+
+        EsBookSearchWithTagRequest.MatchMode mode = request.getMode();
+        if (mode == null) {
+            mode = EsBookSearchWithTagRequest.MatchMode.OR;
+        }
+
+        final String tagField = "tags_keyword.keyword";
+
+        if (mode == EsBookSearchWithTagRequest.MatchMode.AND) {
+            return Query.of(q -> q.bool(b -> {
+                for (String t : tags) {
+                    if (!StringUtils.hasText(t)) continue;
+                    b.must(m -> m.term(tt -> tt.field(tagField).value(t)));
+                }
+                return b;
+            }));
+        }
+
+        List<String> cleaned = tags.stream().filter(StringUtils::hasText).toList();
+        return Query.of(q -> q.bool(b -> b
+                .filter(f -> f.terms(t -> t.field(tagField).terms(v ->
+                        v.value(cleaned.stream().map(FieldValue::of).toList()))))));
 
     }
 
