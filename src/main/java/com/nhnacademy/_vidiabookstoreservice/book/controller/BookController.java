@@ -7,6 +7,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchLi
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchWithTagRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.SearchBooksResponse;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
@@ -48,12 +49,11 @@ public class BookController {
     @GetMapping("/search")
     public ResponseEntity<SearchBooksResponse> searchBooks(
         @Valid @ModelAttribute EsBookSearchRequest request,
-        @PageableDefault(size = 20) Pageable pageable,
-        @RequestHeader(name = "X-User-Id", required = false) Long userId
+        @PageableDefault(size = 20) Pageable pageable
     ) {
+        Long userId = UserContext.get().getUserId();
         SearchBooksResponse result = bookSearchService.searchBooks(request, pageable,
             userId);
-
 
         return ResponseEntity.ok(result);
     }
@@ -61,17 +61,26 @@ public class BookController {
     @GetMapping("/search/ai")
     public ResponseEntity<AiBookSearchResponse> searchBooksWithLlm(
         @Valid EsBookSearchRequest request,
-        @PageableDefault(size = 20) Pageable pageable,
-        @RequestHeader(name = "X-User-Id", required = false) Long userId) {
-
+        @PageableDefault(size = 20) Pageable pageable) {
+        Long userId = UserContext.get().getUserId();
         AiBookSearchResponse response = bookSearchService.searchBookWithLlm(request, pageable,
             userId);
 
         return ResponseEntity.ok(response);
-
     }
 
-    @GetMapping("/{bookId}")
+    @GetMapping("/search/tags")
+    public ResponseEntity<SearchBooksResponse> searchBooksWithTags(
+            @Valid EsBookSearchWithTagRequest request,
+            @PageableDefault(size = 20) Pageable pageable) {
+
+        Long userId = UserContext.get().getUserId();
+        SearchBooksResponse result = bookSearchService.searchBooksByTags(request, pageable, userId);
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{bookId:\\d+}")
     public ResponseEntity<BookDetailWithReviewResponse> bookDetails(@PathVariable Long bookId, Pageable pageable) {
         Long userId = UserContext.get().getUserId();
         Page<ReviewListResponse> reviewListResponsePage = reviewService.getReviewListByBookId(
