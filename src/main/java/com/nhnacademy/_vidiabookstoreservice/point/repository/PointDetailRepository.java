@@ -114,4 +114,17 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
     """)
     List<PointDetail> findPointForRefund(@Param("userId") Long userId,
                                          @Param("now") LocalDate now);
+
+    /**
+     * 마지막 반품인지 확인하는 용도
+     * @return
+     */
+    @Query("""
+        SELECT COALESCE(SUM(pd.price - pd.remainingPrice), 0)
+        FROM PointDetail pd
+        WHERE pd.orderId = :orderId
+          AND pd.reason = :reason
+    """)
+    int sumRefundedPoint(@Param("orderId") Long orderId,
+                         @Param("reason") PointReason pointReason);
 }

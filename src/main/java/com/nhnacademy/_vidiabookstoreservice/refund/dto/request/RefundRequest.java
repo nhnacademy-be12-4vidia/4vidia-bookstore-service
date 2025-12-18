@@ -4,7 +4,7 @@ import java.util.List;
 
 public record RefundRequest (
         Long orderId,
-        String reason,
+        String reason, // 반품 사유
         boolean damaged,
         List<Long> orderItemIds
 ){

@@ -4,15 +4,18 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.AdminRefundListRes
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundItemDto;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
+import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRejectRequest;
+import com.nhnacademy._vidiabookstoreservice.refund.service.impl.RefundCalculator;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
-import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +36,7 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     private final RefundRepository refundRepository;
     private final PointCommandService pointService;
     private final OrderItemService orderItemService;
-    private final OrderItemRepository orderItemRepository;
+    private final RefundCalculator refundCalculator;
 
     @Override
     @Transactional(readOnly = true)
@@ -83,50 +86,35 @@ public class AdminRefundServiceImpl implements AdminRefundService {
         Refund refund = refundRepository.findById(refundId)
                 .orElseThrow(() -> new RefundNotFoundException(refundId));
 
-        refund.accept(); // 반품 상태 변경
-
         OrderItem item = refund.getOrderItem();
         orderItemService.changeStatusOrderItem(item.getOrderItemId(), ConfirmStatus.REFUNDED);
 
         Order order = item.getOrder();
         Long userId = order.getUser().getUserId();
 
-        int refundPoint = calculateItemRefundPoint(item);
-        int cashPoint = item.getSalePrice() * item.getQuantity();
+        RefundAmount amount =
+                refundCalculator.calculate(item, false); // 파손 → 배송비 차감 X
 
         pointService.refundDamaged(
-                new PointRefundRequest(order.getOrderId(), refundPoint, cashPoint),
+                new PointRefundCommand(
+                        order.getOrderId(),
+                        amount.refundPoint(),
+                        amount.refundCash()
+                ),
                 userId
         );
+
+        refund.accept(); // 반품 상태 변경
     }
 
+    // 반품 거절
     @Override
-    public void rejectRefund(Long refundId) {
+    public void rejectRefund(Long refundId, RefundRejectRequest rejectRequest) {
         Refund refund = refundRepository.findById(refundId)
                 .orElseThrow(() -> new RefundNotFoundException(refundId));
 
-        refund.reject();
+        refund.reject(rejectRequest.rejectDetail()); // TODO 반품 사유 전달받아야함
         orderItemService.changeStatusOrderItem(refund.getOrderItem().getOrderItemId(), ConfirmStatus.UNCONFIRMED);
     }
 
-    /**
-     * 수량 비례 환불 포인트 계산
-     */
-    private int calculateItemRefundPoint(OrderItem item) {
-        Order order = item.getOrder();
-        int totalUsedPoint = order.getPointUsed(); // 주문 시 사용한 포인트 금액
-        int totalQuantity = orderItemRepository.sumOrderItemQuantity(order.getOrderId()); // 주문한 도서 수량
-
-        // 이미 환불 완료된 수량
-        int refundedQuantity = refundRepository.sumRefundedQuantity(order.getOrderId(), RefundStatus.ACCEPT);
-
-        int unitPoint = totalUsedPoint / totalQuantity; // 도서 한 권당 반환 포인트 금액
-
-        // 마지막 환불이면 남은 포인트 전부 반환 (호출 전 이미 상태 바뀜)
-        if(refundedQuantity + item.getQuantity() == totalQuantity){
-            return totalUsedPoint - (unitPoint * refundedQuantity);
-        }
-
-        return unitPoint * item.getQuantity();
-    }
 }

@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.refund.dto;
+package com.nhnacademy._vidiabookstoreservice.refund.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

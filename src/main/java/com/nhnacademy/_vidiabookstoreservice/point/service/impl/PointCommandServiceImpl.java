@@ -4,12 +4,11 @@ import com.nhnacademy._vidiabookstoreservice.admin.domain.PointPolicy;
 import com.nhnacademy._vidiabookstoreservice.admin.exception.PointPolicyNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.admin.repository.PointPolicyRepository;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
-import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
+import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
-import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointRefundRequest;
+import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
 import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.InvalidPointException;
 import com.nhnacademy._vidiabookstoreservice.point.exception.already.PointCancelAlreadyExistsException;
@@ -41,8 +40,8 @@ public class PointCommandServiceImpl implements PointCommandService {
 
     private final PointDetailRepository pointDetailRepository;
     private final PointPolicyRepository pointPolicyRepository;
-    private final OrderItemRepository orderItemRepository;
     private final UserService userService;
+    private final OrderRepository orderRepository;
 
     /**
      *  1. 주문완료로 기본 적립 (구매 확정)
@@ -59,7 +58,7 @@ public class PointCommandServiceImpl implements PointCommandService {
         User user = userService.getUserById(userId);
 
         int gradeRate = user.getGrade().getPointRate(); // 적립률 (%)
-        int realPrice = orderItemRepository.calculateNetOrderPrice(order.getOrderId(), ConfirmStatus.CONFIRMED); // 순수 주문금액
+        int realPrice = orderRepository.calculateNetOrderPrice(order.getOrderId(), PointReason.ORDER_CANCEL_REFUND.getCode()); // 순수 주문금액
 
         if(realPrice < 0){
             throw new InvalidPointException("순수 주문금액이 음수일 수 없습니다.");
@@ -251,7 +250,7 @@ public class PointCommandServiceImpl implements PointCommandService {
      * 단순 변심 반품
      */
     @Override
-    public void refundSimpleChange(PointRefundRequest request, Long userId) {
+    public void refundSimpleChange(PointRefundCommand request, Long userId) {
         int refundAmount = request.refundPoint();
         if(refundAmount < 0) {
             throw new InvalidRefundPriceException("환불 금액은 음수일 수 없습니다.");
@@ -259,7 +258,7 @@ public class PointCommandServiceImpl implements PointCommandService {
 
         restoreRemainingPoint(userId, request.refundPoint());
 
-        // 환불 이력
+        // 포인트 내역 등록
         pointDetailRepository.save(
                 PointDetail.refund(
                         userId,
@@ -277,7 +276,7 @@ public class PointCommandServiceImpl implements PointCommandService {
      * 파손으로 인한 반품 시 포인트 새로운 만료일로 적립
      */
     @Override
-    public void refundDamaged(PointRefundRequest request, Long userId) {
+    public void refundDamaged(PointRefundCommand request, Long userId) {
         int refundAmount = request.refundPoint();
         if(refundAmount<0) {
             throw new InvalidRefundPriceException("환불 금액은 음수일 수 없습니다.");

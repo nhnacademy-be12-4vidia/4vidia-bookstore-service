@@ -399,6 +399,7 @@ public class OrderServiceImpl implements OrderService {
                         itemInfos
                 );
                 CouponCalculationResponse couponCalculationResponse = couponClient.calculateCoupons(Objects.requireNonNull(user).getUserId(), couponCalculationRequest);
+
                 serverCouponPrice = couponCalculationResponse.discountPrice();
             }
 

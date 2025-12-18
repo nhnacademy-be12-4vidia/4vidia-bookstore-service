@@ -4,7 +4,8 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.AdminRefundListRes
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRejectRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,8 +53,9 @@ public class AdminRefundController {
      * 관리자 반품 거절
      */
     @PostMapping("/{refund-id}/reject")
-    public ResponseEntity<Void> rejectRefund(@PathVariable("refund-id") Long refundId) {
-        adminRefundService.rejectRefund(refundId);
+    public ResponseEntity<Void> rejectRefund(@PathVariable("refund-id") Long refundId,
+                                             @RequestBody RefundRejectRequest rejectRequest) {
+        adminRefundService.rejectRefund(refundId, rejectRequest);
         return ResponseEntity.ok().build();
     }
 
