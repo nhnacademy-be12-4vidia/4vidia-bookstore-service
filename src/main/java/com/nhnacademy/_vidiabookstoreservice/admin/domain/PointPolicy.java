@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.admin.domain;
 
-import com.nhnacademy._vidiabookstoreservice.admin.exception.InvalidPriceException;
+import com.nhnacademy._vidiabookstoreservice.admin.exception.PointPolicyPriceInvalid;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -24,10 +24,10 @@ public class PointPolicy {
 
     public void updatePrice(Integer newPrice){
         if(newPrice == null){
-            throw new InvalidPriceException("포인트 정책 : price는 필수 입력입니다.");
+            throw new PointPolicyPriceInvalid();
         }
         if(newPrice < 0){
-            throw new InvalidPriceException("포인트 정책 : price는 음수일 수 없습니다.");
+            throw new PointPolicyPriceInvalid();
         }
         this.price = newPrice;
     }

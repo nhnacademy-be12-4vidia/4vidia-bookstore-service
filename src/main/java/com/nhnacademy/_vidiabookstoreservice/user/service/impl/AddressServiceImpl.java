@@ -6,7 +6,11 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
-import com.nhnacademy._vidiabookstoreservice.user.exception.*;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.AddressLimitException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.AddressNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressDeletedException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.DefaultAddressNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
@@ -29,12 +33,12 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressResponse createAddress(Long userId, CreateAddressRequest request){
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(()-> new UserNotFoundException(userId));
 
         // 주소 개수 제한
         int addrCount = addressRepository.countByUser_userId(userId);
         if(addrCount>=10){
-            throw new MaxAddressLimitExceededException(10);
+            throw new AddressLimitException();
         }
 
         Address address = request.toEntity(user);
@@ -50,7 +54,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional(readOnly = true)
     public AddressResponse getAddress(Long userId, Long addressId){
         if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundByUserIdException(userId);
+            throw new UserNotFoundException(userId);
         }
 
         Address address = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
@@ -69,7 +73,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional(readOnly = true)
     public List<AddressResponse> getUserAddresses(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundByUserIdException(userId);
+            throw new UserNotFoundException(userId);
         }
 
         return addressRepository.findAllByUser_UserId(userId)
@@ -84,7 +88,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressResponse updateAddress(Long userId, Long addressId, AddressRequest request){
         if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundByUserIdException(userId);
+            throw new UserNotFoundException(userId);
         }
 
         Address address = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
@@ -109,7 +113,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void deleteAddress(Long userId, Long addressId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         // 주소가 등록되어있는지 체크
         Address address = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
@@ -120,7 +124,7 @@ public class AddressServiceImpl implements AddressService {
         // 삭제하려고 하는 주소가 기본주소인지 체크
         Address defaultAddress = user.getAddress();
         if (defaultAddress != null && defaultAddress.getAddressId().equals(address.getAddressId())) {
-            throw new DefaultAddressCannotBeDeletedException(defaultAddress.getAlias());
+            throw new DefaultAddressDeletedException(defaultAddress.getAlias());
         }
 
         addressRepository.deleteByUser_UserIdAndAddressId(userId, addressId);
@@ -132,7 +136,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void updateDefaultAddress(Long userId, Long addressId){
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(()-> new UserNotFoundException(userId));
 
         Address selectedAddress = addressRepository.findByUser_UserIdAndAddressId(userId, addressId);
         if (selectedAddress == null) {
@@ -156,7 +160,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional(readOnly = true)
     public AddressResponse getDefaultAddress(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(()-> new UserNotFoundException(userId));
 
         Address defaultAddress = user.getAddress();
         if (defaultAddress == null) {

@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookTag;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookTagAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.already.BookTagAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookTagRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookTagService;
 import lombok.RequiredArgsConstructor;

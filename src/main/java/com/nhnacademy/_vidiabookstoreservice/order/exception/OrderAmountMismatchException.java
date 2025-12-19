@@ -1,9 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.order.exception;
 
-import com.nhnacademy._vidiabookstoreservice.global.exception.MismatchException;
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
 
-public class OrderAmountMismatchException extends MismatchException {
+public class OrderAmountMismatchException extends BaseException {
     public OrderAmountMismatchException() {
-        super("주문 금액에 변화가 있습니다");
+        super(OrderErrorCode.ORDER_AMOUNT_MISMATCH);
     }
 }

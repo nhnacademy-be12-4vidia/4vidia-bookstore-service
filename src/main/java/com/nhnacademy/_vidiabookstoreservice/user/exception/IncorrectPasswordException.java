@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.user.exception;
 
-public class IncorrectPasswordException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
+
+public class IncorrectPasswordException extends BaseException {
     public IncorrectPasswordException() {
-        super("비밀번호가 일치하지 않습니다.");
+        super(UserErrorCode.INCORRECT_PASSWORD);
     }
 }

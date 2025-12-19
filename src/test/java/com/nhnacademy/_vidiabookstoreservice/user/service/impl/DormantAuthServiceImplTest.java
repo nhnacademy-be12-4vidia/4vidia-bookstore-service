@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AuthCodeExpiredException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.InvalidAuthCodeException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.InvalidAuthCodeException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisDormantAutoRepository;
 import com.nhnacademy._vidiabookstoreservice.user.sender.DoorayMessageSender;
@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 

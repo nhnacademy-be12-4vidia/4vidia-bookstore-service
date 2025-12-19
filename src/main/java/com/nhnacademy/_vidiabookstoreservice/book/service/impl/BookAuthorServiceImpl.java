@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookAuthorAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.already.BookAuthorAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookAuthorRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
 import lombok.RequiredArgsConstructor;

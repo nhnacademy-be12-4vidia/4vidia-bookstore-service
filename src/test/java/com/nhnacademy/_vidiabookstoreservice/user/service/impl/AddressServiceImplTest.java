@@ -5,7 +5,11 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
-import com.nhnacademy._vidiabookstoreservice.user.exception.*;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.AddressLimitException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.AddressNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressDeletedException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.DefaultAddressNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -60,7 +64,7 @@ class AddressServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> addressService.createAddress(userId, mock(CreateAddressRequest.class)))
-                .isInstanceOf(UserNotFoundByUserIdException.class);
+                .isInstanceOf(UserNotFoundException.class);
 
         verify(addressRepository, never()).save(any());
     }
@@ -73,7 +77,7 @@ class AddressServiceImplTest {
         given(addressRepository.countByUser_userId(userId)).willReturn(10);
 
         assertThatThrownBy(() -> addressService.createAddress(userId, mock(CreateAddressRequest.class)))
-                .isInstanceOf(MaxAddressLimitExceededException.class);
+                .isInstanceOf(AddressLimitException.class);
     }
 
     // --------------------
@@ -100,7 +104,7 @@ class AddressServiceImplTest {
         given(userRepository.existsById(1L)).willReturn(false);
 
         assertThatThrownBy(() -> addressService.getAddress(1L, 100L))
-                .isInstanceOf(UserNotFoundByUserIdException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -156,7 +160,7 @@ class AddressServiceImplTest {
         given(userRepository.existsById(userId)).willReturn(false);
 
         assertThatThrownBy(() -> addressService.getUserAddresses(userId))
-                .isInstanceOf(UserNotFoundByUserIdException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     // --------------------
@@ -186,7 +190,7 @@ class AddressServiceImplTest {
 
         assertThatThrownBy(() -> addressService.updateAddress(userId, 10L,
                 new AddressRequest("별칭", "도로명", "12345", "상세")))
-                .isInstanceOf(UserNotFoundByUserIdException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -274,7 +278,7 @@ class AddressServiceImplTest {
         given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(defaultAddr);
 
         assertThatThrownBy(() -> addressService.deleteAddress(userId, addressId))
-                .isInstanceOf(DefaultAddressCannotBeDeletedException.class)
+                .isInstanceOf(DefaultAddressDeletedException.class)
                 .hasMessageContaining("기본집");
 
         verify(addressRepository, never()).deleteByUser_UserIdAndAddressId(anyLong(), anyLong());
@@ -334,7 +338,7 @@ class AddressServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> addressService.updateDefaultAddress(userId, addressId))
-                .isInstanceOf(UserNotFoundByUserIdException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test

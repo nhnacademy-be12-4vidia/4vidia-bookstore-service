@@ -2,8 +2,8 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
 import com.nhnacademy._vidiabookstoreservice.book.dto.tag.response.TagResponse;
-import com.nhnacademy._vidiabookstoreservice.book.exception.TagNameAlreadyExistsException;
-import com.nhnacademy._vidiabookstoreservice.book.exception.TagNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.already.TagNameAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.TagNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.TagRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
 import java.util.List;

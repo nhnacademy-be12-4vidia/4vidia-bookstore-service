@@ -1,9 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.point.exception.already;
 
-import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.PointErrorCode;
 
-public class PointCancelAlreadyExistsException extends AlreadyExistsException {
+public class PointCancelAlreadyExistsException extends BaseException {
     public PointCancelAlreadyExistsException(Long orderId) {
-        super("이미 포인트 환불이 진행되었습니다. orderId : " + orderId);
+        super(PointErrorCode.POINT_CANCEL_ALREADY_EXISTS, "주문ID : %d".formatted(orderId));
     }
 }

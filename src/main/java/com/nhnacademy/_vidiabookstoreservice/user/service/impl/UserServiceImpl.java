@@ -11,6 +11,9 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserRes
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.PasswordMisMatchException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.SameAsOldPasswordException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
@@ -40,7 +43,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserInfoResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundByEmailException(email));
+                .orElseThrow(() -> new UserNotFoundException(email));
 
         return UserInfoResponse.fromEntity(user);
     }
@@ -64,14 +67,14 @@ public class UserServiceImpl implements UserService {
     public String getUserName(Long userId) {
         return userRepository.findById(userId)
                 .map(User::getName)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderUserResponse getOrderUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         Address defaultAddress = user.getAddress();
 
@@ -85,7 +88,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserProfileResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(()-> new UserNotFoundException(userId));
         log.info("user id({}) -> email : {}", userId, user.getEmail());
         return UserProfileResponse.fromEntity(user);
     }
@@ -96,7 +99,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserProfileResponse updateUserProfile(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(()-> new UserNotFoundException(userId));
 
         if(request.name()!=null && !request.name().isBlank()){
             user.setName(request.name());
@@ -126,7 +129,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
 
@@ -136,7 +139,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePassword(Long userId, ChangePasswordRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(()-> new UserNotFoundException(userId));
         // 기존 비밀번호 확인
         if(!BCryptPasswordEncoder.matches(request.currentPassword(),user.getPassword())){
             throw new IncorrectPasswordException();
@@ -144,7 +147,7 @@ public class UserServiceImpl implements UserService {
 
         // 새 비밀번호와 확인 비밀번호 일치 여부 확인
         if(!request.newPassword().equals(request.confirmPassword())){
-            throw new PasswordNotMatchException();
+            throw new PasswordMisMatchException();
         }
         // 새 비밀번호가 현재 비밀번호와 동일한지 확인
         if(BCryptPasswordEncoder.matches(request.newPassword(),user.getPassword())){
@@ -162,7 +165,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long userId, DeleteUserRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         if(!BCryptPasswordEncoder.matches(request.currentPassword(), user.getPassword())) { // 순서가 중요?
             throw new IncorrectPasswordException();
@@ -174,7 +177,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateLastLoginAt(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundByEmailException(email));
+                .orElseThrow(() -> new UserNotFoundException(email));
 
         user.setLastLoginAt(LocalDateTime.now());
     }
@@ -183,14 +186,14 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public String getUserRole(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         return user.getRole().name();
     }
 
     @Override
     public void completeProfile(Long userId, CompleteProfileRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(()-> new UserNotFoundException(userId));
         if (request.email() != null && !request.email().isBlank()) {
             user.setEmail(request.email());
         }

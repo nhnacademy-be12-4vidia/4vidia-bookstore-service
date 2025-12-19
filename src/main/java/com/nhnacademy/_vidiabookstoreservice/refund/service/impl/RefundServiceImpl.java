@@ -4,8 +4,8 @@ import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
-import com.nhnacademy._vidiabookstoreservice.order.exception.OrderItemNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.order.exception.OrderNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderItemNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Ref;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

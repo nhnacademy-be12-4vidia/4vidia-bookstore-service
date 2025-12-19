@@ -6,7 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.event.ReviewRatingEvent;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.search.BookSearchRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import java.util.stream.Collectors;

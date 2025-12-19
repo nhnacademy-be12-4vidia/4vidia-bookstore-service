@@ -1,7 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
-import com.nhnacademy._vidiabookstoreservice.order.dto.event.BestSellerUpdateEvent;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
@@ -15,13 +13,13 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequ
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.event.WelcomeCouponIssueEvent;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
-import com.nhnacademy._vidiabookstoreservice.user.exception.*;
+import com.nhnacademy._vidiabookstoreservice.user.exception.already.ResignedUserAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.already.UserAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
-import com.nhnacademy._vidiabookstoreservice.user.service.event.WelcomeCouponEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -103,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
     public String restPasswordAndSendMail(FindPasswordRequest request) {
         User user = userRepository.findByEmailAndNameAndPhone(
                 request.email(), request.name(), request.phone()
-        ).orElseThrow(() -> new UserNotFoundByEmailException(request.email()));
+        ).orElseThrow(() -> new UserNotFoundException(request.email()));
 
         // 임시 비밀번호 생성
         String tempPassword = generateTempPassword(10);
@@ -147,11 +145,11 @@ public class AuthServiceImpl implements AuthService {
 
         // 1. 이메일로 회원 찾기
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundByEmailException(email));
+                .orElseThrow(() -> new UserNotFoundException(email));
 
         // 2. 회원탈퇴한 이메일은 -> 예외 던짐
         if (user.getStatus().equals(UserStatus.DELETED)) {
-            throw new AlreadyResignedUserException(email);
+            throw new ResignedUserAlreadyExistsException(email);
         }
 
         // 3. 이미 휴먼일때 (dormant 상태일때)

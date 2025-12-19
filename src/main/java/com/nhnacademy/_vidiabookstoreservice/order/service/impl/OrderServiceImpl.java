@@ -19,11 +19,13 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentC
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.*;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProducer;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.order.service.*;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
-import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.GuestPointUseException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointGuestUseException;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
@@ -417,7 +419,7 @@ public class OrderServiceImpl implements OrderService {
 
         }else{
             if(request.pointUsed()!=0){
-                throw new GuestPointUseException();
+                throw new PointGuestUseException();
             }
         }
 

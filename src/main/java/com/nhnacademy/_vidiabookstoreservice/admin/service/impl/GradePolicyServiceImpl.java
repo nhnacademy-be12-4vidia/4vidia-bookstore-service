@@ -4,7 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.request.GradePolicyUpdate
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.GradePolicyResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.GradePolicyService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
-import com.nhnacademy._vidiabookstoreservice.user.exception.GradeNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.GradeNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

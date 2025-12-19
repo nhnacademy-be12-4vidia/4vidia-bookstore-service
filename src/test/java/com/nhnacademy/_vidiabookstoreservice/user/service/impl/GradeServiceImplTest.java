@@ -7,8 +7,8 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
 import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
-import com.nhnacademy._vidiabookstoreservice.user.exception.GradeNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.GradeNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
@@ -117,7 +117,7 @@ class GradeServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         // when & then
-        assertThrows(UserNotFoundByUserIdException.class,
+        assertThrows(UserNotFoundException.class,
                 () -> gradeService.getGrade(userId) // 서비스로직(등급조회) 호출 시, 예외 던지는지 확인
         );
     }
@@ -158,7 +158,7 @@ class GradeServiceImplTest {
         given(userRepository.findById(invalidUserId)).willReturn(Optional.empty()); // 존재하지 않는 유저아이디로 조회 시, empty() 리턴하도록 설정
 
         // when & then
-        assertThrows(UserNotFoundByUserIdException.class,
+        assertThrows(UserNotFoundException.class,
                 () -> gradeService.updateGrade(invalidUserId, gradeId) // 서비스로직(등급변경) 호출
         );
 
