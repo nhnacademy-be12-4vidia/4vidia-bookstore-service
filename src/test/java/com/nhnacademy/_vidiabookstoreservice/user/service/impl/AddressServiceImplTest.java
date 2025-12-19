@@ -270,7 +270,7 @@ class AddressServiceImplTest {
 
         Address defaultAddr = mock(Address.class);
         given(defaultAddr.getAddressId()).willReturn(addressId);
-        given(defaultAddr.getAlias()).willReturn("기본집");
+        given(defaultAddr.getAlias()).willReturn("기본주소 별칭");
 
         given(user.getAddress()).willReturn(defaultAddr);
 
@@ -279,7 +279,7 @@ class AddressServiceImplTest {
 
         assertThatThrownBy(() -> addressService.deleteAddress(userId, addressId))
                 .isInstanceOf(DefaultAddressDeletedException.class)
-                .hasMessageContaining("기본집");
+                .hasMessageContaining("기본 주소는 삭제할 수 없습니다.");
 
         verify(addressRepository, never()).deleteByUser_UserIdAndAddressId(anyLong(), anyLong());
     }
