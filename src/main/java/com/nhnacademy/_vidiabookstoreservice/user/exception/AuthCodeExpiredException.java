@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.user.exception;
 
-public class AuthCodeExpiredException extends RuntimeException {
-    public AuthCodeExpiredException(String message) {
-        super(message);
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
+
+public class AuthCodeExpiredException extends BaseException {
+    public AuthCodeExpiredException() {
+        super(UserErrorCode.AUTH_CODE_EXPIRED);
     }
 }

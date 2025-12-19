@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.PublisherRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.PublisherService;
 import java.util.Optional;

@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminReviewResponse;
-import com.nhnacademy._vidiabookstoreservice.admin.exception.ReviewNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.ReviewNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;

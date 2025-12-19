@@ -8,10 +8,10 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
-import com.nhnacademy._vidiabookstoreservice.user.exception.*;
+import com.nhnacademy._vidiabookstoreservice.user.exception.already.ResignedUserAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.already.UserAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
@@ -226,7 +226,7 @@ class AuthServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> authService.isDormant(email))
-                .isInstanceOf(AlreadyResignedUserException.class);
+                .isInstanceOf(ResignedUserAlreadyExistsException.class);
     }
 
     @Test

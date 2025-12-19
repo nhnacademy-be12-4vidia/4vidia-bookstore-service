@@ -1,7 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookStockNotEnoughException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookStockNotEnoughException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.global.exception.NoSuchElementException;
@@ -10,7 +10,6 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderChecko
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderCheckoutService;
 import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
-import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

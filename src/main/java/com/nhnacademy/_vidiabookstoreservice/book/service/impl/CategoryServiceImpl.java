@@ -2,7 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.dto.category.response.CategoryListResponse;
-import com.nhnacademy._vidiabookstoreservice.book.exception.CategoryNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.CategoryNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
 import java.util.List;

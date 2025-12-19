@@ -2,7 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.domain;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.converters.StockStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookStockNotEnoughException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookStockNotEnoughException;
 import com.nhnacademy._vidiabookstoreservice.book.service.impl.BookServiceImpl.AuthorSyncData;
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
@@ -19,7 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

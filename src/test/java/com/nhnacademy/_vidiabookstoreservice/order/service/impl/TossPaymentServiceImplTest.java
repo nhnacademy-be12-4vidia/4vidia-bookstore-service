@@ -8,7 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentC
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
-import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

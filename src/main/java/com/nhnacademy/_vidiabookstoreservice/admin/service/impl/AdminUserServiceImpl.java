@@ -5,7 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminUserRespons
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminUserService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

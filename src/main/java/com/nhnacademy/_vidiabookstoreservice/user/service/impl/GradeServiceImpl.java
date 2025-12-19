@@ -6,8 +6,8 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
 import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
-import com.nhnacademy._vidiabookstoreservice.user.exception.GradeNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundByUserIdException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.GradeNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
@@ -48,7 +48,7 @@ public class GradeServiceImpl implements GradeService {
     @Transactional(readOnly = true)
     public GradeResponse getGrade(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         return GradeResponse.builder()
                 .gradeName(user.getGrade().getGradeName().name())
@@ -62,7 +62,7 @@ public class GradeServiceImpl implements GradeService {
     @Override
     public void updateGrade(Long userId, Long gradeId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByUserIdException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         Grade grade = gradeRepository.findById(gradeId)
                 .orElseThrow(() -> new GradeNotFoundException(gradeId));
 

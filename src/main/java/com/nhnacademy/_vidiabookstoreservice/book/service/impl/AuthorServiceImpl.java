@@ -3,9 +3,8 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorIdResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorResponse;
-import com.nhnacademy._vidiabookstoreservice.book.exception.AuthorAlreadyExistsException;
-import com.nhnacademy._vidiabookstoreservice.book.exception.AuthorIdNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.book.exception.AuthorNameNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.already.AuthorAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.AuthorNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.AuthorRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     public AuthorIdResponse getAuthorByName(String name) {
         Author author = authorRepository.findByName(name).orElseThrow(
-            () -> new AuthorNameNotFoundException(name));
+            () -> new AuthorNotFoundException(name));
         return new AuthorIdResponse(author.getId());
     }
 
@@ -66,7 +65,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     public AuthorResponse getAuthorById(Long id) {
         Author author = authorRepository.findById(id).orElseThrow(
-            () -> new AuthorIdNotFoundException(id));
+            () -> new AuthorNotFoundException(id));
 
         return new AuthorResponse(author.getId(), author.getName());
     }

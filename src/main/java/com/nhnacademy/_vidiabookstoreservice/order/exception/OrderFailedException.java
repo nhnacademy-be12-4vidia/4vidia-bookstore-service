@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.order.exception;
 
-public class OrderFailedException extends RuntimeException {
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
+
+public class OrderFailedException extends BaseException {
     public OrderFailedException(String message) {
-        super(message);
+        super(OrderErrorCode.ORDER_FAILED, "message : %s".formatted(message));
     }
 }

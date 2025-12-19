@@ -1,9 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.point.exception.already;
 
-import com.nhnacademy._vidiabookstoreservice.global.exception.AlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.PointErrorCode;
 
-public class PointRewardAlreadyExistsException extends AlreadyExistsException {
+public class PointRewardAlreadyExistsException extends BaseException {
     public PointRewardAlreadyExistsException(Long orderId) {
-        super("해당 주문에 대한 적립이 이미 존재합니다. 주문번호 : %d".formatted(orderId));
+        super(PointErrorCode.POINT_REWARD_ALREADY_EXISTS, "주문번호 : %d".formatted(orderId));
     }
 }

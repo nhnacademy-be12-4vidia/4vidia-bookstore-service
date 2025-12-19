@@ -17,9 +17,9 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateReq
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookAlreadyExistsException;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookAuthorRequiredException;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.already.BookAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookAuthorRequiredException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
@@ -29,11 +29,9 @@ import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookTagService;
 import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.PublisherService;
-import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;

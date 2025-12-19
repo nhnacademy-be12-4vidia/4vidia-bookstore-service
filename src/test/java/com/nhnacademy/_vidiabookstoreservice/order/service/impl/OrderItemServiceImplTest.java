@@ -6,7 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderItemRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderItemResponse;
-import com.nhnacademy._vidiabookstoreservice.order.exception.OrderItemNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderItemNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

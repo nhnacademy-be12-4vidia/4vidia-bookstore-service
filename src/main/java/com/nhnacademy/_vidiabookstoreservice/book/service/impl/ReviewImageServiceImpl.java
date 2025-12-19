@@ -2,7 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.domain.ReviewImage;
-import com.nhnacademy._vidiabookstoreservice.book.exception.ReviewImageAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.already.ImageAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewImageRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewImageService;
 import java.util.List;
@@ -54,7 +54,7 @@ public class ReviewImageServiceImpl implements ReviewImageService {
 
         if (reviewImageRepository.existsByReview_IdAndImageUrl(reviewImage.getId(),
             reviewImage.getImageUrl())) {
-            throw new ReviewImageAlreadyExistsException(reviewImage.getReview().getId(), reviewImage.getImageUrl());
+            throw new ImageAlreadyExistsException(reviewImage.getReview().getId(), reviewImage.getImageUrl());
         }
         return reviewImageRepository.save(reviewImage);
     }

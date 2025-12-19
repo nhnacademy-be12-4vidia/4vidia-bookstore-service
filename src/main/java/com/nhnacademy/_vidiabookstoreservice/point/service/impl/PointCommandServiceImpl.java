@@ -10,17 +10,17 @@ import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
-import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.InvalidPointException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointInvalidException;
 import com.nhnacademy._vidiabookstoreservice.point.exception.already.PointCancelAlreadyExistsException;
-import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.InvalidRefundPriceException;
-import com.nhnacademy._vidiabookstoreservice.point.exception.notenough.NotEnoughPointException;
-import com.nhnacademy._vidiabookstoreservice.point.exception.notenough.UnexpirePointUseException;
-import com.nhnacademy._vidiabookstoreservice.point.exception.notfound.PointDetailNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundPriceInvalidException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointNotEnoughException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointUseUnexpireException;
+import com.nhnacademy._vidiabookstoreservice.point.exception.notfound.PointNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.point.exception.already.PointRewardAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.InvalidGradeRateException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.GradeRateInvalidException;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,13 +61,15 @@ public class PointCommandServiceImpl implements PointCommandService {
         int realPrice = orderRepository.calculateNetOrderPrice(order.getOrderId(), PointReason.ORDER_CANCEL_REFUND.getCode()); // 순수 주문금액
 
         if(realPrice < 0){
-            throw new InvalidPointException("순수 주문금액이 음수일 수 없습니다.");
+            log.error("순수주문금액은 음수일 수 없음.");
+            // TODO 이건 POINT 오류가 아닌 듯 한데
+            throw new PointInvalidException();
         }else if(realPrice == 0){
             return; // 0이면 굳이 적립할 필요도 없음
         }
 
         if(gradeRate < 0){
-            throw new InvalidGradeRateException();
+            throw new GradeRateInvalidException();
         }
 
         int points = BigDecimal.valueOf(realPrice)
@@ -76,7 +78,7 @@ public class PointCommandServiceImpl implements PointCommandService {
                 .intValue();
 
         if (points < 0) {
-            throw new InvalidPointException("적립 포인트가 음수일 수 없습니다.");
+            throw new PointInvalidException();
         }
 
         PointDetail detail = PointDetail.reward(
@@ -149,7 +151,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     @Override
     public void validateUsablePoint(Long userId, int pointUsed){
         if(pointUsed < 0){
-            throw new InvalidPointException("사용 포인트는 음수일 수 없습니다.");
+            throw new PointInvalidException();
         }
 
         if(pointUsed == 0) return;
@@ -157,7 +159,7 @@ public class PointCommandServiceImpl implements PointCommandService {
         int remainPoint = pointDetailRepository.getRemainPoint(userId, LocalDate.now());
 
         if(pointUsed > remainPoint){
-            throw new UnexpirePointUseException();
+            throw new PointUseUnexpireException();
         }
     }
 
@@ -170,15 +172,15 @@ public class PointCommandServiceImpl implements PointCommandService {
         int usePrice = request.price(); // 사용자가 작성한 포인트 사용 금액
 
         if(totalPrice < 0){
-            throw new InvalidPointException("포인트 값이 음수일 수 없습니다.");
+            throw new PointInvalidException();
         }
 
         if(usePrice == 0){
            return;
         }else if(usePrice < 0) {
-            throw new InvalidPointException("사용하는 포인트 값이 음수일 수 없습니다.");
+            throw new PointInvalidException();
         }else if(usePrice > totalPrice){
-            throw new NotEnoughPointException();
+            throw new PointNotEnoughException();
         }
 
         int remainingToUse = usePrice;
@@ -224,7 +226,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     @Override
     public void cancelUse(Long orderId, Long userId) {
         PointDetail used = pointDetailRepository.findByOrderIdAndReason(orderId, PointReason.ORDER_USE)
-                .orElseThrow(() -> new PointDetailNotFoundException(orderId));
+                .orElseThrow(() -> new PointNotFoundException(orderId));
 
         // 이미 취소 처리 + 환불인 경우
         if(pointDetailRepository.existsByUserIdAndOrderIdAndReason(userId, orderId, PointReason.ORDER_CANCEL_REFUND)){
@@ -253,7 +255,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     public void refundSimpleChange(PointRefundCommand request, Long userId) {
         int refundAmount = request.refundPoint();
         if(refundAmount < 0) {
-            throw new InvalidRefundPriceException("환불 금액은 음수일 수 없습니다.");
+            throw new RefundPriceInvalidException();
         }
 
         restoreRemainingPoint(userId, request.refundPoint());
@@ -279,7 +281,7 @@ public class PointCommandServiceImpl implements PointCommandService {
     public void refundDamaged(PointRefundCommand request, Long userId) {
         int refundAmount = request.refundPoint();
         if(refundAmount<0) {
-            throw new InvalidRefundPriceException("환불 금액은 음수일 수 없습니다.");
+            throw new RefundPriceInvalidException();
         }
 
         // 정책에 따른 새로운 만료일

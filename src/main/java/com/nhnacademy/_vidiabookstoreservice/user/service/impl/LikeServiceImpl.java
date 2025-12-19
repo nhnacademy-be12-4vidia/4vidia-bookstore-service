@@ -1,15 +1,15 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResponse;
-import com.nhnacademy._vidiabookstoreservice.user.exception.AlreadyLikedException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.LikeNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.UserNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.already.LikedAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.LikeNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.LikeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
@@ -81,7 +81,7 @@ public class LikeServiceImpl implements LikeService {
         }
 
         if (likeRepository.existsByUser_UserIdAndBook_Id(userId, bookId)) {
-            throw new AlreadyLikedException();
+            throw new LikedAlreadyExistsException();
         }
 
         User user = userService.getProxyById(userId);

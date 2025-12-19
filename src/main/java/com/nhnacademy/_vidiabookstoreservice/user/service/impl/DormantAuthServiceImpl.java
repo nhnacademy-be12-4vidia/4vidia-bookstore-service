@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AuthCodeExpiredException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.InvalidAuthCodeException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.InvalidAuthCodeException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisDormantAutoRepository;
 import com.nhnacademy._vidiabookstoreservice.user.sender.DoorayMessageSender;
@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +52,7 @@ public class DormantAuthServiceImpl implements DormantAuthService {
         String savedCode = autoRepository.getCode(email);
 
         if (savedCode == null) {
-            throw new AuthCodeExpiredException("EXPIRED");
+            throw new AuthCodeExpiredException();
         }
 
         if (!code.equals(savedCode)) {

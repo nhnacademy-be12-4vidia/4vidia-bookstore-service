@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
-import com.nhnacademy._vidiabookstoreservice.book.exception.BookImageAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.already.ImageAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookImageRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
 import java.util.List;
@@ -40,7 +40,7 @@ public class BookImageServiceImpl implements BookImageService {
     public BookImage createByEntity(BookImage bookImage) {
         if (bookImageRepository.existsByBook_IdAndImageUrl(bookImage.getBook().getId(),
             bookImage.getImageUrl())) {
-            throw new BookImageAlreadyExistsException(bookImage.getBook().getTitle(), bookImage.getImageUrl());
+            throw new ImageAlreadyExistsException(bookImage.getBook().getTitle(), bookImage.getImageUrl());
         }
 
         return bookImageRepository.save(bookImage);

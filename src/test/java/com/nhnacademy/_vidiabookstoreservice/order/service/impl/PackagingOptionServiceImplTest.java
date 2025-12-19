@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 import com.nhnacademy._vidiabookstoreservice.order.domain.PackagingOption;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.PackagingOptionRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.PackagingOptionResponse;
-import com.nhnacademy._vidiabookstoreservice.order.exception.PackagingOptionNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.PackagingOptionNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PackagingOptionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
