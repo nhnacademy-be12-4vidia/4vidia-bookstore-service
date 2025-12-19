@@ -1,12 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Payment;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossErrorResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentNotFoundException;
@@ -66,6 +64,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PaymentCancelResponse getPaymentKey(long orderId) {
         Payment payment = paymentRepository.findPaymentByOrder_orderId(orderId)
                 .orElseThrow(() -> new PaymentNotFoundException(orderId));
@@ -74,6 +73,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Payment getPaymentEntity(long orderId) {
         return paymentRepository.findPaymentByOrder_orderId(orderId)
                 .orElseThrow(() -> new PaymentNotFoundException(orderId));
@@ -121,12 +121,12 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
 
         if (response.containsKey("paymentKey")) { // 처리 성공시 토스응답객체로 반환
             return objectMapper.convertValue(response, TossPaymentResponse.class);
-        } else { // 에러 객체로 돌아올때 처리
+        } else {
             throw new PaymentConfirmException(response.toString());
         }
     }
 
-    private Map<String, Object> sendRequest(Map<String, Object> requestData, String secretKey, String urlString) throws IOException {
+    protected Map<String, Object> sendRequest(Map<String, Object> requestData, String secretKey, String urlString) throws IOException {
         HttpURLConnection connection = createConnection(secretKey, urlString);
 
         try (OutputStream os = connection.getOutputStream()) {

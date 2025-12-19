@@ -284,6 +284,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // 배송 전 취소, 결제 중 실패
     @Override
     public void cancelOrder(Long orderId, String message) {
         Order order = getOrder(orderId);
