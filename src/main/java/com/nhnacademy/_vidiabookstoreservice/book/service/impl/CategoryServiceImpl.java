@@ -18,7 +18,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    @Cacheable(cacheNames = "categoryList")
+    @Cacheable(cacheNames = "categoryList", cacheManager = "categoryListCacheManager")
     @Transactional(readOnly = true)
     public List<CategoryListResponse> getCategoryList() {
 
@@ -27,7 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Cacheable(cacheNames = "flatCategoryList")
+    @Cacheable(cacheNames = "flatCategoryList", cacheManager = "categoryListCacheManager")
     @Transactional(readOnly = true)
     public List<CategoryListResponse> getFlatCategoryList() {
 
