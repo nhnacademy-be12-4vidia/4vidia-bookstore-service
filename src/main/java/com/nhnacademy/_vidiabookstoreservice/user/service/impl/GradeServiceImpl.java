@@ -131,7 +131,7 @@ public class GradeServiceImpl implements GradeService {
         for (GradeName gn : GradeName.values()) {
             Grade grade = gradeRepository.findByGradeName(gn);
             if (grade == null) {
-                throw new IllegalStateException("Grade not found for gradeName=" + gn);
+                throw new GradeNotFoundException(gn);
             }
             gradeMap.put(gn, grade);
         }
