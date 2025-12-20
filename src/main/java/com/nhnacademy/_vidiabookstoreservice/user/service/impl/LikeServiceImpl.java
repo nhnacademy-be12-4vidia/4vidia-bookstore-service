@@ -13,7 +13,6 @@ import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoun
 import com.nhnacademy._vidiabookstoreservice.user.repository.LikeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
-import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,6 @@ import java.util.List;
 @Service
 public class LikeServiceImpl implements LikeService {
 
-    private final UserService userService;
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
@@ -84,7 +82,7 @@ public class LikeServiceImpl implements LikeService {
             throw new LikedAlreadyExistsException();
         }
 
-        User user = userService.getProxyById(userId);
+        User user = userRepository.getReferenceById(userId);
         Book book = bookRepository.getReferenceById(bookId);
 
         // 좋아요 저장
