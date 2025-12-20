@@ -69,14 +69,13 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         log.info("grade : {}", user.getGrade());
 
-        userRepository.save(user);
-        pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(user.getUserId(), 1L));
+        User saved = userRepository.save(user);
+        Long userId = saved.getUserId();
+        pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 1L));
 
 //        couponClient.getRegisterCoupon(user.getUserId()); // todo : 분리
-        eventPublisher.publishEvent(new WelcomeCouponIssueEvent(user.getUserId()));
-
+        eventPublisher.publishEvent(new WelcomeCouponIssueEvent(userId));
         //TODO 생일 달인지 체크해서 맞으면? 생일쿠폰 요청
-
         return user.getUserId();
     }
 

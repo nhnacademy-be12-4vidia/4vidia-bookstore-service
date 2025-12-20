@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AuthCodeExpiredException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.InvalidAuthCodeException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisDormantAutoRepository;
 import com.nhnacademy._vidiabookstoreservice.user.sender.DoorayMessageSender;
@@ -56,11 +57,11 @@ public class DormantAuthServiceImpl implements DormantAuthService {
         }
 
         if (!code.equals(savedCode)) {
-            throw new InvalidAuthCodeException("INVALID");
+            throw new InvalidAuthCodeException();
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(); // 필요하면 커스텀 예외로 변경
+                .orElseThrow(UserNotFoundException::new);
 
         user.setStatus(UserStatus.ACTIVE);
 

@@ -1,7 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.user.exception.invalid;
 
-public class InvalidAuthCodeException extends RuntimeException {
-    public InvalidAuthCodeException(String message) {
-        super(message);
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.UserErrorCode;
+
+public class InvalidAuthCodeException extends BaseException {
+    public InvalidAuthCodeException() {
+        super(UserErrorCode.INVALID_AUTH_CODE);
     }
 }

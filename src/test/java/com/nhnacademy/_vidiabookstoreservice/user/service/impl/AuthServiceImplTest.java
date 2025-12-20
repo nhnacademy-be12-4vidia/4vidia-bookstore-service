@@ -9,6 +9,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.event.WelcomeCouponIssueEvent;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.ResignedUserAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.UserAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
@@ -18,9 +19,11 @@ import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -51,6 +54,8 @@ class AuthServiceImplTest {
     private CouponClient couponClient;
     @Mock
     private PointCommandService pointCommandService;
+
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -93,7 +98,18 @@ class AuthServiceImplTest {
         // 검증
         verify(userRepository).save(any(User.class));
         verify(pointCommandService).rewardByPolicy(any(PointPolicyRewardRequest.class));
-        verify(couponClient).getRegisterCoupon(1L);
+
+
+        // ✅ 쿠폰은 직접 호출이 아니라 "이벤트 발행"이 맞음
+        ArgumentCaptor<WelcomeCouponIssueEvent> captor =
+                ArgumentCaptor.forClass(WelcomeCouponIssueEvent.class);
+
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().userId()).isEqualTo(1L);
+
+        // ❌ 서비스 단위테스트에서는 couponClient 호출을 기대하면 안 됨 (리스너가 담당)
+        verifyNoInteractions(couponClient);
+
     }
 
     @Test
