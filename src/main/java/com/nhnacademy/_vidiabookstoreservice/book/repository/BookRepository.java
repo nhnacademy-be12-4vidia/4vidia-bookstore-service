@@ -20,6 +20,8 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
 
     boolean existsByIsbn(String isbn);
 
+    Optional<Book> findByIsbn(String isbn);
+
     @Query("""
             SELECT DISTINCT b
             FROM Book b

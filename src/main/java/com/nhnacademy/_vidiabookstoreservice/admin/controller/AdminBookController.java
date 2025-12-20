@@ -1,7 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminIsbnSearchResponse;
-import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminBookController {
 
-    private final BookService bookService;
+    private final AdminBookService adminBookService;
 
     @GetMapping("/search")
     public ResponseEntity<AdminIsbnSearchResponse> searchBookByIsbn(
             @RequestParam String isbn
     ) {
-
-        return ResponseEntity.ok(null);
+        AdminIsbnSearchResponse response = adminBookService.processIsbnSearch(isbn);
+        return ResponseEntity.ok(response);
     }
 }
