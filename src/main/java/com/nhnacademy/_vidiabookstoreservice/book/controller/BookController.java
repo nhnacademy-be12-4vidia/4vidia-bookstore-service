@@ -80,13 +80,21 @@ public class BookController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{bookId:\\d+}")
-    public ResponseEntity<BookDetailWithReviewResponse> bookDetails(@PathVariable Long bookId, Pageable pageable) {
+    @GetMapping("/search/tags/{tag-id}")
+    public ResponseEntity<PageResponse<BookListResponse>> searchBooksWithSpecificTag(
+            @PathVariable(name = "tag-id") Long tagId,
+            @PageableDefault(size = 20) Pageable pageable
+            ) {
         Long userId = UserContext.get().getUserId();
-        Page<ReviewListResponse> reviewListResponsePage = reviewService.getReviewListByBookId(
-            bookId, userId, pageable);
 
-        PageResponse<ReviewListResponse> reviewList = PageResponse.from(reviewListResponsePage);
+        PageResponse<BookListResponse> pageResponse = bookService.getBookListResponseByTagId(tagId, userId, pageable);
+
+        return ResponseEntity.ok(pageResponse);
+
+    }
+
+    @GetMapping("/{bookId:\\d+}")
+    public ResponseEntity<BookDetailResponse> bookDetails(@PathVariable Long bookId) {
         BookDetailResponse bookDetailResponse = bookService.getBookDetail(bookId);
         String reviewSummary = bookReviewSummaryService.getSummary(bookId);
 
