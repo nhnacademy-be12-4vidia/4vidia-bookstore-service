@@ -5,10 +5,13 @@ import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
+import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.event.WelcomeCouponIssueEvent;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.ResignedUserAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.UserAlreadyExistsException;
@@ -197,6 +200,24 @@ class AuthServiceImplTest {
     }
 
     @Test
+    @DisplayName("이메일 중복 체크 성공")
+    void existsByEmail_success() {
+        String email = "test@test.com";
+
+        given(userRepository.existsByEmail(email)).willReturn(true);
+
+        assertThat(authService.existsByEmail(email)).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("이메일 중복 체크 실패")
+    void existsByEmail_fail() {
+        given(userRepository.existsByEmail(anyString())).willReturn(false);
+
+        assertThat(authService.existsByEmail(anyString())).isEqualTo(false);
+    }
+
+    @Test
     @DisplayName("휴면 계정 여부 확인 - 정상 회원 (False)")
     void isDormant_activeUser() {
         // given
@@ -267,4 +288,54 @@ class AuthServiceImplTest {
         assertThat(user2.getStatus()).isEqualTo(UserStatus.DORMANT);
     }
 
+    @Test
+    @DisplayName("OAuth(payco) 인증 회원 찾기 성공 - 기존 회원(기존 정보 있음)")
+    void findOrCreateOAuthUser_success_find() {
+        String provider = "payco";
+        Long userId = 1L;
+
+        User user = mock(User.class);
+
+        given(user.getUserId()).willReturn(userId);
+        given(user.getEmail()).willReturn("origin@test.com");
+        given(user.getRole()).willReturn(UserRole.USER);
+        given(user.getStatus()).willReturn(UserStatus.ACTIVE);
+
+        PaycoUserRequest request = new PaycoUserRequest(userId.toString());
+        given(userRepository.findByProviderAndSocialId(provider, request.id()))
+                .willReturn(Optional.of(user));
+
+        OAuth2UserDto result = authService.findOrCreateOAuthUser(provider, request);
+
+        assertThat(result.getUserId()).isEqualTo(userId);
+        assertThat(result.getEmail()).isEqualTo("origin@test.com");
+        assertThat(result.getStatus()).isEqualTo(UserStatus.ACTIVE.name());
+    }
+
+    @Test
+    @DisplayName("OAuth(payco) 인증 회원 생성 성공 - 새 회원(기존 정보 없음)")
+    void findOrCreateOAuthUser_success_create() {
+        String provider = "payco";
+        String paycoId = "123";
+        PaycoUserRequest request = new PaycoUserRequest(paycoId);
+
+        given(userRepository.findByProviderAndSocialId(provider, request.id()))
+                .willReturn(Optional.empty());
+
+        given(gradeRepository.findByGradeName(GradeName.WELCOME))
+                .willReturn(Grade.builder().gradeName(GradeName.WELCOME).build());
+
+        given(userRepository.save(any(User.class))).willAnswer(invocation -> {
+            User savingUser = invocation.getArgument(0);
+            ReflectionTestUtils.setField(savingUser, "userId", 1L);
+            return savingUser;
+        });
+
+        OAuth2UserDto createdUser = authService.findOrCreateOAuthUser(provider, request);
+
+        assertThat(createdUser.getUserId()).isEqualTo(1L);
+        assertThat(createdUser.getEmail()).contains("@temp.4vidia.shop");
+
+        verify(userRepository).save(any(User.class));
+    }
 }
