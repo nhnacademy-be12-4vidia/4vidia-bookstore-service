@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -261,6 +262,21 @@ class GradeServiceImplTest {
         // EntityManager 동작 검증
         verify(em).flush();
         verify(em).clear();
+    }
+
+    @Test
+    @DisplayName("[월간 등급 산정] - 존재하지 않는 등급임(db에 필수 등급정보 없음)")
+    void recalculateMonthlyGrades_fail_gradeNotFound() {
+        given(orderRepository.findUserNetSumLast3Months(any(), any(), anyInt()))
+                .willReturn(List.of());
+
+        given(gradeRepository.findByGradeName(any())).willReturn(null);
+
+        assertThatThrownBy(() -> gradeService.recalculateMonthlyGrades())
+                .isInstanceOf(GradeNotFoundException.class)
+                .hasMessageContaining("존재하지 않는 등급입니다.");
+
+        verify(userRepository, never()).findAll(any(PageRequest.class));
     }
 
     // --- Helper Methods & Inner Classes ---
