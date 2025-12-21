@@ -141,6 +141,13 @@
             <artifactId>caffeine</artifactId>
         </dependency>
 
+        <!-- isbn용 validator -->
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+
 
         <!-- dooray 메시지 -->
         <dependency>

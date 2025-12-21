@@ -14,6 +14,7 @@ public class MultiRedisProperties {
     private RedisNode bestseller;
     private RedisNode ai;
     private RedisNode signup;
+    private RedisNode isbn;
 
     @Getter
     @Setter

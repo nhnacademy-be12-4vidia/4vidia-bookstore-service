@@ -28,6 +28,7 @@ public enum BookErrorCode implements ErrorCodeProvider {
 
     // UNPROCESSABLE_ENTITY(422) -> NOT_ENOUGH (422)-> 입력 값/요청은 합리적, 단지 현재 상태가 부족
     BOOK_STOCK_NOT_ENOUGH(HttpStatus.UNPROCESSABLE_ENTITY, "B302", "현재 재고가 부족합니다."),
+    BOOK_ISBN_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "B303", "유효하지 않은 ISBN 번호입니다."),
 
     // 500
     IMAGE_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "B401", "이미지 삭제 중 오류가 발생했습니다."),
