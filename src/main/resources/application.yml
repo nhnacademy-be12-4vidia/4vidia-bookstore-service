@@ -142,6 +142,9 @@ google:
     api-key2: ${GOOGLE_API_KEY2}
     model: gemini-2.5-flash
 
+aladin:
+  api:
+    key: ${ALADIN_API_KEY}
 
 toss:
   secretKey: ${TOSS_SECRET_KEY}
