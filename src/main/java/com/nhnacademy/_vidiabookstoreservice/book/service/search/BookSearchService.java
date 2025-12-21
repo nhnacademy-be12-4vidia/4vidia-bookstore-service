@@ -42,6 +42,7 @@ import org.springframework.util.StringUtils;
 public class BookSearchService {
 
     private static final int MAX_RESULTS = 50;
+    private static final int TAG_MAX_RESULTS = 10000;
 
     private final EmbeddingService embeddingService;
     private final BookDocumentSearchClient searchClient;
@@ -194,7 +195,7 @@ public class BookSearchService {
     }
 
     public SearchBooksResponse searchBooksByTags(EsBookSearchWithTagRequest request, Pageable pageable, Long userId) {
-        List<BookDocument> docs = searchClient.searchByTag(request, MAX_RESULTS);
+        List<BookDocument> docs = searchClient.searchByTag(request, TAG_MAX_RESULTS);
 
         if (docs == null || docs.isEmpty()) {
             return new SearchBooksResponse(PageResponse.from(Page.empty(pageable)), null);

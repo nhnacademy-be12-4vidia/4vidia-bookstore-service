@@ -12,6 +12,7 @@ public class ImageTypeConverter implements AttributeConverter<ImageType, Integer
         if (attribute == null) {
             return null;
         }
+
         return attribute.getCode();
     }
 

@@ -49,7 +49,7 @@ public class BookListResponse {
             .priceSales(book.getPriceSales())
             .authorNames(book.getBookAuthorList().stream().map(BookAuthor::getAuthor).map(
                 Author::getName).toList())
-            .publisherName(book.getPublisher().getName())
+            .publisherName(book.getPublisher() != null ? book.getPublisher().getName() : "출판사 정보가 없습니다")
             .imageUrl(book.getBookImageList().stream().filter(i -> i.getImageType().equals(
                 ImageType.THUMBNAIL)).findFirst().map(BookImage::getImageUrl).orElse(null))
             .liked(isLiked) // 넘겨줄거
