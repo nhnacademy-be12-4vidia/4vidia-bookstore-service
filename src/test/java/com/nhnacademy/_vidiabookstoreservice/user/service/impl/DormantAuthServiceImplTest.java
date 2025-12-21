@@ -129,7 +129,7 @@ class DormantAuthServiceImplTest {
         // when & then
         assertThatThrownBy(() -> dormantAuthService.verifyAuthCode(email, code))
                 .isInstanceOf(AuthCodeExpiredException.class)
-                .hasMessage("EXPIRED");
+                .hasMessage("인증 코드가 만료되었습니다.");
     }
 
     @Test
@@ -146,7 +146,7 @@ class DormantAuthServiceImplTest {
         // when & then
         assertThatThrownBy(() -> dormantAuthService.verifyAuthCode(email, inputCode))
                 .isInstanceOf(InvalidAuthCodeException.class)
-                .hasMessage("INVALID");
+                .hasMessage("인증 코드가 일치하지 않습니다.");
     }
 
     // argThat 사용을 위한 헬퍼 메서드 대신 람다식 사용함 (argThat(body -> ...))
