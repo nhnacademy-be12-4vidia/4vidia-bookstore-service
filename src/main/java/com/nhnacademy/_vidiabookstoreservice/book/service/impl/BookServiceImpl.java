@@ -36,8 +36,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -373,6 +375,28 @@ public class BookServiceImpl implements BookService {
                     return BookListResponse.from(book, isLiked);
                 })
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<BookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable) {
+        Page<Book> bookList = bookRepository.findAllByTag(tagId, pageable);
+        List<Long> bookIdList = bookList.getContent().stream().map(Book::getId).toList();
+
+        Set<Long> likedBookIds;
+
+        if (userId != null && !bookIdList.isEmpty()) {
+            likedBookIds = likeService.getLikeIdList(userId, bookIdList).stream().map(UserLikeResponse::bookId).collect(Collectors.toSet());
+        } else {
+            likedBookIds = Collections.emptySet();
+        }
+
+        Page<BookListResponse> page = bookList.map(b -> {
+            boolean isLiked = likedBookIds.contains(b.getId());
+            return BookListResponse.from(b, isLiked);
+        });
+
+        return PageResponse.from(page);
     }
 
     private Integer parseIntegerSafe(String value) {

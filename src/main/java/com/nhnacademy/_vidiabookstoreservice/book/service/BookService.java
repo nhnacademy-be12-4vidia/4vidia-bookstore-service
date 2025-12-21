@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdRespon
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import java.util.List;
 
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,4 +45,6 @@ public interface BookService {
     List<BookOrderResponse> getOrderBookByBookIds(List<Long> bookIds);
 
     List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList, Long userId);
+
+    PageResponse<BookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable);
 }

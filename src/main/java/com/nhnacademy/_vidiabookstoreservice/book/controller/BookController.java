@@ -96,9 +96,8 @@ public class BookController {
     @GetMapping("/{bookId:\\d+}")
     public ResponseEntity<BookDetailResponse> bookDetails(@PathVariable Long bookId) {
         BookDetailResponse bookDetailResponse = bookService.getBookDetail(bookId);
-        String reviewSummary = bookReviewSummaryService.getSummary(bookId);
 
-        return ResponseEntity.ok(BookDetailWithReviewResponse.of(bookDetailResponse, reviewList, reviewSummary));
+        return ResponseEntity.ok(bookDetailResponse);
     }
 
     @GetMapping("/best-seller")

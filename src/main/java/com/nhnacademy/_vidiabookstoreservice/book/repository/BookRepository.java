@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.repository;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookTag;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
@@ -53,4 +54,21 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT b.id, b.stock FROM Book b WHERE b.id IN :bookIds")
     List<Object[]> findIdsAndStocksById(List<Long> bookIds);
+
+    @Query(
+            value = """
+        SELECT DISTINCT b 
+        FROM Book b
+        JOIN b.bookTagList bt
+        WHERE bt.tag.id = :tagId
+        ORDER BY b.publishedDate DESC 
+""",
+            countQuery = """
+        SELECT COUNT(DISTINCT b.id)
+        FROM Book b
+        JOIN b.bookTagList bt
+        WHERE bt.tag.id = :tagId
+"""
+    )
+    Page<Book> findAllByTag(@Param("tagId")Long tagId, Pageable pageable);
 }
