@@ -13,6 +13,8 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    // todo: 예외 처리 아무것도 안해도 되나요??
+
     public void sendTempPassword(String toEmail, String tempPassword) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
