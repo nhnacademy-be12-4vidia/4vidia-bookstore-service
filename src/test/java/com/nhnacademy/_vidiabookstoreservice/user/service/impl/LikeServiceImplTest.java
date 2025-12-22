@@ -93,7 +93,8 @@ class LikeServiceImplTest {
         given(userRepository.existsById(userId)).willReturn(false);
 
         assertThatThrownBy(() -> likeService.getLikes(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -138,7 +139,8 @@ class LikeServiceImplTest {
         given(userRepository.existsById(userId)).willReturn(false);
 
         assertThatThrownBy(() -> likeService.getLikeIdList(userId, anyList()))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -170,7 +172,8 @@ class LikeServiceImplTest {
         given(userRepository.existsById(userId)).willReturn(false);
 
         assertThatThrownBy(() -> likeService.addLike(userId, anyLong()))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
 
         verify(likeRepository, never()).save(any());
     }
@@ -185,7 +188,8 @@ class LikeServiceImplTest {
         given(bookRepository.existsById(bookId)).willReturn(false);
 
         assertThatThrownBy(() -> likeService.addLike(userId, bookId))
-                .isInstanceOf(BookNotFoundException.class);
+                .isInstanceOf(BookNotFoundException.class)
+                .hasMessageContaining("도서를 찾을 수 없습니다.");
 
         verify(likeRepository, never()).save(any());
     }
@@ -203,7 +207,8 @@ class LikeServiceImplTest {
                 .willReturn(true);
 
         assertThatThrownBy(() -> likeService.addLike(userId, bookId))
-                .isInstanceOf(LikedAlreadyExistsException.class);
+                .isInstanceOf(LikedAlreadyExistsException.class)
+                .hasMessageContaining("이미 좋아요 처리가 되어있습니다.");
 
         verify(likeRepository, never()).save(any());
     }
@@ -231,7 +236,8 @@ class LikeServiceImplTest {
         given(userRepository.existsById(userId)).willReturn(false);
 
         assertThatThrownBy(() -> likeService.removeLike(userId, anyLong()))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
 
         verify(likeRepository, never()).delete(any());
     }
@@ -246,7 +252,8 @@ class LikeServiceImplTest {
         given(bookRepository.existsById(bookId)).willReturn(false);
 
         assertThatThrownBy(() -> likeService.removeLike(userId, bookId))
-                .isInstanceOf(BookNotFoundException.class);
+                .isInstanceOf(BookNotFoundException.class)
+                .hasMessageContaining("도서를 찾을 수 없습니다.");
 
         verify(likeRepository, never()).delete(any());
     }
@@ -261,7 +268,8 @@ class LikeServiceImplTest {
         given(bookRepository.existsById(bookId)).willReturn(true);
 
         assertThatThrownBy(() -> likeService.removeLike(userId, bookId))
-                .isInstanceOf(LikeNotFoundException.class);
+                .isInstanceOf(LikeNotFoundException.class)
+                .hasMessageContaining("좋아요를 찾을 수 없습니다.");
 
         verify(likeRepository, never()).delete(any());
     }
@@ -293,7 +301,8 @@ class LikeServiceImplTest {
         given(userRepository.existsById(userId)).willReturn(false);
 
         assertThatThrownBy(() -> likeService.removeAllLike(userId, anyList()))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
 
         verify(likeRepository, never()).deleteAll(anyList());
     }

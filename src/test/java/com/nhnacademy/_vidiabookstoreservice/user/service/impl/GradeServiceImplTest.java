@@ -118,9 +118,9 @@ class GradeServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         // when & then
-        assertThrows(UserNotFoundException.class,
-                () -> gradeService.getGrade(userId) // 서비스로직(등급조회) 호출 시, 예외 던지는지 확인
-        );
+        assertThatThrownBy(() -> gradeService.getGrade(userId))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");// 서비스로직(등급조회) 호출 시, 예외 던지는지 확인
     }
 
     @Test
@@ -159,9 +159,9 @@ class GradeServiceImplTest {
         given(userRepository.findById(invalidUserId)).willReturn(Optional.empty()); // 존재하지 않는 유저아이디로 조회 시, empty() 리턴하도록 설정
 
         // when & then
-        assertThrows(UserNotFoundException.class,
-                () -> gradeService.updateGrade(invalidUserId, gradeId) // 서비스로직(등급변경) 호출
-        );
+        assertThatThrownBy(() -> gradeService.updateGrade(invalidUserId, gradeId))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다."); // 서비스로직(등급변경) 호출
 
         verify(gradeRepository, never()).findById(gradeId); // 등급 조회 로직은 호출조차 되지 않았음
     }
@@ -179,9 +179,9 @@ class GradeServiceImplTest {
         given(gradeRepository.findById(invalidGradeId)).willReturn(Optional.empty()); // 존재하지 않은 등급으로 조회 시, empty() 리턴하도록 설정
 
         // when & then
-        assertThrows(GradeNotFoundException.class,
-                () -> gradeService.updateGrade(userId, invalidGradeId) // 서비스로직(등급변경) 호출
-        );
+        assertThatThrownBy(() -> gradeService.updateGrade(userId, invalidGradeId))
+                .isInstanceOf(GradeNotFoundException.class)
+                .hasMessageContaining("존재하지 않는 등급입니다."); // 서비스로직(등급변경) 호출
     }
 
     @Test
