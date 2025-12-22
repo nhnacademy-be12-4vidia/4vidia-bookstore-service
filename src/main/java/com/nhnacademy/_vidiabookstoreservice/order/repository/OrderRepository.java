@@ -75,23 +75,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * 구매 확정 -> 순수 주문 금액 계산
      */
     @Query("""
-        SELECT
-            o.totalBookPrice
-            - o.couponDiscount
-            - o.deliveryFee
-            - o.packagingFee
-            - COALESCE(
-                (SELECT SUM(pd.price)
-                 FROM PointDetail pd
-                 WHERE pd.orderId = o.orderId
-                   AND pd.reason = :reason), 0
-            )
-        FROM Order o
-        LEFT JOIN PointDetail pd
-            ON pd.orderId = o.orderId
-            AND pd.reason = :reason
-        WHERE o.orderId = :orderId
-    """)
+            SELECT
+                o.totalBookPrice
+                - o.couponDiscount
+                - COALESCE(
+                    (SELECT SUM(pd.price)
+                     FROM PointDetail pd
+                     WHERE pd.orderId = o.orderId
+                       AND pd.reason = :reason), 0)
+            FROM Order o
+            WHERE o.orderId = :orderId
+        """)
     int calculateNetOrderPrice(
             @Param("orderId") Long orderId,
             @Param("reason") PointReason reason

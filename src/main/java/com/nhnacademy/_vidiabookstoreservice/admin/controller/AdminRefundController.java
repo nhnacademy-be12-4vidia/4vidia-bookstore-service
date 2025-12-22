@@ -41,7 +41,7 @@ public class AdminRefundController {
     }
 
     /**
-     * 관리자 반품 승인
+     * 관리자 반품 승인/거절
      */
     @PutMapping("/refunds/{refund-item-id}")
     public ResponseEntity<Void> updateRefund(@PathVariable("refund-item-id") Long refundItemId,

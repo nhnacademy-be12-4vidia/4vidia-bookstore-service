@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.refund.domain;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.converter.RefundStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.exception.already.RefundAlreadyApprovedException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -61,5 +62,13 @@ public class Refund { // 반품 신청서
     public void addRefundItem(RefundItem item){
         this.refundItems.add(item);
         item.assignToRefund(this);
+    }
+
+    // 단순 변심 승인
+    public void accept() {
+        if (this.refundStatus == RefundStatus.APPROVED) {
+            throw new RefundAlreadyApprovedException();
+        }
+        this.refundStatus = RefundStatus.APPROVED;
     }
 }
