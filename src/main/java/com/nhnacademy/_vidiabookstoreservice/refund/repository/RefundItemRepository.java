@@ -14,7 +14,6 @@ import java.util.Optional;
 public interface RefundItemRepository extends JpaRepository<RefundItem, Long> {
     boolean existsByOrderItem_OrderItemId(Long orderItemId);
 
-    boolean existsByOrderItem_OrderItemIdAndRefundStatusIn(Long orderItemOrderItemId, List<RefundStatus> refundStatuses);
     // 특정 주문 전체 환불 금액 합계
     @Query("SELECT COALESCE(SUM(ri.refundPrice), 0) " +
             "FROM RefundItem ri " +
@@ -29,12 +28,6 @@ public interface RefundItemRepository extends JpaRepository<RefundItem, Long> {
     int sumCategoryRefundedPriceByOrderAndCategory(@Param("orderId") Long orderId,
                                                    @Param("categoryKdcId") String categoryKdcId);
 
-    @Query("""
-        select ri
-        from RefundItem ri
-        join fetch ri.orderItem oi
-        where oi.orderItemId in :orderItemIds
-    """)
-
+    @Query("SELECT ri FROM RefundItem ri WHERE ri.refund.refundId = :refundId")
     List<RefundItem> findAllByRefund_RefundId(Long refundId);
 }

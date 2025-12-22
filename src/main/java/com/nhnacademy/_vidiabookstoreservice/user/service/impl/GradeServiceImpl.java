@@ -82,10 +82,9 @@ public class GradeServiceImpl implements GradeService {
         LocalDateTime to = ym.atDay(1).atStartOfDay();
         LocalDateTime from = ym.minusMonths(3).atDay(1).atStartOfDay();
 
-        int cancelRefundReasonCode = PointReason.ORDER_CANCEL_REFUND.getCode();
 
         // 유저별 순수금액 집계 (주문한 유저만 결과가 옴)
-        List<UserNetSum> rows = orderRepository.findUserNetSumLast3Months(from, to, cancelRefundReasonCode);
+        List<UserNetSum> rows = orderRepository.findUserNetSumLast3Months(from, to, PointReason.ORDER_CANCEL_REFUND);
         Map<Long, Long> netMap = rows.stream()
                 .collect(Collectors.toMap(UserNetSum::getUserId, UserNetSum::getNetSum));
 

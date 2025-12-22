@@ -58,7 +58,7 @@ public class PointCommandServiceImpl implements PointCommandService {
         User user = userService.getUserById(userId);
 
         int gradeRate = user.getGrade().getPointRate(); // 적립률 (%)
-        int realPrice = orderRepository.calculateNetOrderPrice(order.getOrderId(), PointReason.ORDER_CANCEL_REFUND.getCode()); // 순수 주문금액
+        int realPrice = orderRepository.calculateNetOrderPrice(order.getOrderId(), PointReason.ORDER_CANCEL_REFUND); // 순수 주문금액
 
         if(realPrice < 0){
             log.error("순수주문금액은 음수일 수 없음.");

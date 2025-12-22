@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record RefundItemUpdateRequest (
         @NotNull
-        int refundPrice,
-        @NotNull
         RefundStatus refundStatus,
-        String rejectDetail // 거절에만
+        String rejectDetail // 거절에만 작성
 ) {
 }
