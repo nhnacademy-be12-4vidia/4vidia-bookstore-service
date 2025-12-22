@@ -28,31 +28,33 @@ public class AdminBookServiceImpl implements AdminBookService {
 
     @Override
     @Cacheable(
-            value = "isbnSearch",
+            value = "adminIsbnSearchV3",
             key = "T(com.nhnacademy._vidiabookstoreservice.book.service.resolver.IsbnResolver).toIsbn13(#isbn)",
             cacheManager = "isbnSearchCacheManager",
             sync = true // 동시에 여러 요청이 들어올 때 하나의 요청만 처리하고 나머지는 대기
     )
     public AdminIsbnSearchResponse processIsbnSearch(String isbn) {
-        String isbn13 = IsbnResolver.toIsbn13(isbn);
+        String normalizedIsbn = IsbnResolver.toIsbn13(isbn);
 
         // 1. DB 조회
-        return bookRepository.findByIsbn(isbn13)
+        return bookRepository.findByIsbn(normalizedIsbn)
                 .map(book -> {
                     // 2. 보강 필요 여부 판단
                     boolean needsAugmentation =
                             !StringUtils.hasText(book.getDescription())
                             || !StringUtils.hasText(book.getBookIndex());
+                    AdminIsbnSearchResponse response =
+                            AdminIsbnSearchResponse.foundFromDb(book);
                     if (!needsAugmentation) {
                         // 2-1. 보강 필요X: DB에서 정보 조회 후 반환
-                        return AdminIsbnSearchResponse.foundFromDb(book);
+                        return response;
                     } else {
                         // 2-2. 보강 필요O: 알라딘 조회 + GEMINI RAG 후 반환
-                        return geminiRagService.augmentBookInfo(book);
+                        return geminiRagService.augmentBookInfo(normalizedIsbn, response);
                     }
                 }).orElseGet(() -> {
                     // 3. DB에 없는 경우: 알라딘 조회 + GEMINI RAG 후 반환
-                    return geminiRagService.augmentBookInfo(isbn13);
+                    return geminiRagService.augmentBookInfo(normalizedIsbn, null);
                 });
     }
 }

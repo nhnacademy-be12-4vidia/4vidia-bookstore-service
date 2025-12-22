@@ -1,5 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.admin.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorNameRoleResponse;
@@ -8,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.util.List;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public record AdminIsbnSearchResponse(
 
         boolean found,
@@ -18,6 +25,9 @@ public record AdminIsbnSearchResponse(
         List<AuthorNameRoleResponse> authors,
         String publisher,
 
+        @JsonSerialize(using = LocalDateSerializer.class)
+        @JsonDeserialize(using = LocalDateDeserializer.class)
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         LocalDate publishedDate,
 
@@ -68,19 +78,5 @@ public record AdminIsbnSearchResponse(
                 book.getBookIndex(),
                 tags
         );
-    }
-
-    // 2) 알라딘 + GEMINI RAG 통해서 찾음
-    public static AdminIsbnSearchResponse foundPreview(
-
-    ) {
-        return null;
-    }
-
-    // 3) 못 찾음(negative caching 대상)
-    public static AdminIsbnSearchResponse notFound(
-
-    ) {
-        return null;
     }
 }
