@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.refund.domain;
+package com.nhnacademy._vidiabookstoreservice.refund.domain.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum RefundStatus {
-    PROCESS(0),
-    ACCEPT(1),
-    REJECT(2);
+    PROCESS(0), // 반품 신청 ~ 결과 나오기 전까지
+    APPROVED(1), // 승인
+    REJECTED(2); // 거절
 
     private final int code;
 

@@ -1,6 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.refund.service;
 
-import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;

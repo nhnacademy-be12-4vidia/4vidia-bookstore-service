@@ -258,6 +258,7 @@ public class PointCommandServiceImpl implements PointCommandService {
             throw new RefundPriceInvalidException();
         }
 
+        // 사용 가능한 포인트 복구 ( remainingPrice 업데이트 )
         restoreRemainingPoint(userId, request.refundPoint());
 
         // 포인트 내역 등록

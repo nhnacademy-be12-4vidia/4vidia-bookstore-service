@@ -1,5 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.admin.dto.refund;
 
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,6 +12,6 @@ public record RefundDetailResponse(
         String name,
         String description,
         LocalDateTime createdAt,
-        String refundStatus,
         List<RefundItemDto> items
-) {}
+) {
+}
