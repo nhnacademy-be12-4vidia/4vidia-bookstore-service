@@ -15,9 +15,9 @@ public record AdminRefundListResponse(
     public static AdminRefundListResponse from(Refund refund){
         return new AdminRefundListResponse(
                 refund.getRefundId(),
-                refund.getOrderItem().getOrder().getOrderId(),
-                refund.getOrderItem().getOrder().getUser().getEmail(),
-                refund.getOrderItem().getOrder().getUser().getName(),
+                refund.getOrder().getOrderId(),
+                refund.getOrder().getUser().getEmail(),
+                refund.getOrder().getUser().getName(),
                 refund.getCreatedAt(),
                 refund.getRefundStatus().name()
         );

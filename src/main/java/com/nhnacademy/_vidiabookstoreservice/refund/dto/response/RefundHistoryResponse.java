@@ -3,7 +3,8 @@ package com.nhnacademy._vidiabookstoreservice.refund.dto.response;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 
 import java.time.LocalDate;
 
@@ -20,8 +21,18 @@ public record RefundHistoryResponse(
 ) {
 
     public static RefundHistoryResponse from(Refund refund) {
-        OrderItem oi = refund.getOrderItem();
-        Order order = oi.getOrder();
+
+        // 🔒 방어 코드 (매우 중요)
+        if (refund.getRefundItems().isEmpty()) {
+            throw new IllegalStateException(
+                    "RefundItem not exists. refundId=" + refund.getRefundId()
+            );
+        }
+
+        // ✅ RefundItem 기준으로 조회
+        RefundItem refundItem = refund.getRefundItems().get(0);
+        OrderItem oi = refundItem.getOrderItem();
+        Order order = refund.getOrder();
 
         return new RefundHistoryResponse(
                 refund.getRefundId(),

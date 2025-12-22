@@ -11,8 +11,6 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserRes
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.exception.*;
-import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.PasswordMisMatchException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.SameAsOldPasswordException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
@@ -147,11 +145,11 @@ public class UserServiceImpl implements UserService {
 
         // 새 비밀번호와 확인 비밀번호 일치 여부 확인
         if(!request.newPassword().equals(request.confirmPassword())){
-            throw new PasswordMisMatchException();
+            throw new UserNotFoundException();
         }
         // 새 비밀번호가 현재 비밀번호와 동일한지 확인
         if(BCryptPasswordEncoder.matches(request.newPassword(),user.getPassword())){
-            throw new SameAsOldPasswordException();
+            throw new UserNotFoundException();
         }
 
         // 비밀번호 암호화 및 업데이트

@@ -4,8 +4,8 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.AdminRefundListRes
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundStatus;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRejectRequest;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundItemUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin/refunds")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminRefundController {
     private final AdminRefundService adminRefundService;
@@ -22,7 +22,7 @@ public class AdminRefundController {
     /**
      * 파손 반품 리스트
      */
-    @GetMapping
+    @GetMapping("/refunds")
     public ResponseEntity<PageResponse<AdminRefundListResponse>> listByRefundStatus(
             @RequestParam(value = "refundStatus", required = false, defaultValue = "PROCESS") RefundStatus refundStatus,
             @RequestParam(value = "keyword", required = false) String keyword,
@@ -32,9 +32,9 @@ public class AdminRefundController {
     }
 
     /**
-     * 반품 상세 조회 (관리자)
+     * 관리자 페이지 반품 상세 조회
      */
-    @GetMapping("/{refund-id}")
+    @GetMapping("/refunds/{refund-id}")
     public ResponseEntity<RefundDetailResponse> getRefundDetail(@PathVariable("refund-id") Long refundId) {
         RefundDetailResponse detail = adminRefundService.getRefundDetail(refundId);
         return ResponseEntity.ok(detail);
@@ -43,20 +43,11 @@ public class AdminRefundController {
     /**
      * 관리자 반품 승인
      */
-    @PostMapping("/{refund-id}/accept")
-    public ResponseEntity<Void> acceptRefund(@PathVariable("refund-id") Long refundId) {
-        adminRefundService.acceptRefund(refundId);
-        return ResponseEntity.ok().build();
-    }
+    @PutMapping("/refunds/{refund-item-id}")
+    public ResponseEntity<Void> updateRefund(@PathVariable("refund-item-id") Long refundItemId,
+                                             @RequestBody RefundItemUpdateRequest request) {
 
-    /**
-     * 관리자 반품 거절
-     */
-    @PostMapping("/{refund-id}/reject")
-    public ResponseEntity<Void> rejectRefund(@PathVariable("refund-id") Long refundId,
-                                             @RequestBody RefundRejectRequest rejectRequest) {
-        adminRefundService.rejectRefund(refundId, rejectRequest);
-        return ResponseEntity.ok().build();
+        adminRefundService.updateRefundStatus(refundItemId, request);
+        return ResponseEntity.noContent().build();
     }
-
 }

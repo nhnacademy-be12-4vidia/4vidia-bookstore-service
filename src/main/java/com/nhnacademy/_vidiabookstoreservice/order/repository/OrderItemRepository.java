@@ -16,38 +16,15 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     List<OrderItem> findByOrder(Order order);
 
-    List<OrderItem> findAllByConfirmStatusAndOrder(ConfirmStatus confirmStatus, Order order);
+    @Query("SELECT oi FROM OrderItem oi " +
+            "LEFT JOIN RefundItem ri ON ri.orderItem = oi " +
+            "WHERE oi.order.orderId = :orderId " +
+            "AND ri.refundItemId IS NULL")
+    List<OrderItem> findNotRefundedOrderItems(@Param("orderId") Long orderId);
 
     @Query("SELECT oi FROM OrderItem oi JOIN FETCH oi.book WHERE oi.order.orderId = :orderId")
     List<OrderItem> findByOrder_orderId(@Param("orderId") Long orderId);
 
-    @Query("""
-            select sum(oi.salePrice * oi.quantity)
-            from OrderItem oi
-            where oi.order.orderId = :orderId AND oi.confirmStatus = :confirmStatus
-            """)
-    Integer sumOrderItemRefunded(@Param("orderId") Long orderId,
-                                 @Param("confirmStatus") ConfirmStatus confirmStatus);
-
-
-    @Query("SELECT COUNT(oi) FROM OrderItem oi " +
-            "WHERE oi.order.orderId = :orderId " +
-            "AND oi.confirmStatus != :status")
-    long countNotRefundedItems(@Param("orderId") Long orderId,
-                               @Param("status") ConfirmStatus status);
-
-    @Query("""
-        SELECT COALESCE(SUM(oi.salePrice * oi.quantity), 0)
-        FROM OrderItem oi
-        WHERE oi.order.orderId = :orderId
-          AND oi.book.category.kdcCode = :kdcCode
-          AND oi.confirmStatus != :refunded
-        """)
-    int sumCategoryItemRefundedPrice(
-            @Param("orderId") Long orderId,
-            @Param("kdcCode") String kdcCode,
-            @Param("refunded") ConfirmStatus refunded
-    );
 
     @Query("""
         SELECT COALESCE(SUM(oi.salePrice * oi.quantity), 0)
