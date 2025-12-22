@@ -3,11 +3,15 @@ package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItemViewStatus;
+import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItemViewStatusResolver;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public record OrderPreviewResponse(
@@ -28,7 +32,7 @@ public record OrderPreviewResponse(
             OrderItemViewStatus orderItemViewStatus,
             Boolean isReviewed
     ) {
-        public static OrderBookResponse from(OrderItem orderItem, Boolean isReviewed) {
+        public static OrderBookResponse from(OrderItem orderItem, Boolean isReviewed, OrderItemViewStatusResolver resolver, Optional<RefundItem> refundItem) {
             return new OrderBookResponse(
                     orderItem.getOrderItemId(),
                     orderItem.getBook().getId(),
@@ -37,29 +41,20 @@ public record OrderPreviewResponse(
                     orderItem.getBook().getBookImageList().stream().findFirst().map(image -> image.getImageUrl()).orElse(null),
                     orderItem.getQuantity(),
                     orderItem.getSalePrice(),
-                    convertToViewStatus(orderItem.getConfirmStatus()),
+                    resolver.resolve(orderItem, refundItem),
                     isReviewed
             );
         }
-
-        private static OrderItemViewStatus convertToViewStatus(ConfirmStatus status) {
-            if (status == null) return OrderItemViewStatus.ORDERED; // 기본값 방어 코드
-
-            return switch (status) {
-                case UNCONFIRMED -> OrderItemViewStatus.ORDERED;
-                case CONFIRMED -> OrderItemViewStatus.CONFIRMED;
-                case REFUND_REQUEST -> OrderItemViewStatus.REFUND_REQUESTED;
-                case REFUNDED -> OrderItemViewStatus.REFUNDED;
-                case REFUND_REJECTED -> OrderItemViewStatus.REFUND_REJECTED;
-            };
-        }
     }
 
-    public static OrderPreviewResponse from(Order order, Set<Long> reviewedItemIds) {
+    public static OrderPreviewResponse from(Order order, Set<Long> reviewedItemIds, Set<RefundItem> refundItems, OrderItemViewStatusResolver resolver) {
         List<OrderBookResponse> orderItems = order.getOrderItems().stream()
                 .map(item ->  {
                     boolean isReviewed = reviewedItemIds.contains(item.getOrderItemId());
-                    return OrderBookResponse.from(item, isReviewed);
+                    Optional<RefundItem> refundItem = refundItems.stream()
+                            .filter(r -> r.getOrderItem().getOrderItemId().equals(item.getOrderItemId()))
+                            .findFirst();
+                    return OrderBookResponse.from(item, isReviewed, resolver, refundItem);
                 })
                 .toList();
 

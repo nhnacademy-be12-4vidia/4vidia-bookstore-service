@@ -27,6 +27,11 @@ import com.nhnacademy._vidiabookstoreservice.order.service.*;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
 import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointGuestUseException;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
+import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository;
+import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
+import com.nhnacademy._vidiabookstoreservice.refund.service.RefundService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.CouponCalculationResponse;
@@ -60,6 +65,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMessageProducer orderMessageProducer;
     private final CartService cartService;
     private final ApplicationEventPublisher eventPublisher;
+    private final RefundItemRepository refundItemRepository;
+    private final OrderItemViewStatusResolver resolver;
+    private final RefundRepository refundRepository;
 
     @Override
     public OrderCreateResponse saveOrder(Long userId, @Valid OrderCreateRequest request) {
@@ -198,17 +206,20 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findAllByUser_UserId(userId);
 
-        List<Long> ordersIds = orders.stream()
+        List<Long> ordersItemIds = orders.stream()
                 .flatMap(order -> order.getOrderItems().stream()) // 모든 주문의 OrderItem 리스트를 하나의 스트림으로 합치고
                 .map(OrderItem::getOrderItemId) // OrderItem에서 ID만 추출
                 .toList();
 
-        List<Long> writtenReview = reviewService.getReviewedOrderItemIdList(ordersIds);
+        List<Long> writtenReview = reviewService.getReviewedOrderItemIdList(ordersItemIds);
+
+
+        List<RefundItem> refundItems = refundItemRepository.findByOrderItem_OrderItemId(ordersItemIds);
 
         Set<Long> reviewedItemIds = new HashSet<>(writtenReview);
-
+        Set<RefundItem> refundItemsSet = new HashSet<>(refundItems);
         return orders.stream().map(
-                order -> OrderPreviewResponse.from(order, reviewedItemIds))
+                order -> OrderPreviewResponse.from(order,reviewedItemIds, refundItemsSet, resolver))
                 .toList();
     }
 
