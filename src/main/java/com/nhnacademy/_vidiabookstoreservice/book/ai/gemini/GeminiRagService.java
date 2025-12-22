@@ -17,9 +17,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -62,7 +68,7 @@ public class GeminiRagService {
         // 3. GEMINI 호출 (검색 + 정보 병합)
         String geminiJson = callGeminiWithSearchTool(prompt);
 
-        // 4. 결과 매핑
+        // 4. 결과 매핑 (DB 없더라도 알라딘/LLM 결합해 관리자에게 최대 정보 제공)
         return mapToResponse(geminiJson, dbData, aladinItem);
     }
 
@@ -152,72 +158,93 @@ public class GeminiRagService {
             AladinItemDto aladin
     ) {
         if (!StringUtils.hasText(json)) {
-            return dbData != null ? dbData : createEmptyResponse();
+            return fallbackResponse(dbData, aladin);
         }
 
         try {
-            String cleanJson = json.replace("```json", "").replace("```", "").trim();
-            JsonNode root = objectMapper.readTree(cleanJson);
-
-            // Gemini 데이터 추출
-            List<AuthorNameRoleResponse> authors = new ArrayList<>();
-            if (root.has("authors")) {
-                authors = objectMapper.convertValue(root.get("authors"), new TypeReference<>() {});
+            String cleaned = json.replace("```json", "").replace("```", "").trim();
+            String extracted = extractFirstJsonObjectOrNull(cleaned);
+            if (!StringUtils.hasText(extracted)) {
+                log.warn("[관리자 도서] gemini 응답에서 JSON 추출 실패. preview={}", preview(cleaned));
+                return fallbackResponse(dbData, aladin);
             }
 
-            List<String> tags = new ArrayList<>();
-            if (root.has("tags")) {
-                try {
-                    List<String> geminiTags = objectMapper.convertValue(root.get("tags"), new TypeReference<>() {});
-                    tags.addAll(geminiTags);
-                } catch (Exception ignored) {}
-            }
-            if (aladin != null && StringUtils.hasText(aladin.categoryName())) {
-                // 중복 제거하며 추가
-                for (String cat : aladin.categoryName().split(" > ")) {
-                    if (!tags.contains(cat)) tags.add(cat);
-                }
-            }
+            JsonNode root = objectMapper.readTree(extracted);
 
-            LocalDate publishedDate = null;
-            try {
-                String dateStr = root.path("publishedDate").asText();
-                if (StringUtils.hasText(dateStr)) {
-                    // YYYY.MM.DD 형식 대응 및 길이 체크
-                    dateStr = dateStr.replace(".", "-");
-                    if (dateStr.length() >= 10) {
-                        publishedDate = LocalDate.parse(dateStr.substring(0, 10));
-                    }
-                }
-            } catch (Exception ignored) {
-                log.warn("[관리자 도서] gemini 날짜 파싱 실패: {}", root.path("publishedDate").asText());
-            }
+            List<AuthorNameRoleResponse> authors = parseAuthors(root.get("authors"), dbData, aladin);
+            List<String> tags = parseTags(root.get("tags"), aladin, dbData);
+            LocalDate publishedDate = parseLocalDateFlexible(root.path("publishedDate").asText(), dbData);
 
-            // 데이터 병합 및 Override (재고와 커버이미지 보호)
             Integer stock = (dbData != null) ? dbData.stock() : 0;
-            String coverUrl = (aladin != null) ? aladin.cover() : (dbData != null ? dbData.coverImageUrl() : null);
+            String coverUrl = (aladin != null && StringUtils.hasText(aladin.cover()))
+                    ? aladin.cover()
+                    : (dbData != null ? dbData.coverImageUrl() : null);
+
+            String title = firstNonEmpty(root.path("title").asText(null),
+                    dbData != null ? dbData.title() : null,
+                    aladin != null ? aladin.title() : null,
+                    "제목 없음");
+
+            String subtitle = firstNonEmpty(root.path("subtitle").asText(null),
+                    dbData != null ? dbData.subtitle() : null,
+                    aladin != null && aladin.bookinfo() != null ? aladin.bookinfo().subTitle() : null);
+
+            String publisher = firstNonEmpty(root.path("publisher").asText(null),
+                    dbData != null ? dbData.publisher() : null,
+                    aladin != null ? aladin.publisher() : null);
+
+            String language = firstNonEmpty(root.path("language").asText(null),
+                    dbData != null ? dbData.language() : null);
+
+            Integer pageCount = pickInteger(
+                    parseIntegerFlexible(root.get("pageCount")),
+                    dbData != null ? dbData.pageCount() : null,
+                    (aladin != null && aladin.bookinfo() != null) ? aladin.bookinfo().itemPage() : null,
+                    0
+            );
+
+            String categoryCode = firstNonEmpty(root.path("categoryCode").asText(null),
+                    dbData != null ? dbData.categoryCode() : null,
+                    "UNC");
+
+            Integer priceStandard = pickInteger(
+                    parseIntegerFlexible(root.get("priceStandard")),
+                    dbData != null ? dbData.priceStandard() : null,
+                    aladin != null ? aladin.priceStandard() : null,
+                    0
+            );
+
+            String description = firstNonEmpty(root.path("description").asText(null),
+                    dbData != null ? dbData.description() : null,
+                    aladin != null ? aladin.description() : null,
+                    "");
+
+            String bookIndex = firstNonEmpty(root.path("bookIndex").asText(null),
+                    dbData != null ? dbData.bookIndex() : null,
+                    (aladin != null && aladin.bookinfo() != null) ? aladin.bookinfo().toc() : null,
+                    "");
 
             return new AdminIsbnSearchResponse(
                     true,
                     coverUrl,
-                    root.path("title").asText(dbData != null ? dbData.title() : "제목 없음"),
-                    root.path("subtitle").asText(dbData != null ? dbData.subtitle() : null),
-                    authors.isEmpty() && dbData != null ? dbData.authors() : authors,
-                    root.path("publisher").asText(dbData != null ? dbData.publisher() : null),
-                    publishedDate != null ? publishedDate : (dbData != null ? dbData.publishedDate() : null),
-                    root.path("language").asText(dbData != null ? dbData.language() : null),
-                    root.path("pageCount").asInt(dbData != null ? dbData.pageCount() : 0),
-                    root.path("categoryCode").asText(dbData != null ? dbData.categoryCode() : "UNC"),
-                    root.path("priceStandard").asInt(dbData != null ? dbData.priceStandard() : 0),
+                    title,
+                    subtitle,
+                    authors,
+                    publisher,
+                    publishedDate,
+                    language,
+                    pageCount,
+                    categoryCode,
+                    priceStandard,
                     stock,
-                    root.path("description").asText(dbData != null ? dbData.description() : ""),
-                    root.path("bookIndex").asText(dbData != null ? dbData.bookIndex() : ""),
-                    tags.isEmpty() && dbData != null ? dbData.tags() : tags
+                    description,
+                    bookIndex,
+                    tags
             );
 
         } catch (Exception e) {
             log.warn("[관리자 도서] gemini 파싱 실패", e);
-            return dbData != null ? dbData : createEmptyResponse();
+            return fallbackResponse(dbData, aladin);
         }
     }
 
@@ -225,12 +252,172 @@ public class GeminiRagService {
         return new AdminIsbnSearchResponse(false, null, "검색 결과 없음", null, List.of(), null, null, null, 0, null, 0, 0, null, null, List.of());
     }
 
+    private AdminIsbnSearchResponse fallbackResponse(AdminIsbnSearchResponse dbData, AladinItemDto aladin) {
+        if (dbData != null) {
+            return dbData;
+        }
+        if (aladin != null) {
+            return new AdminIsbnSearchResponse(
+                    true,
+                    aladin.cover(),
+                    firstNonEmpty(aladin.title(), "제목 없음"),
+                    aladin.bookinfo() != null ? aladin.bookinfo().subTitle() : null,
+                    parseAuthors(null, null, aladin),
+                    aladin.publisher(),
+                    parseLocalDateFlexible(aladin.pubDate(), null),
+                    null,
+                    aladin.bookinfo() != null ? aladin.bookinfo().itemPage() : 0,
+                    null,
+                    aladin.priceStandard(),
+                    0,
+                    aladin.description(),
+                    aladin.bookinfo() != null ? aladin.bookinfo().toc() : null,
+                    parseTags(null, aladin, null)
+            );
+        }
+        return createEmptyResponse();
+    }
+
+    private String preview(String s) {
+        if (s == null) return "<null>";
+        if (s.length() <= 200) return s;
+        return s.substring(0, 200) + "...<truncated>";
+    }
+
+    private String extractFirstJsonObjectOrNull(String raw) {
+        if (raw == null) return null;
+        int start = raw.indexOf('{');
+        if (start < 0) return null;
+
+        int depth = 0;
+        for (int i = start; i < raw.length(); i++) {
+            char c = raw.charAt(i);
+            if (c == '{') depth++;
+            else if (c == '}') {
+                depth--;
+                if (depth == 0) {
+                    return raw.substring(start, i + 1).trim();
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<AuthorNameRoleResponse> parseAuthors(JsonNode authorsNode, AdminIsbnSearchResponse dbData, AladinItemDto aladin) {
+        List<AuthorNameRoleResponse> authors = new ArrayList<>();
+        if (authorsNode != null && !authorsNode.isMissingNode() && !authorsNode.isNull()) {
+            try {
+                // 정상 객체 배열 케이스
+                authors = objectMapper.convertValue(authorsNode, new TypeReference<>() {});
+            } catch (Exception ignored) {
+                // 문자열 배열일 경우 name만 채우기
+                if (authorsNode.isArray()) {
+                    for (JsonNode n : authorsNode) {
+                        if (n.isTextual() && StringUtils.hasText(n.asText())) {
+                            authors.add(new AuthorNameRoleResponse(n.asText(), null));
+                        }
+                    }
+                }
+            }
+        }
+
+        // 아무 것도 못 읽었을 때 정책: 비정규 저자 필드를 이름으로, 역할 null
+        if (authors.isEmpty()) {
+            // DB author 유지 우선
+            if (dbData != null && dbData.authors() != null && !dbData.authors().isEmpty()) {
+                return dbData.authors();
+            }
+            // aladin 비정규 필드 사용
+            if (aladin != null && StringUtils.hasText(aladin.author())) {
+                authors.add(new AuthorNameRoleResponse(aladin.author(), null));
+            }
+            if (authors.isEmpty()) {
+                return List.of();
+            }
+        }
+        return authors;
+    }
+
+    private List<String> parseTags(JsonNode tagsNode, AladinItemDto aladin, AdminIsbnSearchResponse dbData) {
+        Set<String> set = new LinkedHashSet<>();
+        // 1) Gemini 추천 태그 우선
+        if (tagsNode != null && !tagsNode.isMissingNode() && !tagsNode.isNull()) {
+            try {
+                List<String> geminiTags = objectMapper.convertValue(tagsNode, new TypeReference<>() {});
+                for (String t : geminiTags) {
+                    if (StringUtils.hasText(t)) set.add(t.trim());
+                }
+            } catch (Exception ignored) {}
+        }
+        // 2) Gemini 태그가 없으면 알라딘 카테고리 태그 사용, 단 Gemini 태그가 있더라도 추가 병합
+        if (aladin != null && StringUtils.hasText(aladin.categoryName())) {
+            for (String cat : aladin.categoryName().split(" > ")) {
+                if (StringUtils.hasText(cat)) set.add(cat.trim());
+            }
+        }
+        // 3) 그래도 비어있으면 DB 태그 사용
+        if (set.isEmpty() && dbData != null && dbData.tags() != null) {
+            set.addAll(dbData.tags());
+        }
+        return new ArrayList<>(set);
+    }
+
+    private LocalDate parseLocalDateFlexible(String value, AdminIsbnSearchResponse dbData) {
+        if (!StringUtils.hasText(value)) {
+            return dbData != null ? dbData.publishedDate() : null;
+        }
+        String normalized = value.replace(".", "-").replace("/", "-");
+        String[] patterns = {"uuuu-MM-dd", "uuuu-M-d", "uuuu-MM", "uuuu-M"};
+        for (String p : patterns) {
+            try {
+                DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                        .appendPattern(p)
+                        .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+                        .toFormatter()
+                        .withResolverStyle(ResolverStyle.STRICT);
+                return LocalDate.parse(normalized, formatter);
+            } catch (Exception ignored) {}
+        }
+        log.warn("[관리자 도서] gemini 날짜 파싱 실패: {}", value);
+        return dbData != null ? dbData.publishedDate() : null;
+    }
+
+    private Integer parseIntegerFlexible(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) return null;
+        if (node.isInt() || node.isLong()) return node.asInt();
+        if (node.isTextual()) {
+            try {
+                return Integer.parseInt(node.asText().trim());
+            } catch (NumberFormatException ignored) {}
+        }
+        return null;
+    }
+
+    @SafeVarargs
+    private String firstNonEmpty(String... values) {
+        for (String v : values) {
+            if (StringUtils.hasText(v)) return v;
+        }
+        return null;
+    }
+
+    private Integer pickInteger(Integer... values) {
+        for (Integer v : values) {
+            if (v != null) return v;
+        }
+        return null;
+    }
+
     private String callGeminiWithSearchTool(String prompt) {
         try {
             Map<String, Object> request = Map.of(
-                    "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))),
+                    "contents", List.of(Map.of(
+                            "role", "user",
+                            "parts", List.of(Map.of("text", prompt))
+                    )),
                     "tools", List.of(Map.of("google_search", Map.of()))
             );
+
             String responseBody = geminiRagRestClient.post()
                     .uri("/models/gemini-2.5-flash:generateContent")
                     .body(request)
@@ -243,16 +430,31 @@ public class GeminiRagService {
                 log.warn("Gemini returned no candidates. Response: {}", responseBody);
                 return null;
             }
-            JsonNode content = candidates.get(0).path("content");
-            if (content.isMissingNode()) {
-                log.warn("Gemini candidate has no content (possibly blocked). Response: {}", responseBody);
+
+            // 여러 candidates / 여러 parts 고려: text 파트 이어붙이기
+            StringBuilder sb = new StringBuilder();
+            for (JsonNode candidate : candidates) {
+                JsonNode content = candidate.path("content");
+                if (content.isMissingNode()) continue;
+                JsonNode parts = content.path("parts");
+                if (parts.isMissingNode() || parts.isEmpty()) continue;
+                for (JsonNode part : parts) {
+                    if (part.hasNonNull("text")) {
+                        String t = part.get("text").asText();
+                        if (StringUtils.hasText(t)) {
+                            if (sb.length() > 0) sb.append('\n');
+                            sb.append(t);
+                        }
+                    }
+                }
+                if (sb.length() > 0) break; // 첫 candidate에서 텍스트 얻으면 종료
+            }
+
+            if (sb.length() == 0) {
+                log.warn("Gemini response had no text parts. Response: {}", responseBody);
                 return null;
             }
-            JsonNode parts = content.path("parts");
-            if (parts.isMissingNode() || parts.isEmpty()) {
-                return null;
-            }
-            return parts.get(0).path("text").asText();
+            return sb.toString();
         } catch (Exception e) {
             log.error("Gemini RAG Call Error", e);
             return null;
