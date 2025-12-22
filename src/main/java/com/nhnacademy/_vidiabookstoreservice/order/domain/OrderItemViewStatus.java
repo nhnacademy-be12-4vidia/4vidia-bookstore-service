@@ -1,7 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.domain;
 
 public enum OrderItemViewStatus {
-    ORDERED,
+    UNCONFIRMED,
     CONFIRMED,
     REFUND_REQUESTED,
     REFUNDED,
