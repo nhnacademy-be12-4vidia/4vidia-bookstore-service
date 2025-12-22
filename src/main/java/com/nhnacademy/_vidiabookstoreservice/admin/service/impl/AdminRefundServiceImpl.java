@@ -85,6 +85,7 @@ public class AdminRefundServiceImpl implements AdminRefundService {
                 user.getName(),
                 refund.getDescription(),
                 refund.getCreatedAt(),
+                refund.getRefundStatus(),
                 refundItemDtos
         );
     }

@@ -58,7 +58,7 @@ class PointCommandServiceImplTest {
         when(userService.getUserById(1L)).thenReturn(user);
         when(user.getGrade()).thenReturn(grade);
         when(grade.getPointRate()).thenReturn(5); // 5% 적립
-        when(orderRepository.calculateNetOrderPrice(anyLong(), anyInt())).thenReturn(10000);
+        when(orderRepository.calculateNetOrderPrice(anyLong(), any())).thenReturn(10000);
         when(pointDetailRepository.existsByUserIdAndOrderIdAndReason(anyLong(), anyLong(), any())).thenReturn(false);
 
         // when

@@ -225,7 +225,7 @@ class GradeServiceImplTest {
                 // User C는 리스트에 없으므로 0원으로 처리됨
         );
 
-        given(orderRepository.findUserNetSumLast3Months(any(), any(), anyInt()))
+        given(orderRepository.findUserNetSumLast3Months(any(), any(), any()))
                 .willReturn(netSums);
 
         // when
@@ -248,7 +248,7 @@ class GradeServiceImplTest {
         verify(orderRepository).findUserNetSumLast3Months(
                 fromCaptor.capture(),
                 toCaptor.capture(),
-                eq(PointReason.ORDER_CANCEL_REFUND.getCode())
+                eq(PointReason.ORDER_CANCEL_REFUND)
         );
 
         LocalDateTime capturedFrom = fromCaptor.getValue();
@@ -267,7 +267,7 @@ class GradeServiceImplTest {
     @Test
     @DisplayName("[월간 등급 산정] - 존재하지 않는 등급임(db에 필수 등급정보 없음)")
     void recalculateMonthlyGrades_fail_gradeNotFound() {
-        given(orderRepository.findUserNetSumLast3Months(any(), any(), anyInt()))
+        given(orderRepository.findUserNetSumLast3Months(any(), any(), any()))
                 .willReturn(List.of());
 
         given(gradeRepository.findByGradeName(any())).willReturn(null);

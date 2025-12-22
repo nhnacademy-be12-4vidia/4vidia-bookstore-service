@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.order.repository;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
 import org.springframework.data.domain.Page;
@@ -67,7 +68,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<UserNetSum> findUserNetSumLast3Months(
             @Param("fromDt") LocalDateTime fromDt,
             @Param("toDt") LocalDateTime toDt,
-            @Param("reasonCode") int reasonCode
+            @Param("reasonCode") PointReason reasonCode
     );
 
     /**
@@ -93,7 +94,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     """)
     int calculateNetOrderPrice(
             @Param("orderId") Long orderId,
-            @Param("reason") int reason
+            @Param("reason") PointReason reason
     );
 
 
