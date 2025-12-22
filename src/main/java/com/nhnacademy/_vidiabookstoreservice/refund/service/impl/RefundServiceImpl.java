@@ -97,6 +97,9 @@ public class RefundServiceImpl implements RefundService {
         for (Long itemId : request.orderItemIds()) {
             OrderItem orderItem = orderItemRepository.findById(itemId)
                     .orElseThrow(() -> new OrderItemNotFoundException(itemId));
+
+            orderItem.setConfirmStatus(ConfirmStatus.REFUND_REQUEST);
+
             RefundItem refundItem = RefundItem.createRefundItem(orderItem, orderItem.getSalePrice());
             refund.addRefundItem(refundItem);
         }

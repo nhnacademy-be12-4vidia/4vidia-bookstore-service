@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.order.dto.order.response;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
+import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItemViewStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 
@@ -24,7 +25,7 @@ public record OrderPreviewResponse(
             String bookImageUrl,
             Integer quantity,
             Integer salePrice,
-            ConfirmStatus confirmStatus,
+            OrderItemViewStatus orderItemViewStatus,
             Boolean isReviewed
     ) {
         public static OrderBookResponse from(OrderItem orderItem, Boolean isReviewed) {
@@ -36,9 +37,21 @@ public record OrderPreviewResponse(
                     orderItem.getBook().getBookImageList().stream().findFirst().map(image -> image.getImageUrl()).orElse(null),
                     orderItem.getQuantity(),
                     orderItem.getSalePrice(),
-                    orderItem.getConfirmStatus(),
+                    convertToViewStatus(orderItem.getConfirmStatus()),
                     isReviewed
             );
+        }
+
+        private static OrderItemViewStatus convertToViewStatus(ConfirmStatus status) {
+            if (status == null) return OrderItemViewStatus.ORDERED; // 기본값 방어 코드
+
+            return switch (status) {
+                case UNCONFIRMED -> OrderItemViewStatus.ORDERED;
+                case CONFIRMED -> OrderItemViewStatus.CONFIRMED;
+                case REFUND_REQUEST -> OrderItemViewStatus.REFUND_REQUESTED;
+                case REFUNDED -> OrderItemViewStatus.REFUNDED;
+                case REFUND_REJECTED -> OrderItemViewStatus.REFUND_REJECTED;
+            };
         }
     }
 
