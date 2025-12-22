@@ -64,7 +64,8 @@ class AddressServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> addressService.createAddress(userId, mock(CreateAddressRequest.class)))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
 
         verify(addressRepository, never()).save(any());
     }
@@ -77,7 +78,8 @@ class AddressServiceImplTest {
         given(addressRepository.countByUser_userId(userId)).willReturn(10);
 
         assertThatThrownBy(() -> addressService.createAddress(userId, mock(CreateAddressRequest.class)))
-                .isInstanceOf(AddressLimitException.class);
+                .isInstanceOf(AddressLimitException.class)
+                .hasMessageContaining("배송지는 최대 10개까지만 등록할 수 있습니다.");
     }
 
     // --------------------
@@ -104,7 +106,8 @@ class AddressServiceImplTest {
         given(userRepository.existsById(1L)).willReturn(false);
 
         assertThatThrownBy(() -> addressService.getAddress(1L, 100L))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -114,7 +117,8 @@ class AddressServiceImplTest {
         given(addressRepository.findByUser_UserIdAndAddressId(1L, 100L)).willReturn(null);
 
         assertThatThrownBy(() -> addressService.getAddress(1L, 100L))
-                .isInstanceOf(AddressNotFoundException.class);
+                .isInstanceOf(AddressNotFoundException.class)
+                .hasMessageContaining("주소를 찾을 수 없습니다.");
     }
 
     @Test
@@ -160,7 +164,8 @@ class AddressServiceImplTest {
         given(userRepository.existsById(userId)).willReturn(false);
 
         assertThatThrownBy(() -> addressService.getUserAddresses(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     // --------------------
@@ -190,7 +195,8 @@ class AddressServiceImplTest {
 
         assertThatThrownBy(() -> addressService.updateAddress(userId, 10L,
                 new AddressRequest("별칭", "도로명", "12345", "상세")))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -201,7 +207,8 @@ class AddressServiceImplTest {
 
         assertThatThrownBy(() -> addressService.updateAddress(1L, 10L,
                 new AddressRequest("별칭", "도로명", "12345", "상세")))
-                .isInstanceOf(AddressNotFoundException.class);
+                .isInstanceOf(AddressNotFoundException.class)
+                .hasMessageContaining("주소를 찾을 수 없습니다.");
     }
 
     // --------------------
@@ -236,7 +243,8 @@ class AddressServiceImplTest {
         given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(null);
 
         assertThatThrownBy(() -> addressService.deleteAddress(userId, addressId))
-                .isInstanceOf(AddressNotFoundException.class);
+                .isInstanceOf(AddressNotFoundException.class)
+                .hasMessageContaining("주소를 찾을 수 없습니다.");
 
         verify(addressRepository, never()).deleteByUser_UserIdAndAddressId(anyLong(), anyLong());
     }
@@ -338,7 +346,8 @@ class AddressServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> addressService.updateDefaultAddress(userId, addressId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -352,7 +361,8 @@ class AddressServiceImplTest {
         given(addressRepository.findByUser_UserIdAndAddressId(userId, addressId)).willReturn(null);
 
         assertThatThrownBy(() -> addressService.updateDefaultAddress(userId, addressId))
-                .isInstanceOf(AddressNotFoundException.class);
+                .isInstanceOf(AddressNotFoundException.class)
+                .hasMessageContaining("주소를 찾을 수 없습니다.");
     }
 
     @Test
@@ -402,7 +412,8 @@ class AddressServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         assertThatThrownBy(() -> addressService.getDefaultAddress(userId))
-                .isInstanceOf(DefaultAddressNotFoundException.class);
+                .isInstanceOf(DefaultAddressNotFoundException.class)
+                .hasMessageContaining("기본 주소가 설정되어 있지 않습니다.");
     }
 
     // --------------------

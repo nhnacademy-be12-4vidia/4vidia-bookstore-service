@@ -80,7 +80,8 @@ class UserServiceImplTest {
         given(userRepository.findByEmail(email)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserByEmail(email))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -106,7 +107,8 @@ class UserServiceImplTest {
         given(userRepository.findByUserId(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserByPoint(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -130,7 +132,8 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserName(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -175,7 +178,8 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getOrderUser(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -212,7 +216,8 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserInfo(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -302,7 +307,8 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserById(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -343,7 +349,8 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.changePassword(userId, any()))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -367,7 +374,8 @@ class UserServiceImplTest {
                 .willReturn(false);
 
         assertThatThrownBy(() -> userService.changePassword(userId, request))
-                .isInstanceOf(IncorrectPasswordException.class);
+                .isInstanceOf(IncorrectPasswordException.class)
+                .hasMessageContaining("비밀번호가 일치하지 않습니다.");
     }
 
     @Test
@@ -391,7 +399,8 @@ class UserServiceImplTest {
                 .willReturn(true);
 
         assertThatThrownBy(() -> userService.changePassword(userId, request))
-                .isInstanceOf(PasswordMisMatchException.class);
+                .isInstanceOf(PasswordMisMatchException.class)
+                .hasMessageContaining("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
     }
 
     @Test
@@ -419,7 +428,8 @@ class UserServiceImplTest {
                 .willReturn(true);
 
         assertThatThrownBy(() -> userService.changePassword(userId, request))
-                .isInstanceOf(SameAsOldPasswordException.class);
+                .isInstanceOf(SameAsOldPasswordException.class)
+                .hasMessageContaining("현재 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
     }
 
     @Test
@@ -454,7 +464,8 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.deleteUserById(userId, request))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
 
         verifyNoInteractions(bCryptPasswordEncoder);
     }
@@ -476,7 +487,8 @@ class UserServiceImplTest {
         given(bCryptPasswordEncoder.matches(currentPassword, encodedPassword)).willReturn(false);
 
         assertThatThrownBy(() -> userService.deleteUserById(userId, request))
-                .isInstanceOf(IncorrectPasswordException.class);
+                .isInstanceOf(IncorrectPasswordException.class)
+                .hasMessageContaining("비밀번호가 일치하지 않습니다.");
 
         verify(user, never()).setStatus(any());
     }
@@ -511,7 +523,8 @@ class UserServiceImplTest {
         given(userRepository.findByEmail(email)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updateLastLoginAt(email))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -534,7 +547,8 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserRole(userId))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -572,6 +586,7 @@ class UserServiceImplTest {
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.completeProfile(userId, any()))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 }

@@ -126,7 +126,8 @@ class AuthServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> authService.register(mockRequest))
-                .isInstanceOf(UserAlreadyExistsException.class);
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessageContaining("이미 존재하는 회원입니다.");
     }
 
     @Test
@@ -166,7 +167,8 @@ class AuthServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> authService.findUserId(mockRequest))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("일치하는 회원정보가 없습니다.");
     }
 
     @Test
@@ -263,7 +265,8 @@ class AuthServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> authService.isDormant(email))
-                .isInstanceOf(ResignedUserAlreadyExistsException.class);
+                .isInstanceOf(ResignedUserAlreadyExistsException.class)
+                .hasMessageContaining("등급 적립률이 음수일 수 없습니다.");
     }
 
     @Test
