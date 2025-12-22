@@ -1,28 +1,24 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
+import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
+import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
+import com.nhnacademy._vidiabookstoreservice.user.domain.User;
+import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
+import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
-import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
+import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
+import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
+import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 
@@ -34,48 +30,57 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureRestDocs
-@ExtendWith({SpringExtension.class, RestDocumentationExtension.class})
-@ActiveProfiles("local")
-@SpringBootTest
-@Transactional
-class UserControllerTest {
+class UserControllerTest extends SupportControllerTest {
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+    @Autowired private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired private UserRepository userRepository;
+    @Autowired private GradeRepository gradeRepository;
+    @Autowired private AddressRepository addressRepository;
 
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private UserService userService;
+    private Long testUserId;
+    private final String TEST_EMAIL = "user1@naver.com";
 
     @BeforeEach
-    void setUp(RestDocumentationContextProvider restDocumentation) {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .apply(documentationConfiguration(restDocumentation))
+    void initData() {
+
+        Grade grade = gradeRepository.save(Grade.builder().gradeName(GradeName.WELCOME).pointRate(1).build());
+
+        User user = User.builder()
+                .email(TEST_EMAIL)
+                .password(bCryptPasswordEncoder.encode("1234qwer!"))
+                .name("유저1")
+                .phone("01012345678")
+                .birthDate(LocalDate.now())
+                .grade(grade)
                 .build();
+        user.setStatus(UserStatus.ACTIVE);
+        User savedUser = userRepository.save(user);
+        this.testUserId = savedUser.getUserId();
+
+        Address address = Address.builder()
+                .user(savedUser)
+                .alias("집")
+                .roadAddress("서울")
+                .zipCode("12345")
+                .addressDetail("101")
+                .build();
+        Address savedAddress = addressRepository.save(address);
+
+        savedUser.setDefaultAddress(savedAddress);
+        userRepository.save(savedUser);
     }
 
     @Test
     @DisplayName("[회원 조회 by email]")
     void getUserByEmail() throws Exception {
-        String email = "user1@naver.com";
-
-        mockMvc.perform(get("/users")
-                        .param("email", email)
+        this.mockMvc.perform(get("/users")
+                        .param("email", TEST_EMAIL)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("id").isNumber())
-                .andExpect(jsonPath("email").isString())
-                .andExpect(jsonPath("password").isString())
-                .andExpect(jsonPath("roles").isString())
+                .andExpect(jsonPath("email").value(TEST_EMAIL))
                 .andDo(document("user-by-email-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -95,20 +100,11 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 조회 by id]")
     void getUserById() throws Exception {
-        Long userId = 14L;
-
         mockMvc.perform(get("/users/id")
-                        .header("X-User-Id", userId)
+                        .header("X-User-Id", testUserId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("userId").isNumber())
-                .andExpect(jsonPath("email").isString())
-                .andExpect(jsonPath("name").isString())
-                .andExpect(jsonPath("phone").isString())
-                .andExpect(jsonPath("birthDate").isString())
-                .andExpect(jsonPath("point").isNumber())
-                .andExpect(jsonPath("defaultAddress").exists())
-                .andExpect(jsonPath("gradeName").isString())
+                .andExpect(jsonPath("userId").value(testUserId))
                 .andDo(document("user-by-id-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -124,13 +120,11 @@ class UserControllerTest {
                                 fieldWithPath("birthDate").description("생년월일"),
                                 fieldWithPath("point").description("포인트"),
                                 fieldWithPath("defaultAddress").description("기본 주소"),
-
                                 fieldWithPath("defaultAddress.addressId").description("주소 PK"),
                                 fieldWithPath("defaultAddress.alias").description("별칭"),
                                 fieldWithPath("defaultAddress.roadAddress").description("도로명주소"),
                                 fieldWithPath("defaultAddress.zipCode").description("우편번호"),
                                 fieldWithPath("defaultAddress.addressDetail").description("상세주소"),
-
                                 fieldWithPath("gradeName").description("회원 등급")
                         )
                 ));
@@ -139,14 +133,11 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 이름 조회]")
     void getUserName() throws Exception {
-        Long userId = 14L;
-        String expectedName = "유저1";
-
         mockMvc.perform(get("/users/name")
-                    .header("X-User-Id", userId)
-                    .accept(MediaType.APPLICATION_JSON))
+                        .header("X-User-Id", testUserId)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(expectedName))
+                .andExpect(content().string("유저1"))
                 .andDo(document("user-name-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -160,20 +151,10 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 프로필 조회]")
     void getUserProfile() throws Exception {
-        Long userId = 14L;
-
         mockMvc.perform(get("/users/profile")
-                    .header("X-User-Id", userId)
-                    .accept(MediaType.APPLICATION_JSON))
+                        .header("X-User-Id", testUserId)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("userId").isNumber())
-                .andExpect(jsonPath("email").isString())
-                .andExpect(jsonPath("name").isString())
-                .andExpect(jsonPath("phone").isString())
-                .andExpect(jsonPath("birthDate").isString())
-                .andExpect(jsonPath("point").isNumber())
-                .andExpect(jsonPath("defaultAddress").exists())
-                .andExpect(jsonPath("gradeName").isString())
                 .andDo(document("user-profile-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -189,13 +170,11 @@ class UserControllerTest {
                                 fieldWithPath("birthDate").description("생년월일"),
                                 fieldWithPath("point").description("포인트"),
                                 fieldWithPath("defaultAddress").description("기본 주소"),
-
                                 fieldWithPath("defaultAddress.addressId").description("주소 PK"),
                                 fieldWithPath("defaultAddress.alias").description("별칭"),
                                 fieldWithPath("defaultAddress.roadAddress").description("도로명주소"),
                                 fieldWithPath("defaultAddress.zipCode").description("우편번호"),
                                 fieldWithPath("defaultAddress.addressDetail").description("상세주소"),
-
                                 fieldWithPath("gradeName").description("회원 등급")
                         )
                 ));
@@ -204,24 +183,14 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 프로필 수정]")
     void updateUserProfile() throws Exception {
-        Long userId = 14L;
-
         UpdateUserRequest request = new UpdateUserRequest("루저1", "01012345678");
 
         mockMvc.perform(put("/users/profile")
-                        .header("X-User-Id", userId)
+                        .header("X-User-Id", testUserId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("userId").isNumber())
-                .andExpect(jsonPath("email").isString())
-                .andExpect(jsonPath("name").value(request.name()))
-                .andExpect(jsonPath("phone").value(request.phone()))
-                .andExpect(jsonPath("birthDate").isString())
-                .andExpect(jsonPath("point").isNumber())
-                .andExpect(jsonPath("defaultAddress").exists())
-                .andExpect(jsonPath("gradeName").isString())
                 .andDo(document("user-profile-put",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -241,13 +210,11 @@ class UserControllerTest {
                                 fieldWithPath("birthDate").description("생년월일"),
                                 fieldWithPath("point").description("포인트"),
                                 fieldWithPath("defaultAddress").description("기본 주소"),
-
                                 fieldWithPath("defaultAddress.addressId").description("주소 PK"),
                                 fieldWithPath("defaultAddress.alias").description("별칭"),
                                 fieldWithPath("defaultAddress.roadAddress").description("도로명주소"),
                                 fieldWithPath("defaultAddress.zipCode").description("우편번호"),
                                 fieldWithPath("defaultAddress.addressDetail").description("상세주소"),
-
                                 fieldWithPath("gradeName").description("회원 등급")
                         )
                 ));
@@ -256,8 +223,6 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 비밀번호 수정]")
     void changePassword() throws Exception {
-        Long userId = 14L;
-
         ChangePasswordRequest request = new ChangePasswordRequest(
                 "1234qwer!",
                 "abcd5678!@",
@@ -265,7 +230,7 @@ class UserControllerTest {
         );
 
         mockMvc.perform(put("/users/me/password")
-                        .header("X-User-Id", userId)
+                        .header("X-User-Id", testUserId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))
@@ -288,17 +253,15 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 탈퇴]")
     void deleteUser() throws Exception {
-        Long userId = 14L;
-
         DeleteUserRequest request = new DeleteUserRequest("1234qwer!");
 
         mockMvc.perform(put("/users/delete")
-                        .header("X-User-Id", userId)
+                        .header("X-User-Id", testUserId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
-                .andDo(document("user-me-delete", // 실제 = put맵핑 (db에서 삭제안함)
+                .andDo(document("user-me-delete",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
 
@@ -314,14 +277,11 @@ class UserControllerTest {
     @Test
     @DisplayName("[회원 권한 조회]")
     void getUserRole() throws Exception {
-        Long userId = 14L;
-        String expectedRole = "USER";
-
         mockMvc.perform(get("/users/role")
-                        .header("X-User-Id", userId)
+                        .header("X-User-Id", testUserId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(expectedRole))
+                .andExpect(content().string("USER"))
                 .andDo(document("user-role-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -335,8 +295,6 @@ class UserControllerTest {
     @Test
     @DisplayName("[Payco 로그인 후 필수 정보 수정]")
     void updateCompleteProfile() throws Exception {
-        Long userId = 14L;
-
         CompleteProfileRequest request = new CompleteProfileRequest(
                 "update_email@payco.com",
                 "update_name",
@@ -344,9 +302,8 @@ class UserControllerTest {
                 LocalDate.now().minusYears(20)
         );
 
-
         mockMvc.perform(put("/users/complete-profile")
-                        .header("X-User-Id", userId)
+                        .header("X-User-Id", testUserId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))

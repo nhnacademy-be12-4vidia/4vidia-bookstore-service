@@ -39,3 +39,6 @@ application-local.yml
 
 ### RabbitConfig ###
 RabbitConfigLocal.java
+
+### test yml ###
+/src/test/resources/application-test.yml
