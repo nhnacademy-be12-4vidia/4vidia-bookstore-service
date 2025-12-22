@@ -64,7 +64,7 @@ public class RefundItem { // 실제 반품 아이템 관리
     }
 
     // 반품 신청 시 초기 객체 생성
-    public static RefundItem createRefundItem(OrderItem orderItem, Integer originalPrice){
+    public static RefundItem createRefundItem(OrderItem orderItem){
         return RefundItem.builder()
                 .orderItem(orderItem)
                 .refundStatus(RefundStatus.PROCESS)

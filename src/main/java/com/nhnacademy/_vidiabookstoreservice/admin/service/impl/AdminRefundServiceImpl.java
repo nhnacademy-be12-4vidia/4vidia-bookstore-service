@@ -53,6 +53,7 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     @Transactional(readOnly = true)
     public Page<AdminRefundListResponse> listByRefundStatus(RefundStatus refundStatus, String keyword, Pageable pageable) {
         Page<Refund> refunds;
+        // TODO 단순 변심은 따로 탭을 만들까??
         if (refundStatus == null) {
             refunds = refundRepository.findAll(pageable);
         } else {

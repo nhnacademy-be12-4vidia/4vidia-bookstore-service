@@ -3,12 +3,10 @@ package com.nhnacademy._vidiabookstoreservice.refund.service.impl;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderItemNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
-import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
@@ -19,7 +17,6 @@ import com.nhnacademy._vidiabookstoreservice.refund.dto.response.OrderItemRespon
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotAvailableException;
-import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import com.nhnacademy._vidiabookstoreservice.refund.service.RefundService;
 import lombok.RequiredArgsConstructor;
@@ -98,9 +95,7 @@ public class RefundServiceImpl implements RefundService {
             OrderItem orderItem = orderItemRepository.findById(itemId)
                     .orElseThrow(() -> new OrderItemNotFoundException(itemId));
 
-            //orderItem.setConfirmStatus(ConfirmStatus.REFUND_REQUEST);
-
-            RefundItem refundItem = RefundItem.createRefundItem(orderItem, orderItem.getSalePrice());
+            RefundItem refundItem = RefundItem.createRefundItem(orderItem);
             refund.addRefundItem(refundItem);
         }
 
@@ -136,6 +131,7 @@ public class RefundServiceImpl implements RefundService {
             totalPoint += amount.refundPoint();
             totalCash += amount.refundCash();
         }
+        refund.accept(); // refund 상태도 승인으로
 
         pointCommandService. refundSimpleChange(
                 new PointRefundCommand(

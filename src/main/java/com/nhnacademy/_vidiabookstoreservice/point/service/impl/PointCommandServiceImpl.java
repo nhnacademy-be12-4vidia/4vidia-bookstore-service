@@ -177,8 +177,6 @@ public class PointCommandServiceImpl implements PointCommandService {
 
         if(usePrice == 0){
            return;
-        }else if(usePrice < 0) {
-            throw new PointInvalidException();
         }else if(usePrice > totalPrice){
             throw new PointNotEnoughException();
         }

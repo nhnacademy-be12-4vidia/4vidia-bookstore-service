@@ -23,13 +23,19 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      * -expiredDate > now (아직 소멸되지 않은)
      * -expiredDate ASC (유효기간이 짧은 것부터 사용하기 위해 오름차순)
      */
-    @Query("SELECT p FROM PointDetail p " +
-            "WHERE p.userId = :userId " +
-            "AND p.remainingPrice > 0 " +
-            "AND (p.expiredDate IS NULL OR p.expiredDate >= :now)" +
-            "ORDER BY p.expiredDate ASC")
-    List<PointDetail> findAvailablePointForUse(@Param("userId")Long userId,
-                                               @Param("now") LocalDate now);
+    @Query("""
+            SELECT p FROM PointDetail p
+            WHERE p.userId = :userId
+              AND p.remainingPrice > 0
+              AND (p.expiredDate IS NULL OR p.expiredDate >= :now)
+            ORDER BY
+              CASE WHEN p.expiredDate IS NULL THEN 1 ELSE 0 END,
+              p.expiredDate ASC
+        """)
+    List<PointDetail> findAvailablePointForUse(
+            @Param("userId") Long userId,
+            @Param("now") LocalDate now
+    );
 
     /**
      * 현재 사용 가능한 포인트 총합 조회

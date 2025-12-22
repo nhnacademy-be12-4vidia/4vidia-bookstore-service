@@ -7,6 +7,6 @@ public record PointUseRequest(
         @NotNull
         Long orderId,
         @NotNull
-        @Min(1)
+        @Min(0)
         int price
 ) {}
