@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class DoorayMessageSender {
 
+    // json 문자열 변환용 , dooray webhook은 json형식만 받기 때문에 필수
     private final Gson gson = new Gson();
 
     /**

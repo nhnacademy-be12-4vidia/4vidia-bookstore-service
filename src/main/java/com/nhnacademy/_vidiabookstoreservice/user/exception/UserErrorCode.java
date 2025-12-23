@@ -30,7 +30,10 @@ public enum UserErrorCode implements ErrorCodeProvider {
     // Unauthorized (401)
     AUTH_CODE_EXPIRED(HttpStatus.UNAUTHORIZED, "U501", "인증 코드가 만료되었습니다."),
     INCORRECT_PASSWORD(HttpStatus.UNAUTHORIZED, "U502", "비밀번호가 일치하지 않습니다."),
-    INVALID_AUTH_CODE(HttpStatus.UNAUTHORIZED, "U503", "인증 코드가 일치하지 않습니다.");
+    INVALID_AUTH_CODE(HttpStatus.UNAUTHORIZED, "U503", "인증 코드가 일치하지 않습니다."),
+
+    // SERVICE_UNAVAILABLE (503)
+    EMAIL_SEND_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "U601", "이메일 전송에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;
