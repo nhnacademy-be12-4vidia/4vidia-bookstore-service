@@ -36,4 +36,9 @@ public interface RefundItemRepository extends JpaRepository<RefundItem, Long> {
         SELECT r FROM RefundItem r WHERE r.orderItem.orderItemId in :ordersItemIds
         """)
     List<RefundItem> findByOrderItem_OrderItemId(@Param("ordersItemIds") List<Long> ordersItemIds);
+
+    boolean existsByRefund_RefundIdAndRefundStatus(
+            Long refundId,
+            RefundStatus refundStatus
+    );
 }
