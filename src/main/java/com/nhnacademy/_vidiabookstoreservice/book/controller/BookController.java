@@ -1,9 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.controller;
 
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailWithReviewResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.BookSortKey;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.*;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
@@ -25,7 +23,9 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -70,26 +70,30 @@ public class BookController {
     }
 
     @GetMapping("/search/tags")
-    public ResponseEntity<SearchBooksResponse> searchBooksWithTags(
+    public ResponseEntity<PageResponse<BaseBookListResponse>> searchBooksWithTags(
             @Valid EsBookSearchWithTagRequest request,
             @PageableDefault(size = 20) Pageable pageable) {
 
         Long userId = UserContext.get().getUserId();
-        SearchBooksResponse result = bookSearchService.searchBooksByTags(request, pageable, userId);
+        PageResponse<BaseBookListResponse> result = bookSearchService.searchBooksByTags(request, pageable, userId);
 
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/search/tags/{tag-id}")
-    public ResponseEntity<PageResponse<BookListResponse>> searchBooksWithSpecificTag(
+    public ResponseEntity<PageResponse<BaseBookListResponse>> searchBooksWithSpecificTag(
             @PathVariable(name = "tag-id") Long tagId,
+            @RequestParam(required = false) String tagName,
+            @RequestParam(required = false) String sortKey,
+            @RequestParam(required = false) String direction,
             @PageableDefault(size = 20) Pageable pageable
             ) {
         Long userId = UserContext.get().getUserId();
 
-        PageResponse<BookListResponse> pageResponse = bookService.getBookListResponseByTagId(tagId, userId, pageable);
+        BookSortKey sort = BookSortKey.from(sortKey);
+        boolean asc = "asc".equalsIgnoreCase(direction);
 
-        return ResponseEntity.ok(pageResponse);
+        return ResponseEntity.ok(bookService.getBooksByTag(tagId, tagName, sort, asc, pageable, userId));
 
     }
 
