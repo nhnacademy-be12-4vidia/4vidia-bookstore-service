@@ -6,6 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCr
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentCancelException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
@@ -122,7 +123,7 @@ public class TossPaymentServiceImpl implements PaymentService<TossPaymentRespons
         if (response.containsKey("paymentKey")) { // 처리 성공시 토스응답객체로 반환
             return objectMapper.convertValue(response, TossPaymentResponse.class);
         } else {
-            throw new PaymentConfirmException(response.toString());
+            throw new PaymentCancelException(response.toString());
         }
     }
 

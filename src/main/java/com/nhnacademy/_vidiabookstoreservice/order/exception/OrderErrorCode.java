@@ -21,6 +21,7 @@ public enum OrderErrorCode implements ErrorCodeProvider {
 
     // 500
     ORDER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "O501", "주문 처리 중 오류가 발생했습니다."),
+    ORDER_ROLLBACK_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "O502", "주문 취소 및 환불 처리 중 오류가 발생했습니다.")
     ;
 
     private final HttpStatus status;
