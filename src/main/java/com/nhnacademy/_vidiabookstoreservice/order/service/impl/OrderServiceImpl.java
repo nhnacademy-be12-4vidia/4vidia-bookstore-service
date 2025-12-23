@@ -27,11 +27,8 @@ import com.nhnacademy._vidiabookstoreservice.order.service.*;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
 import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointGuestUseException;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository;
-import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
-import com.nhnacademy._vidiabookstoreservice.refund.service.RefundService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.CouponCalculationResponse;
@@ -67,7 +64,6 @@ public class OrderServiceImpl implements OrderService {
     private final ApplicationEventPublisher eventPublisher;
     private final RefundItemRepository refundItemRepository;
     private final OrderItemViewStatusResolver resolver;
-    private final RefundRepository refundRepository;
 
     @Override
     public OrderCreateResponse saveOrder(Long userId, @Valid OrderCreateRequest request) {
@@ -264,8 +260,8 @@ public class OrderServiceImpl implements OrderService {
             int payPrice = order.getTotalBookPrice() + order.getPackagingFee() + order.getDeliveryFee() - order.getCouponDiscount() - order.getPointUsed();
             try {
                 paymentService.cancelPayment(confirmRequest.paymentKey(), "결제 확정 및 처리 실패", payPrice);
-            } catch (PaymentConfirmException e) {
-
+            } catch (PaymentCancelException e) {
+                throw new OrderRollbackFailedException(e.getMessage());
             }
         }
 
