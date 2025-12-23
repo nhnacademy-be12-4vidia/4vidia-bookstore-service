@@ -1,0 +1,35 @@
+// 주문 checkout 옵션 R/C/U/D 기능
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 주문 화면에 보여줄 값 조회(redis)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-checkout-get/http-request.adoc[]
+.Query Parameters
+include::{snippets}/order-checkout-get/query-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/order-checkout-get/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-checkout-get/http-response.adoc[]
+.응답 필드 (Response fields)
+include::{snippets}/order-checkout-get/response-fields.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST)
+==== 주문 전 선택된 아이템 저장(redis)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-checkout-post/http-request.adoc[]
+.요청 필드 (Request fields)
+include::{snippets}/order-checkout-post/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-checkout-post/http-response.adoc[]
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE)
+// --------------------------------------------------------------

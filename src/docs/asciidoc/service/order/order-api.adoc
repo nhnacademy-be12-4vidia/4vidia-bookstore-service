@@ -9,4 +9,6 @@ include::order-payment.adoc[]
 === `포장 관리`
 include::order-packaging-option.adoc[]
 
-// ...
+=== `주문 체크아웃 관리`
+include::order-checkout.adoc[]
+
