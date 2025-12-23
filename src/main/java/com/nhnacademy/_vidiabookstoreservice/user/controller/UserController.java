@@ -42,8 +42,18 @@ public class UserController {
         Long userId = UserContext.get().getUserId();
         User user = userService.getUserById(userId);
         return ResponseEntity.ok().body(UserProfileResponse.fromEntity(user));
-
     }
+
+    /**
+     * userId 받는게 필요함..
+     * @param userId
+     */
+    @GetMapping("/{userId}/exists")
+    public ResponseEntity<Void> exists(@PathVariable Long userId) {
+        userService.getUserById(userId); // 없으면 예외
+        return ResponseEntity.ok().build();
+    }
+
 
     /**
      * 회원 이름 조회

@@ -12,6 +12,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordR
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
+import com.nhnacademy._vidiabookstoreservice.user.dto.event.BirthdayCouponIssueEvent;
 import com.nhnacademy._vidiabookstoreservice.user.dto.event.WelcomeCouponIssueEvent;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.ResignedUserAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.UserAlreadyExistsException;
@@ -75,6 +76,17 @@ public class AuthServiceImpl implements AuthService {
 
 //        couponClient.getRegisterCoupon(user.getUserId()); // todo : 분리
         eventPublisher.publishEvent(new WelcomeCouponIssueEvent(userId));
+
+        // 🎂 생일 달이면 생일 쿠폰 이벤트도 발행
+        LocalDate birth = user.getBirthDate();
+        LocalDate now = LocalDate.now();
+
+        if (birth != null && birth.getMonthValue() == now.getMonthValue()) {
+            eventPublisher.publishEvent(
+                    new BirthdayCouponIssueEvent(userId)
+            );
+        }
+
         //TODO 생일 달인지 체크해서 맞으면? 생일쿠폰 요청
         return user.getUserId();
     }
