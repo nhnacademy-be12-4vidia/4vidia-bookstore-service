@@ -18,6 +18,7 @@ import java.util.List;
 public record AdminIsbnSearchResponse(
 
         boolean found,
+        Long bookId,
 
         String coverImageUrl,
         String title,
@@ -63,6 +64,7 @@ public record AdminIsbnSearchResponse(
 
         return new AdminIsbnSearchResponse(
                 true,
+                book.getId(),
                 coverImageUrl,
                 book.getTitle(),
                 book.getSubtitle(),

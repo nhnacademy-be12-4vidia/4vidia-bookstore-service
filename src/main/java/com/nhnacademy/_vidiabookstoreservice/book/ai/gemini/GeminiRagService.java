@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminIsbnSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.aladin.client.AladinApiClient;
 import com.nhnacademy._vidiabookstoreservice.book.aladin.dto.AladinItemDto;
-import com.nhnacademy._vidiabookstoreservice.book.config.GeminiProperties;
 import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorNameRoleResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,6 @@ public class GeminiRagService {
     private final AladinApiClient aladinApiClient;
     private final RestClient geminiRagRestClient;
     private final ObjectMapper objectMapper;
-    private final GeminiProperties geminiProperties;
 
     @Value("${aladin.api.key}")
     private String aladinApiKey;
@@ -128,7 +126,10 @@ public class GeminiRagService {
         sb.append("4. categoryCode는 KDC 코드 세자리를 사용하고, 소수점은 사용하지 않습니다. 예: '005', '813'\n");
         sb.append("4-1. 해당 도서에 대한 kdc 정보를 찾지 못한 경우 'UNC'로 기재하세요.\n");
         sb.append("5. 언어는 해당 도서가 작성된 언어로 영어 2글자 소문자를 사용하세요. 예: 'ko', 'en', 'jp'\n");
-        sb.append("6. 응답은 반드시 마크다운 코드 블록 없이 **순수 JSON 객체**로만 답변하세요.\n");
+        sb.append("6. 태그 목록은 알라딘 카테고리 이름을 > 구분자로 분리해 사용 할 것입니다.\n");
+        sb.append("6-1. 알라딘 카테고리 이름과 중복되지 않게, 책에 대한 적절한 태그를 생성해주세요.\n");
+        sb.append("7. 모든 필드를 최대한 채우되, 불확실한 정보는 절대 추가하지 마세요.\n");
+        sb.append("8. 응답은 반드시 마크다운 코드 블록 없이 **순수 JSON 객체**로만 답변하세요.\n");
 
         sb.append("\n[목표 JSON 구조]\n");
         sb.append("{\n");
@@ -143,6 +144,7 @@ public class GeminiRagService {
         sb.append("  \"priceStandard\": 0,\n");
         sb.append("  \"description\": \"상세 설명 (최대한 풍부하게)\",\n");
         sb.append("  \"bookIndex\": \"목차 (줄바꿈 포함)\",\n");
+        sb.append("  \"tags\": [\"태그1\", \"태그2\"]\n");
         sb.append("}");
 
         return sb.toString();
@@ -180,20 +182,24 @@ public class GeminiRagService {
                     ? aladin.cover()
                     : (dbData != null ? dbData.coverImageUrl() : null);
 
-            String title = firstNonEmpty(root.path("title").asText(null),
+            String title = firstNonEmpty(
+                    root.path("title").asText(null),
                     dbData != null ? dbData.title() : null,
                     aladin != null ? aladin.title() : null,
                     "제목 없음");
 
-            String subtitle = firstNonEmpty(root.path("subtitle").asText(null),
+            String subtitle = firstNonEmpty(
+                    root.path("subtitle").asText(null),
                     dbData != null ? dbData.subtitle() : null,
                     aladin != null && aladin.bookinfo() != null ? aladin.bookinfo().subTitle() : null);
 
-            String publisher = firstNonEmpty(root.path("publisher").asText(null),
+            String publisher = firstNonEmpty(
+                    root.path("publisher").asText(null),
                     dbData != null ? dbData.publisher() : null,
                     aladin != null ? aladin.publisher() : null);
 
-            String language = firstNonEmpty(root.path("language").asText(null),
+            String language = firstNonEmpty(
+                    root.path("language").asText(null),
                     dbData != null ? dbData.language() : null);
 
             Integer pageCount = pickInteger(
@@ -203,7 +209,8 @@ public class GeminiRagService {
                     0
             );
 
-            String categoryCode = firstNonEmpty(root.path("categoryCode").asText(null),
+            String categoryCode = firstNonEmpty(
+                    root.path("categoryCode").asText(null),
                     dbData != null ? dbData.categoryCode() : null,
                     "UNC");
 
@@ -214,18 +221,21 @@ public class GeminiRagService {
                     0
             );
 
-            String description = firstNonEmpty(root.path("description").asText(null),
+            String description = firstNonEmpty(
                     dbData != null ? dbData.description() : null,
+                    root.path("description").asText(null),
                     aladin != null ? aladin.description() : null,
                     "");
 
-            String bookIndex = firstNonEmpty(root.path("bookIndex").asText(null),
+            String bookIndex = firstNonEmpty(
+                    root.path("bookIndex").asText(null),
                     dbData != null ? dbData.bookIndex() : null,
                     (aladin != null && aladin.bookinfo() != null) ? aladin.bookinfo().toc() : null,
                     "");
 
             return new AdminIsbnSearchResponse(
                     true,
+                    dbData != null ? dbData.bookId() : null,
                     coverUrl,
                     title,
                     subtitle,
@@ -249,7 +259,7 @@ public class GeminiRagService {
     }
 
     private AdminIsbnSearchResponse createEmptyResponse() {
-        return new AdminIsbnSearchResponse(false, null, "검색 결과 없음", null, List.of(), null, null, null, 0, null, 0, 0, null, null, List.of());
+        return new AdminIsbnSearchResponse(false, null, null, "검색 결과 없음", null, List.of(), null, null, null, 0, null, 0, 0, null, null, List.of());
     }
 
     private AdminIsbnSearchResponse fallbackResponse(AdminIsbnSearchResponse dbData, AladinItemDto aladin) {
@@ -259,6 +269,7 @@ public class GeminiRagService {
         if (aladin != null) {
             return new AdminIsbnSearchResponse(
                     true,
+                    null,
                     aladin.cover(),
                     firstNonEmpty(aladin.title(), "제목 없음"),
                     aladin.bookinfo() != null ? aladin.bookinfo().subTitle() : null,
@@ -340,7 +351,7 @@ public class GeminiRagService {
 
     private List<String> parseTags(JsonNode tagsNode, AladinItemDto aladin, AdminIsbnSearchResponse dbData) {
         Set<String> set = new LinkedHashSet<>();
-        // 1) Gemini 추천 태그 우선
+        // 1) Gemini 추천 태그
         if (tagsNode != null && !tagsNode.isMissingNode() && !tagsNode.isNull()) {
             try {
                 List<String> geminiTags = objectMapper.convertValue(tagsNode, new TypeReference<>() {});
@@ -351,7 +362,7 @@ public class GeminiRagService {
         }
         // 2) Gemini 태그가 없으면 알라딘 카테고리 태그 사용, 단 Gemini 태그가 있더라도 추가 병합
         if (aladin != null && StringUtils.hasText(aladin.categoryName())) {
-            for (String cat : aladin.categoryName().split(" > ")) {
+            for (String cat : aladin.categoryName().split(">")) {
                 if (StringUtils.hasText(cat)) set.add(cat.trim());
             }
         }
@@ -427,7 +438,7 @@ public class GeminiRagService {
             JsonNode root = objectMapper.readTree(responseBody);
             JsonNode candidates = root.path("candidates");
             if (candidates.isMissingNode() || candidates.isEmpty()) {
-                log.warn("Gemini returned no candidates. Response: {}", responseBody);
+                log.warn("[관리자 도서] Gemini returned no candidates. Response: {}", responseBody);
                 return null;
             }
 
@@ -442,21 +453,21 @@ public class GeminiRagService {
                     if (part.hasNonNull("text")) {
                         String t = part.get("text").asText();
                         if (StringUtils.hasText(t)) {
-                            if (sb.length() > 0) sb.append('\n');
+                            if (!sb.isEmpty()) sb.append('\n');
                             sb.append(t);
                         }
                     }
                 }
-                if (sb.length() > 0) break; // 첫 candidate에서 텍스트 얻으면 종료
+                if (!sb.isEmpty()) break; // 첫 candidate에서 텍스트 얻으면 종료
             }
 
-            if (sb.length() == 0) {
-                log.warn("Gemini response had no text parts. Response: {}", responseBody);
+            if (sb.isEmpty()) {
+                log.warn("[관리자 도서] Gemini 응답에 text parts가 없습니다. Response: {}", responseBody);
                 return null;
             }
             return sb.toString();
         } catch (Exception e) {
-            log.error("Gemini RAG Call Error", e);
+            log.error("[관리자 도서] Gemini RAG 호출 Error", e);
             return null;
         }
     }
