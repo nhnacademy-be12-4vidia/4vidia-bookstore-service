@@ -3,9 +3,11 @@ package com.nhnacademy._vidiabookstoreservice.point.repository;
 
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,24 +25,22 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
      * -expiredDate > now (아직 소멸되지 않은)
      * -expiredDate ASC (유효기간이 짧은 것부터 사용하기 위해 오름차순)
      */
-    @Query("""
-            SELECT p FROM PointDetail p
-            WHERE p.userId = :userId
-              AND p.remainingPrice > 0
-              AND (p.expiredDate IS NULL OR p.expiredDate >= :now)
-            ORDER BY
-              CASE WHEN p.expiredDate IS NULL THEN 1 ELSE 0 END,
-              p.expiredDate ASC
-        """)
-    List<PointDetail> findAvailablePointForUse(
-            @Param("userId") Long userId,
-            @Param("now") LocalDate now
-    );
+    // 동시성 제어 추가: 포인트 사용을 위해 목록을 읽을 때 쓰기 잠금을 건다
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM PointDetail p " +
+            "WHERE p.userId = :userId " +
+            "AND p.remainingPrice > 0 " +
+            "AND (p.expiredDate IS NULL OR p.expiredDate >= :now)" +
+            "ORDER BY p.expiredDate ASC")
+    List<PointDetail> findAvailablePointForUse(@Param("userId")Long userId,
+                                               @Param("now") LocalDate now);
 
     /**
      * 현재 사용 가능한 포인트 총합 조회
      * COALESCE : sum()이 조회 대상이 없을 때 null을 반환 -> null을 0으로 바꿔줘
      */
+    // 잔액 합계 조회 시에도 잠금을 걸어 다른 트랜잭션의 차감/적립을 대기시킨다.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT COALESCE(SUM(p.remainingPrice), 0) FROM PointDetail p " +
             "WHERE p.userId = :userId AND p.remainingPrice > 0 " +
             "AND (p.expiredDate IS NULL OR p.expiredDate >=:now)")
