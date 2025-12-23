@@ -13,4 +13,6 @@ public interface BookDocumentSearchClient {
 
     List<BookDocument> searchByTag(EsBookSearchWithTagRequest request, int maxResult);
 
+    List<BookDocument> searchByTagOrderByRating(String tagName, boolean asc, int maxResult);
+
 }

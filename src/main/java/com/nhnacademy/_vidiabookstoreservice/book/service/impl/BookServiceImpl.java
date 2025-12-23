@@ -8,15 +8,14 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.*;
 import com.nhnacademy._vidiabookstoreservice.book.exception.already.BookAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookAuthorRequiredException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
@@ -34,6 +33,7 @@ import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
@@ -43,7 +43,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -65,6 +67,7 @@ public class BookServiceImpl implements BookService {
     private final ReviewRepository reviewRepository;
     private final BookTagService bookTagService;
     private final LikeService likeService;
+    private final BookSearchService bookSearchService;
 
     @Value("${image.default.thumbnail}")
     private String defaultThumbnailUrl;
@@ -82,7 +85,6 @@ public class BookServiceImpl implements BookService {
         Book book = request.toEntity(publisher, categoryProxy);
 
         Book savedBook = bookRepository.save(book);
-
         saveThumbnail(thumbnail, savedBook);
         saveBookImages(detailImages, savedBook);
 
@@ -377,7 +379,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<BookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable) {
+    public PageResponse<BaseBookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable) {
         Page<Book> bookList = bookRepository.findAllByTag(tagId, pageable);
         List<Long> bookIdList = bookList.getContent().stream().map(Book::getId).toList();
 
@@ -389,12 +391,27 @@ public class BookServiceImpl implements BookService {
             likedBookIds = Collections.emptySet();
         }
 
-        Page<BookListResponse> page = bookList.map(b -> {
+        Page<BaseBookListResponse> page = bookList.map(b -> {
             boolean isLiked = likedBookIds.contains(b.getId());
             return BookListResponse.from(b, isLiked);
         });
 
         return PageResponse.from(page);
+    }
+
+    @Override
+    public PageResponse<BaseBookListResponse> getBooksByTag(Long tagId, String tagName, BookSortKey sortKey, boolean asc, Pageable pageable, Long userId) {
+        if (sortKey.isEsOnly()) {
+            return bookSearchService.searchBooksByTagOrderByRating(tagName, asc, pageable, userId);
+        }
+
+        Sort sort = switch (sortKey) {
+            case PRICE_SALES -> Sort.by(asc ? Sort.Direction.ASC : Sort.Direction.DESC, "priceSales");
+            default -> Sort.by(asc ? Sort.Direction.ASC : Sort.Direction.DESC, "publishedDate");
+        };
+        Pageable resolved = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        return getBookListResponseByTagId(tagId, userId, resolved);
     }
 
     private Integer parseIntegerSafe(String value) {

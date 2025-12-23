@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
 @Service
@@ -234,7 +235,7 @@ public class GeminiAnswerService {
             try {
                 GeminiResponse response = getGeminiResponse(request);
                 return extractFirstText(response);
-            } catch (HttpClientErrorException e) {
+            } catch (HttpStatusCodeException e) {
                 String body = safeBody(e);
                 boolean retryableQuota = isQuotaOrRateLimit(e, body);
 
@@ -254,7 +255,7 @@ public class GeminiAnswerService {
         return Optional.empty();
     }
 
-    private boolean isQuotaOrRateLimit(HttpClientErrorException e, String body) {
+    private boolean isQuotaOrRateLimit(HttpStatusCodeException e, String body) {
         int code = e.getStatusCode().value();
         if (code == 429 || code == 503) return true;
         if (body == null) return false;
@@ -267,7 +268,7 @@ public class GeminiAnswerService {
                 || b.contains("limit");
     }
 
-    private String safeBody(HttpClientErrorException e) {
+    private String safeBody(HttpStatusCodeException e) {
         try {
             String body = e.getResponseBodyAsString();
             if (body == null) return "<null>";

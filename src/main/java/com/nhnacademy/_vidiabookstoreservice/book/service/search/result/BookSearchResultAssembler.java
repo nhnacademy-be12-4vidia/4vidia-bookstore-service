@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.search.result;
 
+import co.elastic.clients.elasticsearch.xpack.usage.Base;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BaseBookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
@@ -26,7 +28,7 @@ public class BookSearchResultAssembler {
     private final BookRepository bookRepository;
     private final LikeService likeService;
 
-    public Page<BookSearchListResponse> assemble(List<BookDocument> docs, Long userId, Pageable pageable) {
+    public Page<BaseBookListResponse> assemble(List<BookDocument> docs, Long userId, Pageable pageable, boolean llm) {
         long total = docs.size();
 
         if (total == 0) {
@@ -54,13 +56,25 @@ public class BookSearchResultAssembler {
             likedBookIds = Collections.emptySet();
         }
 
-        List<BookSearchListResponse> responseList = bookIdList.stream()
-            .map(bookMap::get)
-            .filter(Objects::nonNull)
-            .map(b -> BookSearchListResponse.from(
-                b, likedBookIds.contains(b.getId())
-            ))
-            .toList();
+        if (llm) {
+            List<BaseBookListResponse> responseList = bookIdList.stream()
+                    .map(bookMap::get)
+                    .filter(Objects::nonNull)
+                    .map(b -> (BaseBookListResponse) BookSearchListResponse.from(
+                            b, likedBookIds.contains(b.getId())
+                    ))
+                    .toList();
+
+            return new PageImpl<>(responseList, pageable, total);
+        }
+
+        List<BaseBookListResponse> responseList = bookIdList.stream()
+                .map(bookMap::get)
+                .filter(Objects::nonNull)
+                .map(b -> (BaseBookListResponse) BookListResponse.from(
+                        b, likedBookIds.contains(b.getId())
+                ))
+                .toList();
 
         return new PageImpl<>(responseList, pageable, total);
     }

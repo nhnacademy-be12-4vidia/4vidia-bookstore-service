@@ -61,7 +61,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         FROM Book b
         JOIN b.bookTagList bt
         WHERE bt.tag.id = :tagId
-        ORDER BY b.publishedDate DESC 
 """,
             countQuery = """
         SELECT COUNT(DISTINCT b.id)

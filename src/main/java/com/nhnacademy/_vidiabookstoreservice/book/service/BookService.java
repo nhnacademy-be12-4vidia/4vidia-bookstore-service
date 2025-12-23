@@ -1,13 +1,13 @@
 package com.nhnacademy._vidiabookstoreservice.book.service;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.*;
+
 import java.util.List;
 
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
@@ -46,5 +46,7 @@ public interface BookService {
 
     List<BookListResponse> getBookListResponseByIdList(List<Long> bookIdList, Long userId);
 
-    PageResponse<BookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable);
+    PageResponse<BaseBookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable);
+
+    PageResponse<BaseBookListResponse> getBooksByTag(Long tagId, String tagName, BookSortKey sortKey, boolean asc, Pageable pageable, Long userId);
 }

@@ -2,6 +2,9 @@ package com.nhnacademy._vidiabookstoreservice.book.service.search.es;
 
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.KnnSearch;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.mapping.FieldType;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 
@@ -14,6 +17,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearc
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -28,6 +32,7 @@ import org.springframework.util.StringUtils;
 public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearchClient{
 
     private final ElasticsearchOperations elasticsearchOperations;
+    private final String TAG_FIELD = "tags.keyword";
 
     @Override
     public List<BookDocument> search(EsBookSearchRequest request, float[] queryVector, int maxResult) {
@@ -80,6 +85,33 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
         return hits.stream().map(SearchHit::getContent).toList();
     }
 
+    @Override
+    public List<BookDocument> searchByTagOrderByRating(String tagName, boolean asc, int maxResult) {
+
+        if (!StringUtils.hasText(tagName)) {
+            return List.of();
+        }
+
+        Query query = Query.of(q -> q.bool(b -> b.filter(f -> f.term(t -> t.field(TAG_FIELD).value(tagName)))));
+
+        SortOptions ratingSort = SortOptions.of(s -> s.field(f -> f
+                .field("rating")
+                .order(asc ? SortOrder.Asc : SortOrder.Desc)
+                .missing("_last")
+                .unmappedType(FieldType.Double)
+        ));
+
+        NativeQuery nativeQuery = new NativeQueryBuilder()
+                .withQuery(query)
+                .withSort(ratingSort)
+                .withPageable(PageRequest.of(0, maxResult))
+                .build();
+
+        SearchHits<BookDocument> hits = elasticsearchOperations.search(nativeQuery, BookDocument.class);
+
+        return hits.stream().map(SearchHit::getContent).toList();
+    }
+
     private Query buildTagQuery(EsBookSearchWithTagRequest request) {
         List<String> tags = request.getTagNameList();
 
@@ -88,13 +120,11 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
             mode = EsBookSearchWithTagRequest.MatchMode.OR;
         }
 
-        final String tagField = "tags_keyword.keyword";
-
         if (mode == EsBookSearchWithTagRequest.MatchMode.AND) {
             return Query.of(q -> q.bool(b -> {
                 for (String t : tags) {
                     if (!StringUtils.hasText(t)) continue;
-                    b.must(m -> m.term(tt -> tt.field(tagField).value(t)));
+                    b.must(m -> m.term(tt -> tt.field(TAG_FIELD).value(t)));
                 }
                 return b;
             }));
@@ -102,7 +132,7 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
 
         List<String> cleaned = tags.stream().filter(StringUtils::hasText).toList();
         return Query.of(q -> q.bool(b -> b
-                .filter(f -> f.terms(t -> t.field(tagField).terms(v ->
+                .filter(f -> f.terms(t -> t.field(TAG_FIELD).terms(v ->
                         v.value(cleaned.stream().map(FieldValue::of).toList()))))));
 
     }
