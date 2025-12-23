@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.cart.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.domain.CartOwner;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.request.AddCartItemRequest;
@@ -70,7 +71,7 @@ public class CartServiceImplTest {
         AddCartItemRequest request = new AddCartItemRequest(99L, 1);
         when(bookRepository.existsById(request.bookId())).thenReturn(false);
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        BookNotFoundException ex = assertThrows(BookNotFoundException.class,
                 () -> cartService.addItem(cartOwner, request));
         assertEquals("도서를 찾을 수 없습니다.", ex.getMessage());
 
