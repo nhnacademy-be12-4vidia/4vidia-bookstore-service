@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.point.service.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 
@@ -16,6 +17,7 @@ import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointNotEno
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
+import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,8 @@ class PointCommandServiceImplTest {
     private PointPolicyRepository pointPolicyRepository;
     @Mock
     private UserService userService;
+    @Mock
+    private UserRepository userRepository;
     @Mock
     private OrderRepository orderRepository;
 
@@ -100,11 +104,11 @@ class PointCommandServiceImplTest {
         User user = mock(User.class);
         PointDetail detail = mock(PointDetail.class);
 
+        when(userRepository.findByUserIdWithLock(userId)).thenReturn(Optional.of(user));
         when(pointDetailRepository.getRemainPoint(eq(userId), any(LocalDate.class))).thenReturn(1000);
         when(pointDetailRepository.findAvailablePointForUse(eq(userId), any(LocalDate.class)))
                 .thenReturn(Collections.singletonList(detail));
         when(detail.getRemainingPrice()).thenReturn(1000);
-        when(userService.getUserById(userId)).thenReturn(user);
 
         // when
         pointCommandService.use(request, userId);
@@ -120,6 +124,10 @@ class PointCommandServiceImplTest {
         // given
         Long userId = 1L;
         PointUseRequest request = new PointUseRequest(100L, 2000);
+
+        User user = mock(User.class);
+        when(userRepository.findByUserIdWithLock(userId)).thenReturn(Optional.of(user));
+
         when(pointDetailRepository.getRemainPoint(eq(userId), any(LocalDate.class))).thenReturn(1000);
 
         // when & then
