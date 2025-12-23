@@ -1,0 +1,49 @@
+// 결제 R/C/U/D 기능
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 결제 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-payment-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/order-payment-get/path-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-payment-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/order-payment-get/response-fields.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST)
+==== 결제 확정/저장
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-payment-confirm-post/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/order-payment-confirm-post/request-headers.adoc[]
+.요청 필드 (Request fields)
+include::{snippets}/order-payment-confirm-post/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-payment-confirm-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/order-payment-confirm-post/response-fields.adoc[]
+
+
+==== 프론트 결제 처리 중 실패
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-payment-fail-rollback-post/http-request.adoc[]
+.요청 필드 (Request fields)
+include::{snippets}/order-payment-fail-rollback-post/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-payment-fail-rollback-post/http-response.adoc[]
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE)
+// --------------------------------------------------------------
