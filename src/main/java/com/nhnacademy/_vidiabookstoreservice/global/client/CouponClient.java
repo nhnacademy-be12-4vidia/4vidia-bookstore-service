@@ -5,11 +5,10 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.CouponUseRe
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.CouponCalculationResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundCouponRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.UseCouponResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.coupon.response.ActivePolicyIdResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "4vidia-coupon-service")
 public interface CouponClient {
@@ -29,8 +28,17 @@ public interface CouponClient {
     @PostMapping("/coupons/welcome")
     void getRegisterCoupon(@RequestHeader("X-User-Id") Long userId);
 
+    //회원가입 시 birthday 쿠폰 요청
+    @PostMapping("/policies/birthday")
+    void getRegisterBirthdayCoupon(@RequestHeader("X-User-Id") Long userId);
+
     // 반품 : 주문에 사용한 쿠폰 정보 요청
     @PostMapping("/coupons/use-refund")
     UseCouponResponse getUseCouponDetail(@RequestBody RefundCouponRequest refundCouponRequest);
+
+    @GetMapping("/policies/active")
+    ResponseEntity<ActivePolicyIdResponse> getActivePolicy(
+            @RequestParam String policyType
+    );
 
 }

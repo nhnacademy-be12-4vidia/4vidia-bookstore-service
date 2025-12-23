@@ -58,4 +58,34 @@ public interface UserRepository extends JpaRepository<User, Long> {
           )
         """)
     Page<User> searchAdminUsers(@Param("status") UserStatus status, @Param("keyword")String keyword, Pageable pageable);
+
+
+
+    @Query("""
+    select u
+    from User u
+    where u.status = :status
+      and u.birthDate is not null
+      and month(u.birthDate) = :month
+    """)
+    List<User> findBirthdayUsersByMonth(
+            @Param("status") UserStatus status,
+            @Param("month") int month
+    );
+
+
+
+    @Query("""
+    select u
+    from User u
+    where u.status = :status
+      and u.birthDate is not null
+      and month(u.birthDate) = 2
+      and day(u.birthDate) = 29
+""")
+    List<User> findBirthdayUsersIncludingLeap(@Param("status") UserStatus status);
+
+
+
+
 }
