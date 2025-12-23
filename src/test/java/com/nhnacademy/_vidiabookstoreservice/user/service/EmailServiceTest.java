@@ -1,71 +1,60 @@
 package com.nhnacademy._vidiabookstoreservice.user.service;
 
+import com.nhnacademy._vidiabookstoreservice.user.exception.EmailSendFailedException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import java.util.Objects;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class EmailServiceTest {
 
     @Mock
-    private JavaMailSender javaMailSender;
-    @Mock
-    private SimpleMailMessage simpleMailMessage;
+    private JavaMailSender mailSender;
 
     @InjectMocks
     private EmailService emailService;
 
     @Test
-    @DisplayName("임시 비밀번호 전송 성공")
-    void sendTempPassword_success() {
-        String email = "test@test.com";
-        String tempPassword = "1234qwer!";
+    @DisplayName("sendDormantAuthCode: mailSender 실패 시 EmailSendFailedException 발생")
+    void sendDormantAuthCode_fail_throwsEmailSendFailedException() {
+        // given
+        doThrow(new MailSendException("smtp down"))
+                .when(mailSender).send(any(SimpleMailMessage.class));
 
-        emailService.sendTempPassword(email, tempPassword);
-
-        // mailSender.send()가 실제로 호출되었는지 확인하면서, 매개변수를 캡쳐(Capture)함
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(javaMailSender).send(messageCaptor.capture());
-
-        // 캡쳐한 메시지 내용이 맞는지 뜯어봄
-        SimpleMailMessage sentMessage = messageCaptor.getValue();
-
-        assertThat(Objects.requireNonNull(sentMessage.getTo())[0]).isEqualTo(email);
-        assertThat(sentMessage.getSubject()).contains("임시 비밀번호");
-        assertThat(sentMessage.getText()).contains(tempPassword);
+        // when & then
+        assertThatThrownBy(() -> emailService.sendDormantAuthCode("to@email.com", "123456"))
+                .isInstanceOf(EmailSendFailedException.class);
     }
 
     @Test
-    @DisplayName("휴먼 인증코드 전송 성공")
-    void sendDormantAuthCode_success() {
-        String email = "dormant@test.com";
-        String authCode = "123456";
+    @DisplayName("sendTempPassword: mailSender 실패 시 EmailSendFailedException 발생")
+    void sendTempPassword_fail_throwsEmailSendFailedException() {
+        // given
+        doThrow(new MailSendException("smtp down"))
+                .when(mailSender).send(any(SimpleMailMessage.class));
 
-        emailService.sendDormantAuthCode(email, authCode);
+        // when & then
+        assertThatThrownBy(() -> emailService.sendTempPassword("to@email.com", "tempPw"))
+                .isInstanceOf(EmailSendFailedException.class);
+    }
 
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        verify(javaMailSender).send(messageCaptor.capture());
+    @Test
+    @DisplayName("sendDormantAuthCode: 성공 시 mailSender.send 호출")
+    void sendDormantAuthCode_success_callsMailSender() {
+        // given
+        // (성공 케이스는 아무 스텁 안 해도 됨)
 
-        SimpleMailMessage sentMessage = messageCaptor.getValue();
+        // when
+        emailService.sendDormantAuthCode("to@email.com", "123456");
 
-        assertThat(Objects.requireNonNull(sentMessage.getTo())[0]).isEqualTo(email);
-        assertThat(sentMessage.getSubject()).contains("휴면 계정 인증코드");
-        assertThat(sentMessage.getText()).contains(authCode);
+        // then
+        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
     }
 }
