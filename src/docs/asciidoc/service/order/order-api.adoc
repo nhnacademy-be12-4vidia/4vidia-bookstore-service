@@ -6,7 +6,7 @@ include::order-order.adoc[]
 === `결제 관리`
 include::order-payment.adoc[]
 
-=== {기능3} 관리
-// include::order-{기능}.adoc[]
+=== `포장 관리`
+include::order-packaging-option.adoc[]
 
 // ...
