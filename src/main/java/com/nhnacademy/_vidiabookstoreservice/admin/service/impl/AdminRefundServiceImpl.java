@@ -4,7 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.AdminRefundListRes
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundItemDto;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
-import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
@@ -15,17 +14,13 @@ import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemReposit
 import com.nhnacademy._vidiabookstoreservice.refund.service.impl.RefundCalculator;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
-import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -96,15 +91,10 @@ public class AdminRefundServiceImpl implements AdminRefundService {
      */
     @Override
     public void updateRefundStatus(Long refundItemId, RefundItemUpdateRequest request) {
-        switch (request.refundStatus().name()) {
-            case "APPROVED":
-                acceptRefund(refundItemId);
-                break;
-            case "REJECTED":
-                rejectRefund(refundItemId, request.rejectDetail());
-                break;
-            default:
-                throw new RefundStatusInvalidException();
+        switch (request.refundStatus()) {
+            case APPROVED -> acceptRefund(refundItemId);
+            case REJECTED -> rejectRefund(refundItemId, request.rejectDetail());
+            default -> throw new RefundStatusInvalidException();
         }
     }
 
@@ -114,19 +104,17 @@ public class AdminRefundServiceImpl implements AdminRefundService {
      */
     @Override
     public void acceptRefund(Long refundItemId) {
-        log.info("관리자 반품 승인 시작 : 반품 아이템 ID={}", refundItemId);
-
         RefundItem refundItem = refundItemRepository.findById(refundItemId)
                 .orElseThrow(() -> new RefundNotFoundException(refundItemId));
 
-        refundItem.accept();
-
         OrderItem item = refundItem.getOrderItem();
         Order order = item.getOrder();
+        Refund refund = refundItem.getRefund();
 
         RefundAmount amount =
-                refundCalculator.calculate(item, false, false); // 파손 → 배송비 차감 X
+                refundCalculator.calculate(item, false, false);
 
+        refundItem.accept();
         refundItem.updateRefundPrice(amount.refundCash() + amount.refundPoint());
 
         pointService.refundDamaged(
@@ -138,7 +126,10 @@ public class AdminRefundServiceImpl implements AdminRefundService {
                 order.getUser().getUserId()
         );
 
+        updateRefundStatusIfCompleted(refund);
     }
+
+
 
     // 반품 거절
     @Override
@@ -146,8 +137,24 @@ public class AdminRefundServiceImpl implements AdminRefundService {
         RefundItem refundItem = refundItemRepository.findById(refundItemId)
                 .orElseThrow(() -> new RefundNotFoundException(refundItemId));
 
+        Refund refund = refundItem.getRefund();
+
         refundItem.reject(rejectDetail);
-        log.info("관리자 반품 거절 완료 : ID={}", refundItemId);
+
+        updateRefundStatusIfCompleted(refund);
+    }
+
+
+    private void updateRefundStatusIfCompleted(Refund refund) {
+        boolean hasProcessItem =
+                refundItemRepository.existsByRefund_RefundIdAndRefundStatus(
+                        refund.getRefundId(),
+                        RefundStatus.PROCESS
+                );
+
+        if (!hasProcessItem) {
+            refund.accept();
+        }
     }
 
 }

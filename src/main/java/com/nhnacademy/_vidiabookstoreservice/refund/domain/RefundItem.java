@@ -8,6 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.refund.exception.already.RefundAlre
 import com.nhnacademy._vidiabookstoreservice.refund.exception.already.RefundAlreadyRejectedException;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter

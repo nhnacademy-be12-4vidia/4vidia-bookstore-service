@@ -14,27 +14,19 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
     Page<Refund> findAllByRefundStatus(RefundStatus status, Pageable pageable);
 
-    @Query("""
-        select distinct r
-        from Refund r
-        join r.refundItems ri
-        join ri.orderItem oi
-        join oi.order o
-        where o.user.userId = :userId
-    """)
-    List<Refund> findAllByUserId(@Param("userId") Long userId);
-
-    @Query("""
-        select distinct r
-        from Refund r
-        join r.refundItems ri
-        join ri.orderItem oi
-        join oi.order o
-        where o.user.userId = :userId
-          and r.refundStatus = :status
-    """)
-    List<Refund> findAllByUserIdAndRefundStatus(
+    // TODO 변경 예정 (일단 기능 구현부터)
+    @Query("select distinct r from Refund r " +
+            "join fetch r.refundItems ri " +
+            "join fetch ri.orderItem oi " +
+            "join fetch oi.book " +
+            "join fetch r.order " +
+            "where r.order.user.userId = :userId " +
+            "and (:status is null or r.refundStatus = :status) " +
+            "order by r.createdAt desc")
+    List<Refund> findAllByUserIdAndStatusWithDetails(
             @Param("userId") Long userId,
             @Param("status") RefundStatus status
     );
+
+
 }

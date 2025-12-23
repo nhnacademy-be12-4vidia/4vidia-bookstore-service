@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 public enum RefundErrorCode implements ErrorCodeProvider {
     // NOT_FOUND (404)
     REFUND_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "반품 내역을 찾을 수 없습니다."),
+    REFUND_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "R002", "반품 아이템를 찾을 없습니다."),
     // BAD_REQUEST (400)
 
     // ALREADY_EXISTS (409)
