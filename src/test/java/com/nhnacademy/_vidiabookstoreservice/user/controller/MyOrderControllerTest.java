@@ -132,6 +132,7 @@ class MyOrderControllerTest extends SupportControllerTest {
                                 fieldWithPath("[].createdAt").description("주문 생성일"),
                                 fieldWithPath("[].deliveryStatus").description("배송상태"),
                                 fieldWithPath("[].orderItems").description("주문 도서 목록"),
+
                                 fieldWithPath("[].orderItems[].orderItemId").description("주문 상품 아이디"),
                                 fieldWithPath("[].orderItems[].bookId").description("도서 아이디"),
                                 fieldWithPath("[].orderItems[].bookTitle").description("도서 제목"),
@@ -139,7 +140,7 @@ class MyOrderControllerTest extends SupportControllerTest {
                                 fieldWithPath("[].orderItems[].bookImageUrl").description("도서 이미지").optional(),
                                 fieldWithPath("[].orderItems[].quantity").description("주문 수량"),
                                 fieldWithPath("[].orderItems[].salePrice").description("구매 당시 가격"),
-                                fieldWithPath("[].orderItems[].confirmStatus").description("주문 확정 상태"),
+                                fieldWithPath("[].orderItems[].orderItemViewStatus").description("주문 확정 상태"),
                                 fieldWithPath("[].orderItems[].isReviewed").description("리뷰 작성 여부")
                         )
                 ));
