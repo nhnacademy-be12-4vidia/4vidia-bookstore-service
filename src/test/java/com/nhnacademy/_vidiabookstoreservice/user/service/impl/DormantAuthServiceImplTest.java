@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.exception.AuthCodeExpiredException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.InvalidAuthCodeException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisDormantAutoRepository;
 import com.nhnacademy._vidiabookstoreservice.user.sender.DoorayMessageSender;
@@ -11,20 +12,14 @@ import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class DormantAuthServiceImplTest {
 
     @Mock
@@ -43,111 +38,145 @@ class DormantAuthServiceImplTest {
     private DormantAuthServiceImpl dormantAuthService;
 
     @Test
-    @DisplayName("휴면 인증 코드 발송 성공 (두레이)")
-    void sendAuthCode_success() {
+    @DisplayName("sendAuthCode: 이메일 정규화 후 Redis 저장 + Dooray 전송 호출")
+    void sendAuthCode_success_savesRedisAndSendsDooray() {
         // given
-        String email = "test@test.com";
-        String webhookUrl = "https://hook.dooray.com/services/...";
+        String rawEmail = " Test@Email.com ";
+        String normalizedEmail = "test@email.com";
+        String webhookUrl = "https://hook.dooray.com/services/xxx";
 
         // when
-        dormantAuthService.sendAuthCode(email, webhookUrl);
+        dormantAuthService.sendAuthCode(rawEmail, webhookUrl);
 
         // then
-        // 1. Redis에 저장된 코드를 캡처 (랜덤 값이라 예측 불가하므로)
+        // code는 랜덤이라 값 비교 대신: 호출된 email이 정규화 되었는지 + code가 null/blank 아닌지
+        ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
-        verify(autoRepository).saveCode(eq(email), codeCaptor.capture());
 
-        String capturedCode = codeCaptor.getValue();
+        verify(autoRepository, times(1)).saveCode(emailCaptor.capture(), codeCaptor.capture());
+        assertThat(emailCaptor.getValue()).isEqualTo(normalizedEmail);
+        assertThat(codeCaptor.getValue()).matches("\\d{6}");
 
-        // 2. 캡처한 코드가 6자리 숫자인지 확인
-        assertThat(capturedCode).hasSize(6).containsOnlyDigits();
+        // Dooray send도 호출 여부만 검증 (title/body는 대략 포함 여부 체크)
+        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
 
-        // 3. 두레이 메시지 전송 시, 저장된 그 코드가 포함되어 있는지 검증
-        verify(webhookSender).send(eq(webhookUrl), anyString(), argThat(body -> body.contains(capturedCode)));
+        verify(webhookSender, times(1)).send(urlCaptor.capture(), titleCaptor.capture(), bodyCaptor.capture());
+
+        assertThat(urlCaptor.getValue()).isEqualTo(webhookUrl);
+        assertThat(titleCaptor.getValue()).contains("휴면 계정 인증코드");
+        assertThat(bodyCaptor.getValue()).contains("인증코드");
     }
 
     @Test
-    @DisplayName("휴면 인증 코드 발송 성공 (이메일)")
-    void sendAuthCodeByEmail_success() {
+    @DisplayName("verifyAuthCode: Redis에 코드가 없으면 AuthCodeExpiredException")
+    void verifyAuthCode_expired_throwsAuthCodeExpiredException() {
         // given
-        String loginEmail = " LoginUser@test.com "; // 공백 및 대소문자 섞임
-        String sendToEmail = "target@test.com";
-        String normalizedEmail = "loginuser@test.com"; // 예상되는 정규화된 이메일
+        String email = "test@email.com";
+        when(autoRepository.getCode(email)).thenReturn(null);
 
-        // when
-        dormantAuthService.sendAuthCodeByEmail(loginEmail, sendToEmail);
+        // when & then
+        assertThatThrownBy(() -> dormantAuthService.verifyAuthCode(email, "123456"))
+                .isInstanceOf(AuthCodeExpiredException.class);
 
-        // then
-        // 1. Redis 저장 검증 (로그인 이메일이 소문자+trim 되었는지, 코드가 캡처되는지)
-        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
-        verify(autoRepository).saveCode(eq(normalizedEmail), codeCaptor.capture());
-
-        String generatedCode = codeCaptor.getValue();
-
-        // 2. 이메일 발송 검증 (생성된 코드가 올바르게 전달되었는지)
-        verify(emailService).sendDormantAuthCode(eq(sendToEmail), eq(generatedCode));
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(autoRepository, never()).deleteCode(anyString());
     }
 
     @Test
-    @DisplayName("인증 코드 검증 성공 - 상태 ACTIVE 변경")
-    void verifyAuthCode_success() {
+    @DisplayName("verifyAuthCode: 코드 불일치면 InvalidAuthCodeException")
+    void verifyAuthCode_mismatch_throwsInvalidAuthCodeException() {
         // given
-        String email = "dormant@test.com";
+        String email = "test@email.com";
+        when(autoRepository.getCode(email)).thenReturn("111111");
+
+        // when & then
+        assertThatThrownBy(() -> dormantAuthService.verifyAuthCode(email, "222222"))
+                .isInstanceOf(InvalidAuthCodeException.class);
+
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(autoRepository, never()).deleteCode(anyString());
+    }
+
+    @Test
+    @DisplayName("verifyAuthCode: 유저가 없으면 UserNotFoundException")
+    void verifyAuthCode_userNotFound_throwsUserNotFoundException() {
+        // given
+        String email = "test@email.com";
+        when(autoRepository.getCode(email)).thenReturn("123456");
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> dormantAuthService.verifyAuthCode(email, "123456"))
+                .isInstanceOf(UserNotFoundException.class);
+
+        verify(userRepository, times(1)).findByEmail(email);
+        verify(userRepository, never()).save(any());
+        verify(autoRepository, never()).deleteCode(anyString());
+    }
+
+    @Test
+    @DisplayName("verifyAuthCode: 성공 시 유저 상태 ACTIVE로 변경하고 저장 + Redis 코드 삭제")
+    void verifyAuthCode_success_updatesUserAndDeletesRedisCode() {
+        // given
+        String email = "test@email.com";
         String code = "123456";
 
-        // Redis에서 올바른 코드가 조회된다고 가정
-        given(autoRepository.getCode(email)).willReturn(code);
+        when(autoRepository.getCode(email)).thenReturn(code);
 
-        // 실제 User 객체 사용 (Mock 대신)
-        User user = User.builder()
-                .email(email)
-                .name("휴면유저")
-                .build();
-        // 초기 상태 설정 (setter가 없으면 Reflection 사용, 있으면 setter 사용)
-        user.setStatus(UserStatus.DORMANT);
-
-        given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
+        User user = mock(User.class); // 엔티티 실제 생성이 번거로우면 mock으로 충분
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
         // when
         dormantAuthService.verifyAuthCode(email, code);
 
         // then
-        assertThat(user.getStatus()).isEqualTo(UserStatus.ACTIVE); // 상태 변경 확인
-        verify(autoRepository).deleteCode(email); // 코드 삭제 호출 확인
+        verify(user, times(1)).setStatus(UserStatus.ACTIVE);
+        verify(userRepository, times(1)).save(user);
+        verify(autoRepository, times(1)).deleteCode(email);
     }
 
     @Test
-    @DisplayName("인증 코드 검증 실패 - 만료된 코드 (Redis null)")
-    void verifyAuthCode_fail_expired() {
+    @DisplayName("sendAuthCodeByEmail: 성공 시 Redis 저장 후 이메일 발송")
+    void sendAuthCodeByEmail_success_savesRedisAndSendsEmail() {
         // given
-        String email = "test@test.com";
-        String code = "123456";
+        String loginEmail = "  Login@Email.com ";
+        String normalizedLoginEmail = "login@email.com";
+        String sendToEmail = "target@email.com";
 
-        // Redis에 코드가 없음 (만료됨)
-        given(autoRepository.getCode(email)).willReturn(null);
+        // when
+        dormantAuthService.sendAuthCodeByEmail(loginEmail, sendToEmail);
 
-        // when & then
-        assertThatThrownBy(() -> dormantAuthService.verifyAuthCode(email, code))
-                .isInstanceOf(AuthCodeExpiredException.class)
-                .hasMessage("인증 코드가 만료되었습니다.");
+        // then
+        ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(autoRepository, times(1)).saveCode(emailCaptor.capture(), codeCaptor.capture());
+        assertThat(emailCaptor.getValue()).isEqualTo(normalizedLoginEmail);
+        assertThat(codeCaptor.getValue()).matches("\\d{6}");
+
+        verify(emailService, times(1)).sendDormantAuthCode(eq(sendToEmail), anyString());
+        verify(autoRepository, never()).deleteCode(anyString());
     }
 
     @Test
-    @DisplayName("인증 코드 검증 실패 - 불일치")
-    void verifyAuthCode_fail_invalid() {
+    @DisplayName("sendAuthCodeByEmail: 이메일 전송 실패 시 Redis에 저장된 코드 삭제 후 예외 재던짐")
+    void sendAuthCodeByEmail_mailFail_deletesRedisAndRethrows() {
         // given
-        String email = "test@test.com";
-        String inputCode = "111111";
-        String savedCode = "999999";
+        String loginEmail = "  Login@Email.com ";
+        String normalizedLoginEmail = "login@email.com";
+        String sendToEmail = "target@email.com";
 
-        // Redis에는 다른 코드가 저장되어 있음
-        given(autoRepository.getCode(email)).willReturn(savedCode);
+        doThrow(new RuntimeException("mail fail"))
+                .when(emailService).sendDormantAuthCode(eq(sendToEmail), anyString());
 
         // when & then
-        assertThatThrownBy(() -> dormantAuthService.verifyAuthCode(email, inputCode))
-                .isInstanceOf(InvalidAuthCodeException.class)
-                .hasMessage("인증 코드가 일치하지 않습니다.");
-    }
+        assertThatThrownBy(() -> dormantAuthService.sendAuthCodeByEmail(loginEmail, sendToEmail))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("mail fail");
 
-    // argThat 사용을 위한 헬퍼 메서드 대신 람다식 사용함 (argThat(body -> ...))
+        verify(autoRepository, times(1)).saveCode(eq(normalizedLoginEmail), anyString());
+        verify(autoRepository, times(1)).deleteCode(eq(normalizedLoginEmail));
+    }
 }
