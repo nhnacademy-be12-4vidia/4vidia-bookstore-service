@@ -1,0 +1,71 @@
+// 회원 주소 R/C/U/D 기능
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 주문 내역 상세보기
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-find-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/order-find-get/path-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-find-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/order-find-get/response-fields.adoc[]
+
+
+==== 주문 내역 상세보기 (비회원)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-find-guest-post/http-request.adoc[]
+.요청 필드 (Request fields)
+include::{snippets}/order-find-guest-post/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-find-guest-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/order-find-guest-post/response-fields.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST)
+==== 주문 생성
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-create-post/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/order-create-post/request-headers.adoc[]
+.요청 필드 (Request fields)
+include::{snippets}/order-create-post/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-create-post/http-response.adoc[]
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+==== 주문 취소 (배송 전)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-cancel-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/order-cancel-put/path-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-cancel-put/http-response.adoc[]
+
+
+==== 구매 확정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/order-confirm-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/order-confirm-put/path-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/order-confirm-put/http-response.adoc[]
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE)
+// --------------------------------------------------------------

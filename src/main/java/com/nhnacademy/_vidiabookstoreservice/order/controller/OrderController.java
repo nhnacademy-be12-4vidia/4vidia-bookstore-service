@@ -41,7 +41,7 @@ public class OrderController {
      * @param orderId : 주문아이디
      * @return 주문내역 상세보기
      */
-    @GetMapping("/{orderId}")
+    @GetMapping("/{orderId}") // todo : {order-id} 로 수정?
     public ResponseEntity<OrderResponse> getOrder(@PathVariable long orderId) {
         OrderResponse orderResponse = orderService.getOrderResponse(orderId);
 
@@ -67,7 +67,7 @@ public class OrderController {
      * @param orderId : 주문아이디
      * @return 200 OK
      */
-    @PutMapping("/{orderId}/cancel")
+    @PutMapping("/{orderId}/cancel") // todo : {order-id} 로 수정?
     public ResponseEntity<Void> cancelOrder(@PathVariable long orderId) {
         orderService.cancelOrder(orderId, "배송 전 취소");
 
