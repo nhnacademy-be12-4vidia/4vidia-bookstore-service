@@ -357,7 +357,7 @@ public class PointCommandServiceImpl implements PointCommandService {
         }
 
         // 정책에 따른 새로운 만료일
-        LocalDate newExpiredDate = LocalDate.now().plusWeeks(1);
+        LocalDate newExpiredDate = LocalDate.now().plusYears(1);
 
         /**
          * cash 만료일 없이 환불
@@ -373,12 +373,16 @@ public class PointCommandServiceImpl implements PointCommandService {
         /**
          * 사용한 포인트 새로운 만료일 생성해서 환불
          */
-        pointDetailRepository.save(PointDetail.damageRefund(
-                userId,
-                request.orderId(),
-                request.refundPoint(),
-                newExpiredDate
-        ));
+        if(refundAmount == 0){
+            log.info("파손-반품 : 사용한 포인트 없음");
+        }else{
+            pointDetailRepository.save(PointDetail.damageRefund(
+                    userId,
+                    request.orderId(),
+                    request.refundPoint(),
+                    newExpiredDate
+            ));
+        }
 
         User user = userService.getUserById(userId);
         user.addPoint(refundAmount + request.cashPoint());

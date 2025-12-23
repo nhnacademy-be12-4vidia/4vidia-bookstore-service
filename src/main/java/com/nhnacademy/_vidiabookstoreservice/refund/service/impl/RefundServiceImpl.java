@@ -14,7 +14,7 @@ import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.OrderItemResponse;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryResponse;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryGroupResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotAvailableException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
@@ -66,15 +66,12 @@ public class RefundServiceImpl implements RefundService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<RefundHistoryResponse> getMyRefunds(Long userId, RefundStatus status) {
+    public List<RefundHistoryGroupResponse> getMyRefunds(Long userId, RefundStatus status) {
 
-        List<Refund> refunds =
-                status == null
-                        ? refundRepository.findAllByUserId(userId)
-                        : refundRepository.findAllByUserIdAndRefundStatus(userId, status);
+        List<Refund> refunds = refundRepository.findAllByUserIdAndStatusWithDetails(userId, status);
 
         return refunds.stream()
-                .map(RefundHistoryResponse::from)
+                .map(RefundHistoryGroupResponse::from)
                 .toList();
     }
 

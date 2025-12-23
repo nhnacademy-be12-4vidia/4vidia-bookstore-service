@@ -3,7 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.refund.controller;
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
-import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryResponse;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryGroupResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.service.RefundService;
 import lombok.RequiredArgsConstructor;
@@ -39,12 +39,12 @@ public class RefundController {
      * 반품 신청 내역 조회
      */
     @GetMapping("/users/me/refunds")
-    public ResponseEntity<List<RefundHistoryResponse>> getMyRefundHistories(
+    public ResponseEntity<List<RefundHistoryGroupResponse>> getMyRefundHistories(
             @RequestParam(value = "status", required = false) RefundStatus status
     ) {
         Long userId = UserContext.get().getUserId();
 
-        List<RefundHistoryResponse> refundHistoryResponses = refundService.getMyRefunds(userId, status);
+        List<RefundHistoryGroupResponse> refundHistoryResponses = refundService.getMyRefunds(userId, status);
         return ResponseEntity.ok().body(refundHistoryResponses);
     }
 }
