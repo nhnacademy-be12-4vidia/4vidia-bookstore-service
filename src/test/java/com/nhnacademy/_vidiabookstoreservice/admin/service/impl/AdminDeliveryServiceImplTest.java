@@ -75,13 +75,13 @@ class AdminDeliveryServiceImplTest {
         Order order = createTestOrder(1L, DeliveryStatus.WAITING);
         Page<Order> page = new PageImpl<>(List.of(order));
 
-        given(orderRepository.searchAdminDeliveries(DeliveryStatus.WAITING, "나울림", pageable))
+        given(orderRepository.searchAdminDeliveries(DeliveryStatus.WAITING, "테스트", pageable))
                 .willReturn(page);
 
         Page<Order> result = adminDeliveryService.listByDeliveryStatus(DeliveryStatus.WAITING, keyword, pageable);
 
         assertThat(result.getContent()).hasSize(1);
-        verify(orderRepository).searchAdminDeliveries(DeliveryStatus.WAITING, "나울림", pageable);
+        verify(orderRepository).searchAdminDeliveries(DeliveryStatus.WAITING, "테스트", pageable);
     }
 
     @Test
