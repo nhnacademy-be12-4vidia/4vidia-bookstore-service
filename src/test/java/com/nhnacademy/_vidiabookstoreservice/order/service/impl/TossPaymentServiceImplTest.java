@@ -175,7 +175,7 @@ class TossPaymentServiceImplTest {
         //spy 객체 호출시 실제 통신 대신 리턴
         doReturn(mockData).when(tossPaymentService).sendRequest(any(), any(), any());
 
-        assertThatThrownBy(() -> tossPaymentService.confirmPayment(any(), any(), any()))
+        assertThatThrownBy(() -> tossPaymentService.confirmPayment("test_key", "test_order", 10000L))
                 .isInstanceOf(PaymentConfirmException.class);
     }
 
