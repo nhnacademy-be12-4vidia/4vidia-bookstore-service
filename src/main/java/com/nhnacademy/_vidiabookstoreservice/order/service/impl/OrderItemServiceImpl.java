@@ -26,7 +26,6 @@ public class OrderItemServiceImpl implements OrderItemService {
         return orderItemRepository.save(orderItem);
     }
 
-    // 사용자 구매 확정 실패
     @Override
     public void changeStatusOrderItem_byUser(Long orderItemId, ConfirmStatus confirmStatus) {
         OrderItem findOrderItem = orderItemRepository.findByOrderItemId(orderItemId).orElseThrow(

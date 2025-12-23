@@ -19,7 +19,6 @@ public class OrderMessageConsumer {
         try {
             orderService.cancelOrderIfPending(orderId);
         } catch(Exception e) {
-            // 재시도? 예외 던져야 yml에서 공통 처리
             throw new RuntimeException(e);
         }
     }
