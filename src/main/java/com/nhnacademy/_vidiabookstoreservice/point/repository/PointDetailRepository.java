@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,19 +83,6 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
                         @Param("now") LocalDate now,
                         @Param("limit") LocalDate limit);
 
-    /**
-     * 포인트 내역 최신 순 조회
-     */
-    Page<PointDetail> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
-    /**
-     * 포인트 내역 중 '적립' 내역만 (price > 0)
-     */
-    Page<PointDetail> findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(Long userId, int price, Pageable pageable);
-
-    /**
-     * 포인트 내역 중 '사용' 내역만 (price < 0)
-     */
-    Page<PointDetail> findByUserIdAndPriceLessThanOrderByCreatedAtDesc(Long userId, int price, Pageable pageable);
 
     /**
      * 중복 환불 방지 체크
@@ -133,4 +121,30 @@ public interface PointDetailRepository extends JpaRepository<PointDetail, Long> 
     """)
     int sumRefundedPoint(@Param("orderId") Long orderId,
                          @Param("reason") PointReason pointReason);
+
+    Page<PointDetail> findByUserIdAndCreatedAtBetween(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to,
+            Pageable pageable
+    );
+
+    Page<PointDetail> findByUserIdAndCreatedAtBetweenAndPriceGreaterThan(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to,
+            Integer price,
+            Pageable pageable
+    );
+
+    Page<PointDetail> findByUserIdAndCreatedAtBetweenAndPriceLessThan(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to,
+            Integer price,
+            Pageable pageable
+    );
+
+
+
 }

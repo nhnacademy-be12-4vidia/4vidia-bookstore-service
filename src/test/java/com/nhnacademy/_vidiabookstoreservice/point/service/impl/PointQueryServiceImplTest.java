@@ -32,11 +32,17 @@ class PointQueryServiceImplTest {
     private PointQueryServiceImpl pointQueryService;
 
     @Test
-    @DisplayName("포인트 내역 조회: category=null -> ALL 쿼리 + createdAt DESC pageable + DTO 매핑 검증")
-    void getHistory_nullCategory_allQuery_andMapsDto() {
+    @DisplayName("포인트 내역 조회: category=null -> ALL(기간필터) 쿼리 + createdAt DESC pageable + DTO 매핑 검증")
+    void getHistory_nullCategory_allQuery_withDateRange_andMapsDto() {
         // given
         Long userId = 1L;
         int page = 0, size = 10;
+
+        LocalDate from = LocalDate.of(2025, 12, 1);
+        LocalDate to = LocalDate.of(2025, 12, 31);
+
+        LocalDateTime expectedStart = from.atStartOfDay();
+        LocalDateTime expectedEndExclusive = to.plusDays(1).atStartOfDay();
 
         LocalDateTime createdAt = LocalDateTime.of(2025, 12, 1, 10, 0);
         LocalDate expiredDate = LocalDate.of(2026, 1, 1);
@@ -48,20 +54,32 @@ class PointQueryServiceImplTest {
         when(detail.getPointPolicy()).thenReturn(null);
         when(detail.getExpiredDate()).thenReturn(expiredDate);
 
-        when(pointDetailRepository.findByUserIdOrderByCreatedAtDesc(eq(userId), any(Pageable.class)))
+        when(pointDetailRepository
+                .findByUserIdAndCreatedAtBetween(eq(userId), any(LocalDateTime.class), any(LocalDateTime.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(detail)));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        ArgumentCaptor<LocalDateTime> fromCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+        ArgumentCaptor<LocalDateTime> toCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
 
         // when
-        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, null, page, size);
+        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, null, from, to, page, size);
 
-        // then - repo 분기 검증
-        verify(pointDetailRepository).findByUserIdOrderByCreatedAtDesc(eq(userId), pageableCaptor.capture());
+        // then - repo 분기 검증 + 기간 전달 검증
+        verify(pointDetailRepository).findByUserIdAndCreatedAtBetween(
+                eq(userId),
+                fromCaptor.capture(),
+                toCaptor.capture(),
+                pageableCaptor.capture()
+        );
+
         verify(pointDetailRepository, never())
-                .findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(anyLong(), anyInt(), any());
+                .findByUserIdAndCreatedAtBetweenAndPriceGreaterThan(anyLong(), any(), any(), anyInt(), any());
         verify(pointDetailRepository, never())
-                .findByUserIdAndPriceLessThanOrderByCreatedAtDesc(anyLong(), anyInt(), any());
+                .findByUserIdAndCreatedAtBetweenAndPriceLessThan(anyLong(), any(), any(), anyInt(), any());
+
+        assertEquals(expectedStart, fromCaptor.getValue());
+        assertEquals(expectedEndExclusive, toCaptor.getValue());
 
         // then - pageable(createdAt desc) 검증
         Pageable pageable = pageableCaptor.getValue();
@@ -81,7 +99,6 @@ class PointQueryServiceImplTest {
         assertNull(dto.policyName());
         assertEquals(expiredDate, dto.expiredDate());
 
-        // record는 equals 자동이라, 이렇게도 가능:
         PointHistoryResponse expected = new PointHistoryResponse(
                 createdAt, 500, PointReason.ORDER_REWARD.getTitle(), null, expiredDate
         );
@@ -89,10 +106,15 @@ class PointQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("포인트 내역 조회: category=EARN(대소문자 무관) -> price>0 쿼리 + policyName 매핑")
-    void getHistory_earn_callsEarnQuery_andMapsPolicyName() {
+    @DisplayName("포인트 내역 조회: category=EARN(대소문자 무관) -> price>0(기간필터) 쿼리 + policyName 매핑")
+    void getHistory_earn_callsEarnQuery_withDateRange_andMapsPolicyName() {
         // given
         Long userId = 1L;
+        LocalDate from = LocalDate.of(2025, 12, 1);
+        LocalDate to = LocalDate.of(2025, 12, 31);
+
+        LocalDateTime expectedStart = from.atStartOfDay();
+        LocalDateTime expectedEndExclusive = to.plusDays(1).atStartOfDay();
 
         LocalDateTime createdAt = LocalDateTime.of(2025, 12, 2, 10, 0);
         LocalDate expiredDate = LocalDate.of(2026, 1, 2);
@@ -107,16 +129,28 @@ class PointQueryServiceImplTest {
         when(detail.getPointPolicy()).thenReturn(policy);
         when(detail.getExpiredDate()).thenReturn(expiredDate);
 
-        when(pointDetailRepository.findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(eq(userId), eq(0), any(Pageable.class)))
+        when(pointDetailRepository
+                .findByUserIdAndCreatedAtBetweenAndPriceGreaterThan(eq(userId), any(), any(), eq(0), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(detail)));
 
+        ArgumentCaptor<LocalDateTime> fromCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+        ArgumentCaptor<LocalDateTime> toCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+
         // when
-        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, "eArN", 0, 10);
+        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, "eArN", from, to, 0, 10);
 
         // then
-        verify(pointDetailRepository).findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(eq(userId), eq(0), any(Pageable.class));
-        verify(pointDetailRepository, never()).findByUserIdAndPriceLessThanOrderByCreatedAtDesc(anyLong(), anyInt(), any());
-        verify(pointDetailRepository, never()).findByUserIdOrderByCreatedAtDesc(anyLong(), any());
+        verify(pointDetailRepository).findByUserIdAndCreatedAtBetweenAndPriceGreaterThan(
+                eq(userId), fromCaptor.capture(), toCaptor.capture(), eq(0), any(Pageable.class)
+        );
+
+        assertEquals(expectedStart, fromCaptor.getValue());
+        assertEquals(expectedEndExclusive, toCaptor.getValue());
+
+        verify(pointDetailRepository, never())
+                .findByUserIdAndCreatedAtBetweenAndPriceLessThan(anyLong(), any(), any(), anyInt(), any());
+        verify(pointDetailRepository, never())
+                .findByUserIdAndCreatedAtBetween(anyLong(), any(), any(), any());
 
         PointHistoryResponse dto = result.getContent().get(0);
         assertEquals(createdAt, dto.createdAt());
@@ -127,10 +161,15 @@ class PointQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("포인트 내역 조회: category=USE -> price<0 쿼리 호출")
-    void getHistory_use_callsUseQuery() {
+    @DisplayName("포인트 내역 조회: category=USE -> price<0(기간필터) 쿼리 호출")
+    void getHistory_use_callsUseQuery_withDateRange() {
         // given
         Long userId = 1L;
+        LocalDate from = LocalDate.of(2025, 12, 1);
+        LocalDate to = LocalDate.of(2025, 12, 31);
+
+        LocalDateTime expectedStart = from.atStartOfDay();
+        LocalDateTime expectedEndExclusive = to.plusDays(1).atStartOfDay();
 
         LocalDateTime createdAt = LocalDateTime.of(2025, 12, 3, 10, 0);
 
@@ -141,16 +180,28 @@ class PointQueryServiceImplTest {
         when(detail.getPointPolicy()).thenReturn(null);
         when(detail.getExpiredDate()).thenReturn(null);
 
-        when(pointDetailRepository.findByUserIdAndPriceLessThanOrderByCreatedAtDesc(eq(userId), eq(0), any(Pageable.class)))
+        when(pointDetailRepository
+                .findByUserIdAndCreatedAtBetweenAndPriceLessThan(eq(userId), any(), any(), eq(0), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(detail)));
 
+        ArgumentCaptor<LocalDateTime> fromCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+        ArgumentCaptor<LocalDateTime> toCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+
         // when
-        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, "USE", 0, 10);
+        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, "USE", from, to, 0, 10);
 
         // then
-        verify(pointDetailRepository).findByUserIdAndPriceLessThanOrderByCreatedAtDesc(eq(userId), eq(0), any(Pageable.class));
-        verify(pointDetailRepository, never()).findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(anyLong(), anyInt(), any());
-        verify(pointDetailRepository, never()).findByUserIdOrderByCreatedAtDesc(anyLong(), any());
+        verify(pointDetailRepository).findByUserIdAndCreatedAtBetweenAndPriceLessThan(
+                eq(userId), fromCaptor.capture(), toCaptor.capture(), eq(0), any(Pageable.class)
+        );
+
+        assertEquals(expectedStart, fromCaptor.getValue());
+        assertEquals(expectedEndExclusive, toCaptor.getValue());
+
+        verify(pointDetailRepository, never())
+                .findByUserIdAndCreatedAtBetweenAndPriceGreaterThan(anyLong(), any(), any(), anyInt(), any());
+        verify(pointDetailRepository, never())
+                .findByUserIdAndCreatedAtBetween(anyLong(), any(), any(), any());
 
         PointHistoryResponse dto = result.getContent().get(0);
         assertEquals(createdAt, dto.createdAt());
@@ -161,19 +212,23 @@ class PointQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("포인트 내역 조회: 알 수 없는 category -> default(ALL) 쿼리 호출")
-    void getHistory_unknownCategory_defaultsToAll() {
+    @DisplayName("포인트 내역 조회: 알 수 없는 category -> default(ALL, 기간필터) 쿼리 호출")
+    void getHistory_unknownCategory_defaultsToAll_withDateRange() {
         // given
         Long userId = 1L;
+        LocalDate from = LocalDate.of(2025, 12, 1);
+        LocalDate to = LocalDate.of(2025, 12, 31);
 
-        when(pointDetailRepository.findByUserIdOrderByCreatedAtDesc(eq(userId), any(Pageable.class)))
+        when(pointDetailRepository
+                .findByUserIdAndCreatedAtBetween(eq(userId), any(), any(), any(Pageable.class)))
                 .thenReturn(Page.empty());
 
         // when
-        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, "SOMETHING", 0, 10);
+        Page<PointHistoryResponse> result = pointQueryService.getHistory(userId, "SOMETHING", from, to, 0, 10);
 
         // then
-        verify(pointDetailRepository).findByUserIdOrderByCreatedAtDesc(eq(userId), any(Pageable.class));
+        verify(pointDetailRepository)
+                .findByUserIdAndCreatedAtBetween(eq(userId), any(), any(), any(Pageable.class));
         assertTrue(result.isEmpty());
     }
 }

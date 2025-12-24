@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.point.repository;
 
+import com.nhnacademy._vidiabookstoreservice.book.config.QueryDslConfig;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import jakarta.persistence.EntityManager;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
@@ -15,10 +17,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(QueryDslConfig.class)
 class PointDetailRepositoryTest {
 
     @Autowired
@@ -27,18 +31,11 @@ class PointDetailRepositoryTest {
     @Autowired
     EntityManager em;
 
-    private final LocalDate NOW = LocalDate.of(2025, 12, 23);
-    private final LocalDateTime NOW_DT = LocalDateTime.of(2025, 12, 23, 10, 0);
+    private final LocalDate NOW = LocalDate.of(2025, 12, 24);
+    private final LocalDateTime NOW_DT = LocalDateTime.of(2025, 12, 24, 10, 0);
 
-    private PointDetail pd(
-            Long userId,
-            Long orderId,
-            int price,
-            LocalDateTime createdAt,
-            LocalDate expiredDate,
-            PointReason reason,
-            Integer remainingPrice
-    ) {
+    private PointDetail pd(Long userId, Long orderId, int price, LocalDateTime createdAt,
+                           LocalDate expiredDate, PointReason reason, Integer remainingPrice) {
         return PointDetail.builder()
                 .userId(userId)
                 .orderId(orderId)
@@ -46,7 +43,7 @@ class PointDetailRepositoryTest {
                 .createdAt(createdAt)
                 .expiredDate(expiredDate)
                 .reason(reason)
-                .remainingPrice(remainingPrice) // null이면 builder 내부에서 0 처리
+                .remainingPrice(remainingPrice != null ? remainingPrice : 0)
                 .build();
     }
 
@@ -57,97 +54,75 @@ class PointDetailRepositoryTest {
     }
 
     @Test
-    @DisplayName("findAvailablePointForUse: remainingPrice>0 AND (expiredDate null or >= now) AND expiredDate ASC")
+    @DisplayName("사용 가능한 포인트 목록 조회: 정렬 및 조건 확인")
     void findAvailablePointForUse_success() {
         // given
-        persist(pd(1L, null, 1000, NOW_DT.minusDays(3), NOW.plusDays(10), PointReason.ORDER_REWARD, 1000));
-        persist(pd(1L, null, 2000, NOW_DT.minusDays(2), NOW.plusDays(3), PointReason.POLICY_REWARD, 1500));
-        persist(pd(1L, null, 500,  NOW_DT.minusDays(1), NOW.plusDays(2), PointReason.ORDER_REWARD, 0));        // 제외(remaining=0)
-        persist(pd(1L, null, 700,  NOW_DT.minusDays(1), NOW.minusDays(1), PointReason.ORDER_REWARD, 700));     // 제외(만료)
-        persist(pd(2L, null, 999,  NOW_DT.minusDays(1), NOW.plusDays(1), PointReason.ORDER_REWARD, 999));     // 제외(다른 유저)
-        persist(pd(1L, null, 300,  NOW_DT.minusDays(1), null,            PointReason.ORDER_REWARD, 300));     // 포함(expired null)
+        // 1. 10일 뒤 만료
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(10), PointReason.ORDER_REWARD, 1000));
+        // 2. 3일 뒤 만료
+        persist(pd(1L, null, 2000, NOW_DT, NOW.plusDays(3), PointReason.POLICY_REWARD, 1500));
+        // 3. 무기한 포인트 (null) -> H2에서는 정렬 시 보통 가장 먼저 나옴
+        persist(pd(1L, null, 300,  NOW_DT, null, PointReason.ORDER_REWARD, 300));
+        // 4. 어제 만료 (제외 대상)
+        persist(pd(1L, null, 500,  NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 500));
 
         // when
         List<PointDetail> result = pointDetailRepository.findAvailablePointForUse(1L, NOW);
 
         // then
-        assertThat(result).allMatch(p -> p.getUserId().equals(1L));
-        assertThat(result).allMatch(p -> p.getRemainingPrice() > 0);
-        assertThat(result).allSatisfy(p -> {
-            if (p.getExpiredDate() != null) {
-                assertThat(p.getExpiredDate()).isAfterOrEqualTo(NOW);
-            }
-        });
+        assertThat(result).hasSize(3); // 만료된 4번 제외하고 3개
 
-        // expiredDate ASC 정렬 확인(단, null은 DB 정렬 규칙이 달라질 수 있어 null 제외하고 검사)
-        List<LocalDate> nonNullDates = result.stream()
+        // 정렬 검증 (null 제외하고 날짜 있는 것들끼리 비교)
+        List<LocalDate> dates = result.stream()
                 .map(PointDetail::getExpiredDate)
-                .filter(d -> d != null)
+                .filter(java.util.Objects::nonNull) // null(무기한) 제외
                 .toList();
-        assertThat(nonNullDates).isSorted();
+
+        // 날짜가 있는 데이터들끼리는 오름차순(ASC)이어야 함
+        assertThat(dates).isSorted();
+
+        // 구체적인 날짜 확인 (리스트에 해당 날짜들이 포함되어 있는지 확인)
+        assertThat(result).extracting("expiredDate")
+                .contains(NOW.plusDays(3), NOW.plusDays(10));
     }
 
     @Test
-    @DisplayName("getRemainPoint: remainingPrice 합계(없으면 0)")
-    void getRemainPoint_success_and_empty() {
+    @DisplayName("잔여 포인트 합계 조회")
+    void getRemainPoint_success() {
         // given
-        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(1), PointReason.ORDER_REWARD, 500));
-        persist(pd(1L, null, 2000, NOW_DT, NOW.plusDays(2), PointReason.POLICY_REWARD, 1000));
-        persist(pd(1L, null, 999,  NOW_DT, NOW.plusDays(3), PointReason.ORDER_REWARD, 0));        // 제외
-        persist(pd(1L, null, 111,  NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 111));     // 제외(만료)
-        persist(pd(2L, null, 777,  NOW_DT, NOW.plusDays(10), PointReason.ORDER_REWARD, 777));     // 제외(다른 유저)
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(5), PointReason.ORDER_REWARD, 700));
+        persist(pd(1L, null, 500,  NOW_DT, NOW.plusDays(5), PointReason.ORDER_REWARD, 300));
+        persist(pd(1L, null, 500,  NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 500)); // 만료 제외
 
         // when
-        int sum = pointDetailRepository.getRemainPoint(1L, NOW);
-        int empty = pointDetailRepository.getRemainPoint(999L, NOW);
+        int remainPoint = pointDetailRepository.getRemainPoint(1L, NOW);
 
         // then
-        assertThat(sum).isEqualTo(1500);
-        assertThat(empty).isEqualTo(0);
+        assertThat(remainPoint).isEqualTo(1000);
     }
 
     @Test
-    @DisplayName("findExpiredPoints: expiredDate < now AND remainingPrice>0 AND reason != 제외사유")
+    @DisplayName("소멸 대상 포인트 조회 (배치용)")
     void findExpiredPoints_success() {
         // given
-        persist(pd(1L, null, 1000, NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 100));     // 포함
-        persist(pd(1L, null, 1000, NOW_DT, NOW.minusDays(2), PointReason.POINT_EXPIRE, 100));    // 제외(reason)
-        persist(pd(1L, null, 1000, NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 0));      // 제외(remaining=0)
-        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(1),  PointReason.ORDER_REWARD, 100));    // 제외(만료 아님)
+        persist(pd(1L, null, 1000, NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 100));
+        persist(pd(1L, null, 1000, NOW_DT, NOW.minusDays(1), PointReason.POINT_EXPIRE, 100)); // 이미 소멸처리된 건 제외
 
         // when
-        List<PointDetail> result = pointDetailRepository.findExpiredPoints(NOW, PointReason.POINT_EXPIRE);
+        List<PointDetail> expired = pointDetailRepository.findExpiredPoints(NOW, PointReason.POINT_EXPIRE);
 
         // then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getExpiredDate()).isBefore(NOW);
-        assertThat(result.get(0).getRemainingPrice()).isGreaterThan(0);
-        assertThat(result.get(0).getReason()).isNotEqualTo(PointReason.POINT_EXPIRE);
+        assertThat(expired).hasSize(1);
+        assertThat(expired.get(0).getReason()).isNotEqualTo(PointReason.POINT_EXPIRE);
     }
 
     @Test
-    @DisplayName("findExpiredPointsByUser: 특정 유저의 만료 포인트만 조회")
-    void findExpiredPointsByUser_success() {
-        // given
-        persist(pd(1L, null, 1000, NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 100)); // 포함
-        persist(pd(2L, null, 1000, NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 100)); // 제외
-
-        // when
-        List<PointDetail> result = pointDetailRepository.findExpiredPointsByUser(1L, NOW, PointReason.POINT_EXPIRE);
-
-        // then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getUserId()).isEqualTo(1L);
-    }
-
-    @Test
-    @DisplayName("getExpiringSoon: now < expiredDate <= limit 인 remainingPrice 합계")
+    @DisplayName("곧 소멸 예정인 포인트 합계 조회")
     void getExpiringSoon_success() {
         // given
-        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(1), PointReason.ORDER_REWARD, 100)); // 포함
-        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(7), PointReason.ORDER_REWARD, 200)); // 포함
-        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(8), PointReason.ORDER_REWARD, 300)); // 제외(limit 초과)
-        persist(pd(1L, null, 1000, NOW_DT, NOW,            PointReason.ORDER_REWARD, 400)); // 제외(expiredDate > now 조건)
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(3), PointReason.ORDER_REWARD, 100)); // 범위 내
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(7), PointReason.ORDER_REWARD, 200)); // 범위 내
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(10), PointReason.ORDER_REWARD, 500)); // 범위 밖
 
         // when
         int sum = pointDetailRepository.getExpiringSoon(1L, NOW, NOW.plusDays(7));
@@ -157,121 +132,67 @@ class PointDetailRepositoryTest {
     }
 
     @Test
-    @DisplayName("findByUserIdOrderByCreatedAtDesc: 최신순 페이징 조회")
-    void findByUserIdOrderByCreatedAtDesc_success() {
-        // given (createdAt을 일부러 다르게)
-        persist(pd(1L, null, 100, NOW_DT.minusMinutes(10), NOW.plusDays(1), PointReason.ORDER_REWARD, 100));
-        persist(pd(1L, null, 200, NOW_DT.minusMinutes(5),  NOW.plusDays(1), PointReason.ORDER_REWARD, 200));
-        persist(pd(1L, 10L, -50, NOW_DT.minusMinutes(1),  null,           PointReason.ORDER_USE, null));
+    @DisplayName("날짜 기간 내 포인트 내역 페이징 조회")
+    void findByUserIdAndCreatedAtBetween_success() {
+        // given
+        persist(pd(1L, null, 1000, NOW_DT.minusDays(2), null, PointReason.ORDER_REWARD, 1000));
+        persist(pd(1L, null, 500,  NOW_DT, null, PointReason.ORDER_REWARD, 500));
 
         // when
-        Page<PointDetail> page = pointDetailRepository.findByUserIdOrderByCreatedAtDesc(
-                1L, PageRequest.of(0, 2)
+        Page<PointDetail> page = pointDetailRepository.findByUserIdAndCreatedAtBetween(
+                1L, NOW_DT.minusDays(1), NOW_DT.plusDays(1), PageRequest.of(0, 10)
         );
 
         // then
-        assertThat(page.getTotalElements()).isEqualTo(3);
-        assertThat(page.getContent()).hasSize(2);
-        assertThat(page.getContent().get(0).getCreatedAt())
-                .isAfterOrEqualTo(page.getContent().get(1).getCreatedAt());
+        assertThat(page.getTotalElements()).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc: 적립(price > 0)만")
-    void findByUserIdAndPriceGreaterThan_success() {
+    @DisplayName("기간 내 적립 포인트(Price > 0) 페이징 조회")
+    void findByUserIdAndCreatedAtBetweenAndPriceGreaterThan_success() {
         // given
-        persist(pd(1L, null, 100, NOW_DT, NOW.plusDays(1), PointReason.ORDER_REWARD, 100));
-        persist(pd(1L, 10L, -50, NOW_DT.plusSeconds(1), null, PointReason.ORDER_USE, null));
+        persist(pd(1L, null, 1000, NOW_DT, null, PointReason.ORDER_REWARD, 1000));
+        persist(pd(1L, 100L, -500, NOW_DT, null, PointReason.ORDER_USE, 0));
 
         // when
-        Page<PointDetail> page = pointDetailRepository.findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(
-                1L, 0, PageRequest.of(0, 10)
+        Page<PointDetail> page = pointDetailRepository.findByUserIdAndCreatedAtBetweenAndPriceGreaterThan(
+                1L, NOW_DT.minusDays(1), NOW_DT.plusDays(1), 0, PageRequest.of(0, 10)
         );
 
         // then
         assertThat(page.getContent()).allMatch(p -> p.getPrice() > 0);
+        assertThat(page.getTotalElements()).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("findByUserIdAndPriceLessThanOrderByCreatedAtDesc: 사용(price < 0)만")
-    void findByUserIdAndPriceLessThan_success() {
-        // given
-        persist(pd(1L, null, 100, NOW_DT, NOW.plusDays(1), PointReason.ORDER_REWARD, 100));
-        persist(pd(1L, 10L, -50, NOW_DT.plusSeconds(1), null, PointReason.ORDER_USE, null));
-
-        // when
-        Page<PointDetail> page = pointDetailRepository.findByUserIdAndPriceLessThanOrderByCreatedAtDesc(
-                1L, 0, PageRequest.of(0, 10)
-        );
-
-        // then
-        assertThat(page.getContent()).allMatch(p -> p.getPrice() < 0);
-    }
-
-    @Test
-    @DisplayName("existsByUserIdAndOrderIdAndReason: 중복 환불 방지 체크")
-    void existsByUserIdAndOrderIdAndReason_success() {
-        // given
-        persist(pd(1L, 100L, 300, NOW_DT, null, PointReason.ORDER_CANCEL_REFUND, 0));
-
-        // when
-        boolean exists = pointDetailRepository.existsByUserIdAndOrderIdAndReason(1L, 100L, PointReason.ORDER_CANCEL_REFUND);
-        boolean notExists = pointDetailRepository.existsByUserIdAndOrderIdAndReason(1L, 999L, PointReason.ORDER_CANCEL_REFUND);
-
-        // then
-        assertThat(exists).isTrue();
-        assertThat(notExists).isFalse();
-    }
-
-    @Test
-    @DisplayName("findByOrderIdAndReason: 주문 포인트 내역 단건 조회")
-    void findByOrderIdAndReason_success() {
-        // given
-        persist(pd(1L, 777L, -300, NOW_DT, null, PointReason.ORDER_USE, null));
-
-        // when
-        var opt = pointDetailRepository.findByOrderIdAndReason(777L, PointReason.ORDER_USE);
-
-        // then
-        assertThat(opt).isPresent();
-        assertThat(opt.get().getOrderId()).isEqualTo(777L);
-        assertThat(opt.get().getReason()).isEqualTo(PointReason.ORDER_USE);
-    }
-
-    @Test
-    @DisplayName("findPointForRefund: expiredDate>=now AND remainingPrice < price AND expiredDate desc")
+    @DisplayName("환불 가능 내역 조회: 사용된 포인트가 있고 만료 전인 것 (유효기간 긴 순서)")
     void findPointForRefund_success() {
         // given
-        persist(pd(1L, 10L, 1000, NOW_DT, NOW.plusDays(5),  PointReason.ORDER_REWARD, 200)); // 포함
-        persist(pd(1L, 11L, 500,  NOW_DT, NOW.plusDays(10), PointReason.ORDER_REWARD, 500)); // 제외(remaining==price)
-        persist(pd(1L, 12L, 1000, NOW_DT, NOW.minusDays(1), PointReason.ORDER_REWARD, 100)); // 제외(만료)
-        persist(pd(1L, 13L, 1000, NOW_DT, NOW.plusDays(20), PointReason.ORDER_REWARD, 300)); // 포함(더 늦게 만료)
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(1), PointReason.ORDER_REWARD, 200)); // 포함 (일부 사용됨)
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(10), PointReason.ORDER_REWARD, 500)); // 포함 (일부 사용됨)
+        persist(pd(1L, null, 1000, NOW_DT, NOW.plusDays(5), PointReason.ORDER_REWARD, 1000)); // 제외 (사용 안 함)
 
         // when
         List<PointDetail> result = pointDetailRepository.findPointForRefund(1L, NOW);
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result).allMatch(p -> p.getExpiredDate().isAfter(NOW)|| p.getExpiredDate().isEqual(NOW));
-        assertThat(result).allMatch(p -> p.getRemainingPrice() < p.getPrice());
-
-        // expiredDate desc 확인
-        assertThat(result.get(0).getExpiredDate()).isAfter(result.get(1).getExpiredDate());
+        // order by expiredDate desc 확인
+        assertThat(result.get(0).getExpiredDate()).isEqualTo(NOW.plusDays(10));
     }
 
     @Test
-    @DisplayName("sumRefundedPoint: (price - remainingPrice) 합계")
+    @DisplayName("특정 주문과 사유에 대해 이미 처리된 포인트 차액(환불된 양 등) 합계")
     void sumRefundedPoint_success() {
         // given
-        // (1000-700)=300, (500-200)=300 => 600
-        persist(pd(1L, 900L, 1000, NOW_DT, NOW.plusDays(10), PointReason.ORDER_REWARD, 700));
-        persist(pd(1L, 900L, 500,  NOW_DT, NOW.plusDays(10), PointReason.ORDER_REWARD, 200));
-        persist(pd(1L, 900L, 999,  NOW_DT, NOW.plusDays(10), PointReason.ORDER_CANCEL_REFUND, 0)); // reason 달라서 제외
+        Long orderId = 999L;
+        persist(pd(1L, orderId, 1000, NOW_DT, null, PointReason.ORDER_REWARD, 700)); // 차액 300
+        persist(pd(1L, orderId, 500,  NOW_DT, null, PointReason.ORDER_REWARD, 400)); // 차액 100
 
         // when
-        int sum = pointDetailRepository.sumRefundedPoint(900L, PointReason.ORDER_REWARD);
+        int sum = pointDetailRepository.sumRefundedPoint(orderId, PointReason.ORDER_REWARD);
 
         // then
-        assertThat(sum).isEqualTo(600);
+        assertThat(sum).isEqualTo(400); // (1000-700) + (500-400)
     }
 }

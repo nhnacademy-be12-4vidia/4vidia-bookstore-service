@@ -30,34 +30,100 @@ public class PointQueryServiceImpl implements PointQueryService {
     }
 
     // 포인트 내역 조회 ( 최신순)
+//    @Override
+//    public Page<PointHistoryResponse> getHistory(Long userId, String category,
+//                                                 LocalDate from, LocalDate to,
+//                                                 int page, int size)
+//    {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+//
+//        String cat = (category == null) ? "ALL" : category.toUpperCase();
+//
+//
+//        var start = from.atStartOfDay();
+//        var endExclusive = to.plusDays(1).atStartOfDay();
+//
+//        // 🔥 카테고리별로 다른 쿼리 사용
+//        Page<PointDetail> details;
+//
+//        switch (cat) {
+//            case "EARN":   // 적립 내역: price > 0
+//                details = pointDetailRepository
+//                        .findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(userId, 0, pageable);
+//                break;
+//
+//            case "USE":    // 사용 내역: price < 0
+//                details = pointDetailRepository
+//                        .findByUserIdAndPriceLessThanOrderByCreatedAtDesc(userId, 0, pageable);
+//                break;
+//
+//            case "ALL":
+//            default:       // 전체 내역
+//                details = pointDetailRepository
+//                        .findByUserIdOrderByCreatedAtDesc(userId, pageable);
+//                break;
+//        }
+//
+//        // 엔티티 → DTO 매핑은 그대로 사용
+//        return details.map(detail -> new PointHistoryResponse(
+//                detail.getCreatedAt(),
+//                detail.getPrice(),
+//                detail.getReason().getTitle(),
+//                detail.getPointPolicy() != null ? detail.getPointPolicy().getPointName() : null,
+//                detail.getExpiredDate()
+//        ));
+//    }
     @Override
-    public Page<PointHistoryResponse> getHistory(Long userId, String category, int page, int size) {
+    public Page<PointHistoryResponse> getHistory(Long userId, String category,
+                                                 LocalDate from, LocalDate to,
+                                                 int page, int size) {
+
+        // Pageable에서 정렬 담당 (repo에 OrderBy 없어도 최신순 유지됨)
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         String cat = (category == null) ? "ALL" : category.toUpperCase();
 
-        // 🔥 카테고리별로 다른 쿼리 사용
+        //  null 방어 + 기본값(최근 3개월)
+        LocalDate end = (to != null) ? to : LocalDate.now();
+        LocalDate startDate = (from != null) ? from : end.minusMonths(3);
+
+        //  from > to 방어
+        if (startDate.isAfter(end)) {
+            LocalDate tmp = startDate;
+            startDate = end;
+            end = tmp;
+        }
+
+        // to 날짜 포함 위해 endExclusive 사용
+        var start = startDate.atStartOfDay();
+        var endExclusive = end.plusDays(1).atStartOfDay();
+
         Page<PointDetail> details;
 
         switch (cat) {
-            case "EARN":   // 적립 내역: price > 0
+            case "EARN":
                 details = pointDetailRepository
-                        .findByUserIdAndPriceGreaterThanOrderByCreatedAtDesc(userId, 0, pageable);
+                        .findByUserIdAndCreatedAtBetweenAndPriceGreaterThan(
+                                userId, start, endExclusive, 0, pageable
+                        );
                 break;
 
-            case "USE":    // 사용 내역: price < 0
+            case "USE":
                 details = pointDetailRepository
-                        .findByUserIdAndPriceLessThanOrderByCreatedAtDesc(userId, 0, pageable);
+                        .findByUserIdAndCreatedAtBetweenAndPriceLessThan(
+                                userId, start, endExclusive, 0, pageable
+                        );
                 break;
 
             case "ALL":
-            default:       // 전체 내역
+            default:
                 details = pointDetailRepository
-                        .findByUserIdOrderByCreatedAtDesc(userId, pageable);
+                        .findByUserIdAndCreatedAtBetween(
+                                userId, start, endExclusive, pageable
+                        );
                 break;
         }
 
-        // 엔티티 → DTO 매핑은 그대로 사용
         return details.map(detail -> new PointHistoryResponse(
                 detail.getCreatedAt(),
                 detail.getPrice(),
@@ -66,4 +132,7 @@ public class PointQueryServiceImpl implements PointQueryService {
                 detail.getExpiredDate()
         ));
     }
+
+
+
 }
