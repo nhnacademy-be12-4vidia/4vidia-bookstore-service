@@ -8,7 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.BookSortKey;
+import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;

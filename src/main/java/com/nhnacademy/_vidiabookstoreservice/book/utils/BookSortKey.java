@@ -1,4 +1,4 @@
-package com.nhnacademy._vidiabookstoreservice.book.dto.book;
+package com.nhnacademy._vidiabookstoreservice.book.utils;
 
 public enum BookSortKey {
     PUBLISHED_DATE,

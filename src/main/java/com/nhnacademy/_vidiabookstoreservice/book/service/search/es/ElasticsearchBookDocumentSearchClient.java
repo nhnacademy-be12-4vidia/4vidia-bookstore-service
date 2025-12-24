@@ -17,7 +17,6 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearc
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -33,6 +32,7 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
 
     private final ElasticsearchOperations elasticsearchOperations;
     private final String TAG_FIELD = "tags.keyword";
+    private final String PRICE_FIELD = "priceSales";
 
     @Override
     public List<BookDocument> search(EsBookSearchRequest request, float[] queryVector, int maxResult) {
@@ -41,11 +41,16 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
             return List.of();
         }
 
-        Query lexicalQuery = buildLexicalQuery(keyword);
+        Query searchQuery = buildSearchQuery(request);
 
         NativeQueryBuilder queryBuilder = new NativeQueryBuilder()
-            .withQuery(lexicalQuery)
+            .withQuery(searchQuery)
             .withPageable(PageRequest.of(0, maxResult));
+
+        SortOptions sortOptions = makeSortOptions(request);
+        if (sortOptions != null) {
+            queryBuilder.withSort(sortOptions);
+        }
 
         if (queryVector != null && queryVector.length > 0) {
             KnnSearch knnSearch = KnnSearch.of(k -> k
@@ -111,6 +116,64 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
 
         return hits.stream().map(SearchHit::getContent).toList();
     }
+
+    @Override
+    public SortOptions makeSortOptions(EsBookSearchRequest request) {
+        if (request.getSortKey() == null || request.getSortKey().isBlank()) {
+            return null;
+        }
+
+        String field = request.getSortKey().trim();
+        SortOrder direction = parseSortOrder(request.getDirection());
+
+        return SortOptions.of(s -> s.field(f -> f
+                .field(field)
+                .order(direction)));
+    }
+
+    private SortOrder parseSortOrder(String direction) {
+        if (!StringUtils.hasText(direction)) {
+            return SortOrder.Desc;
+        }
+
+        return "asc".equalsIgnoreCase(direction) ? SortOrder.Asc : SortOrder.Desc;
+    }
+
+    private Query buildSearchQuery(EsBookSearchRequest request) {
+        String keyword = request.getKeyword();
+        Query lexicalQuery = buildLexicalQuery(keyword);
+
+        Query priceFilter = buildPriceRangeFilter(request.getMinPrice(), request.getMaxPrice());
+
+        if (priceFilter == null) {
+            return lexicalQuery;
+        }
+
+        return Query.of(q -> q.bool(b -> b
+                .must(lexicalQuery)
+                .filter(priceFilter)));
+    }
+
+    private Query buildPriceRangeFilter(Integer minPrice, Integer maxPrice) {
+        if (minPrice == null && maxPrice == null) {
+            return null;
+        }
+
+        return Query.of(q -> q
+                .range(r -> r.number(n -> {
+                    n.field(PRICE_FIELD);
+
+                    if (minPrice != null) {
+                        n.gte(minPrice.doubleValue());
+                    }
+                    if (maxPrice != null) {
+                        n.lte(maxPrice.doubleValue());
+                    }
+                    return n;
+                        })
+                ));
+    }
+
 
     private Query buildTagQuery(EsBookSearchWithTagRequest request) {
         List<String> tags = request.getTagNameList();
