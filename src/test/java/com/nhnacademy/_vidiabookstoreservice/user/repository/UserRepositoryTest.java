@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.repository;
 
+import com.nhnacademy._vidiabookstoreservice.book.config.QueryDslConfig;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,9 +26,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 중요: 실제 DB 사용 설정
- @ActiveProfiles("local") // 필요 시 application-dev.yml 설정을 로드하려면 주석 해제
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 중요: 실제 DB 사용 설정
+ @ActiveProfiles("test") // 필요 시 application-dev.yml 설정을 로드하려면 주석 해제
 @org.springframework.transaction.annotation.Transactional
+@Import(QueryDslConfig.class)
 class UserRepositoryTest {
 
     @Autowired
@@ -185,7 +188,7 @@ class UserRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // 상태가 ACTIVE이고 이름에 "길동"이 들어가는 사용자 검색
-        Page<User> result = userRepository.searchAdminUsers(UserStatus.ACTIVE,"길동", pageable);
+        Page<User> result = userRepository.searchAdminUsers(UserStatus.ACTIVE,"홍길동", pageable);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getName()).isEqualTo("홍길동");
