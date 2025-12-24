@@ -1,7 +1,9 @@
 package com.nhnacademy._vidiabookstoreservice.refund.domain;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.converter.RefundItemStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.converter.RefundStatusConverter;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundPriceInvalidException;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.already.RefundAlreadyApprovedException;
@@ -32,35 +34,35 @@ public class RefundItem { // 실제 반품 아이템 관리
     private Integer refundPrice;
 
     @Column(name = "refund_item_status", nullable = false)
-    @Convert(converter = RefundStatusConverter.class)
-    private RefundStatus refundStatus;
+    @Convert(converter = RefundItemStatusConverter.class)
+    private RefundItemStatus refundItemStatus;
 
     @Column(name = "reject_detail")
     private String rejectDetail;
 
     @Builder
-    public RefundItem(Refund refund, OrderItem orderItem, Integer refundPrice, RefundStatus refundStatus, String rejectDetail){
+    public RefundItem(Refund refund, OrderItem orderItem, Integer refundPrice, RefundItemStatus refundStatus, String rejectDetail){
         this.refund = refund;
         this.orderItem = orderItem;
         this.refundPrice = refundPrice;
-        this.refundStatus = refundStatus;
+        this.refundItemStatus = refundStatus;
         this.rejectDetail = rejectDetail;
     }
 
     // 관리자 반품 승인 (update)
     public void accept() {
-        if (this.refundStatus == RefundStatus.APPROVED) {
+        if (this.refundItemStatus == RefundItemStatus.APPROVED) {
             throw new RefundAlreadyApprovedException();
         }
-        this.refundStatus = RefundStatus.APPROVED;
+        this.refundItemStatus = RefundItemStatus.APPROVED;
     }
 
     // 관리자 반품 거절 (update)
     public void reject(String rejectDetail) {
-        if(this.refundStatus == RefundStatus.REJECTED){
+        if(this.refundItemStatus == RefundItemStatus.REJECTED){
             throw new RefundAlreadyRejectedException();
         }
-        this.refundStatus = RefundStatus.REJECTED;
+        this.refundItemStatus = RefundItemStatus.REJECTED;
         this.rejectDetail = rejectDetail;
     }
 
@@ -68,7 +70,7 @@ public class RefundItem { // 실제 반품 아이템 관리
     public static RefundItem createRefundItem(OrderItem orderItem){
         return RefundItem.builder()
                 .orderItem(orderItem)
-                .refundStatus(RefundStatus.PROCESS)
+                .refundStatus(RefundItemStatus.PROCESS)
                 .build();
     }
 

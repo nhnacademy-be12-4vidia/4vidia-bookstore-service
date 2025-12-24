@@ -28,7 +28,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // 반품/교환 요청 조회 (OrderItem 상태가 REFUND_REQUESTED인 주문들)
     @Query("SELECT DISTINCT ri.orderItem.order FROM RefundItem ri " +
             "WHERE ri.orderItem.order.user.userId = :userId " +
-            "AND ri.refundStatus = com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus.PROCESS")
+            "AND ri.refundItemStatus = com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus.PROCESS")
     Page<Order> findRefundRequestsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Query("""

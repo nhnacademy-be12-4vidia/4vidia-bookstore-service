@@ -5,14 +5,15 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum RefundStatus {
+public enum RefundItemStatus {
     PROCESS(0), // 반품 신청 ~ 결과 나오기 전까지
-    APPROVED(1); // 처리 완
+    APPROVED(1), // 승인
+    REJECTED(2); // 거절
 
     private final int code;
 
-    public static RefundStatus fromCode(int code) {
-        for (RefundStatus status : RefundStatus.values()) {
+    public static RefundItemStatus fromCode(int code) {
+        for (RefundItemStatus status : RefundItemStatus.values()) {
             if (status.getCode() == code) {
                 return status;
             }
