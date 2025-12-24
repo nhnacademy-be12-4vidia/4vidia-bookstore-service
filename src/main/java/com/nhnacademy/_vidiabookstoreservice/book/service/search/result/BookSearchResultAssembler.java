@@ -88,4 +88,9 @@ public class BookSearchResultAssembler {
         return bookList.stream().map(b -> AiCacheResponse.of(b, suggestionMap.get(b.getId()))).sorted(Comparator.comparingInt(AiCacheResponse::getRank)).toList();
     }
 
+    public List<BookListResponse> assembleForCoupon(List<BookDocument> docs) {
+        List<Long> idList = docs.stream().map(d -> Long.valueOf(d.getId())).toList();
+        return bookRepository.findAllById(idList).stream().map(BookListResponse::from).toList();
+    }
+
 }
