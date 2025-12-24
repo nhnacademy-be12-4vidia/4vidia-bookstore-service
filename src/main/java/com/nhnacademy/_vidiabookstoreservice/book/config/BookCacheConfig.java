@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +38,7 @@ public class BookCacheConfig {
 
     @Bean
     public CacheManager isbnSearchCacheManager(
-            RedisConnectionFactory isbnRedisConnectionFactory
+            @Qualifier("isbnRedisConnectionFactory") RedisConnectionFactory isbnRedisConnectionFactory
     ) {
         // 기본 ObjectMapper는 클래스에 대한 정보를 모르기 때문에 ClassCastException 발생
         // 해결을 위해 다형성 타입 정보를 포함하도록 설정
