@@ -10,7 +10,8 @@ public class EsBookSearchRequest {
 
     @NotBlank(message = "검색어는 필수입니다.")
     private String keyword;
-    private String sort;
+    private String sortKey;
+    private String direction;
     private Long categoryId;
     private Integer minPrice;
     private Integer maxPrice;

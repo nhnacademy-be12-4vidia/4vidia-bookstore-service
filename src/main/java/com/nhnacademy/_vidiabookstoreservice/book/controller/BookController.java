@@ -1,9 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.controller;
 
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.BookSortKey;
+import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.*;
-import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
-import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchWithTagRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
@@ -18,17 +16,12 @@ import jakarta.validation.Valid;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
