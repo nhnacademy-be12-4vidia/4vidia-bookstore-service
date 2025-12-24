@@ -28,7 +28,7 @@ public class AdminBookServiceImpl implements AdminBookService {
 
     @Override
     @Cacheable(
-            value = "adminIsbnSearchV7",
+            value = "adminIsbnSearchV8",
             key = "T(com.nhnacademy._vidiabookstoreservice.book.service.resolver.IsbnResolver).toIsbn13(#isbn)",
             cacheManager = "isbnSearchCacheManager",
             sync = true // 동시에 여러 요청이 들어올 때 하나의 요청만 처리하고 나머지는 대기

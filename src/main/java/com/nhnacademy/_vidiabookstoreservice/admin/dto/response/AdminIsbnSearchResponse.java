@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.CLASS
+        use = JsonTypeInfo.Id.CLASS // 직렬화 시 클래스 정보를 포함
 )
 public record AdminIsbnSearchResponse(
 

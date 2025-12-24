@@ -39,13 +39,19 @@ public class BookCacheConfig {
     public CacheManager isbnSearchCacheManager(
             RedisConnectionFactory isbnRedisConnectionFactory
     ) {
+        // 기본 ObjectMapper는 클래스에 대한 정보를 모르기 때문에 ClassCastException 발생
+        // 해결을 위해 다형성 타입 정보를 포함하도록 설정
+        // BasicPolymorphicTypeValidator를 사용하여 허용된 패키지 설정
         ObjectMapper cacheObjectMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .activateDefaultTyping(
                         BasicPolymorphicTypeValidator.builder()
-                                .allowIfBaseType(Object.class)
+                                .allowIfSubType("com.nhnacademy._vidiabookstoreservice")
+                                .allowIfSubType("java.util")
+                                .allowIfSubType("java.time")
+                                .allowIfSubType("java.lang")
                                 .build(),
-                        ObjectMapper.DefaultTyping.NON_FINAL,
+                        ObjectMapper.DefaultTyping.EVERYTHING,
                         JsonTypeInfo.As.PROPERTY
                 );
 
