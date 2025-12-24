@@ -37,10 +37,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -199,24 +202,41 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderPreviewResponse> getOrdersByUserId(Long userId) {
-        List<Order> orders = orderRepository.findAllByUser_UserId(userId);
+    public Page<OrderPreviewResponse> getOrdersByUserId(Long userId, String status, Pageable pageable) {
+        Page<Order> orderPage;
 
-        List<Long> ordersItemIds = orders.stream()
+        if (status == null || status.equalsIgnoreCase("ALL")) { // 전체 조회
+            orderPage = orderRepository.findAllByUser_UserId(userId, pageable);
+        } else if (status.equalsIgnoreCase("REFUND_REQUEST")) { // 반품/교환
+            orderPage = orderRepository.findRefundRequestsByUserId(userId, pageable);
+        } else {
+            try {
+                DeliveryStatus deliveryStatus = DeliveryStatus.valueOf(status.toUpperCase());
+                orderPage = orderRepository.findAllByUser_UserIdAndDeliveryStatus(userId, deliveryStatus, pageable);
+            } catch (IllegalArgumentException e) {
+                log.warn("잘못된 status");
+                orderPage = orderRepository.findAllByUser_UserId(userId, pageable);
+            }
+        }
+
+        List<Long> ordersItemIds = orderPage.stream()
                 .flatMap(order -> order.getOrderItems().stream()) // 모든 주문의 OrderItem 리스트를 하나의 스트림으로 합치고
                 .map(OrderItem::getOrderItemId) // OrderItem에서 ID만 추출
                 .toList();
 
-        List<Long> writtenReview = reviewService.getReviewedOrderItemIdList(ordersItemIds);
-
-
-        List<RefundItem> refundItems = refundItemRepository.findByOrderItem_OrderItemId(ordersItemIds);
+        List<Long> writtenReview = ordersItemIds.isEmpty() ? Collections.emptyList() : reviewService.getReviewedOrderItemIdList(ordersItemIds);
+        List<RefundItem> refundItems = ordersItemIds.isEmpty() ? Collections.emptyList() : refundItemRepository.findByOrderItem_OrderItemId(ordersItemIds);
 
         Set<Long> reviewedItemIds = new HashSet<>(writtenReview);
         Set<RefundItem> refundItemsSet = new HashSet<>(refundItems);
-        return orders.stream().map(
-                order -> OrderPreviewResponse.from(order,reviewedItemIds, refundItemsSet, resolver))
-                .toList();
+
+        return orderPage.map(order -> OrderPreviewResponse.from(order, reviewedItemIds, refundItemsSet, resolver));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderCountResponse getOrderCounts(Long userId) {
+        return orderRepository.countOrdersByUserId(userId);
     }
 
 
