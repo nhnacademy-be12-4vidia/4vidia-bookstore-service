@@ -5,12 +5,16 @@ import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.book.service.impl.MinioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.ISBN;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @Validated
 @RestController
@@ -20,6 +24,7 @@ public class AdminBookController {
 
     private final AdminBookService adminBookService;
     private final BookService bookService;
+    private final MinioService minioService;
 
     @GetMapping("/search")
     public ResponseEntity<AdminIsbnSearchResponse> searchBookByIsbn(
@@ -45,5 +50,13 @@ public class AdminBookController {
 
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/images")
+    public ResponseEntity<Map<String, String>> uploadImage(
+            @RequestParam("image") MultipartFile image
+    ) {
+        String imageUrl = minioService.upload(image);
+        return ResponseEntity.ok(Map.of("url", imageUrl));
     }
 }

@@ -14,7 +14,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.util.List;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.CLASS
+)
 public record AdminIsbnSearchResponse(
 
         boolean found,
@@ -26,9 +28,6 @@ public record AdminIsbnSearchResponse(
         List<AuthorNameRoleResponse> authors,
         String publisher,
 
-        @JsonSerialize(using = LocalDateSerializer.class)
-        @JsonDeserialize(using = LocalDateDeserializer.class)
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         LocalDate publishedDate,
 

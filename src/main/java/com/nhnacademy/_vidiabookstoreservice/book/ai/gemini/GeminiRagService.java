@@ -120,6 +120,8 @@ public class GeminiRagService {
         sb.append("\n[지시사항]\n");
         sb.append("1. **Google Search**를 반드시 사용하여 위 정보 중 '정보 없음'이거나 내용이 부실한 필드를 보강하세요.\n");
         sb.append("2. 특히 **'목차(bookIndex)'**와 **'상세 설명(description)'**은 반드시 검색을 통해 풍부하게 작성해야 합니다.\n");
+        sb.append("2-1. 목차는 도서의 실제 목차를 전부 가져와야합니다.\n");
+        sb.append("2-2. 상세 설명은 도서의 핵심 내용을 요약하고, 가능한 한 풍부하게 작성하세요.\n");
         sb.append("3. 저자 정보는 '이름'과 '역할(지은이/옮긴이/그림 등)'을 정확히 구분하여 리스트로 만드세요\n");
         sb.append("3-1. 여러명의 저자를 모두 포함하고, 역할이 불분명한 경우 역할은 비워두세요.\n");
         sb.append("3-2. 저자의 역할이 2개 이상인 경우, 정규화하여 (이름, 역할1), (이름, 역할2) 형태로 각각 추가하세요.\n");
@@ -128,8 +130,10 @@ public class GeminiRagService {
         sb.append("5. 언어는 해당 도서가 작성된 언어로 영어 2글자 소문자를 사용하세요. 예: 'ko', 'en', 'jp'\n");
         sb.append("6. 태그 목록은 알라딘 카테고리 이름을 > 구분자로 분리해 사용 할 것입니다.\n");
         sb.append("6-1. 알라딘 카테고리 이름과 중복되지 않게, 책에 대한 적절한 태그를 생성해주세요.\n");
-        sb.append("7. 모든 필드를 최대한 채우되, 불확실한 정보는 절대 추가하지 마세요.\n");
-        sb.append("8. 응답은 반드시 마크다운 코드 블록 없이 **순수 JSON 객체**로만 답변하세요.\n");
+        sb.append("6-2. 태그에는 출판사 이름이나 작가 이름을 포함하지 말아주세요\n");
+        sb.append("7. 페이지 수(pageCount)와 정가(priceStandard)는 반드시 정수로 기재하세요.\n");
+        sb.append("8. 모든 필드를 최대한 채우되, 불확실한 정보이거나 찾을 수 없는 정보는 절대 추가하지 마세요.\n");
+        sb.append("8-1. 응답은 반드시 마크다운 코드 블록 없이 **순수 JSON 객체**로만 답변하세요.\n");
 
         sb.append("\n[목표 JSON 구조]\n");
         sb.append("{\n");
@@ -139,7 +143,7 @@ public class GeminiRagService {
         sb.append("  \"publisher\": \"출판사명\",\n");
         sb.append("  \"publishedDate\": \"YYYY-MM-DD\",\n");
         sb.append("  \"language\": \"언어(ko, en...)\",\n");
-        sb.append("  \"pageCount\": 0,\n");
+        sb.append("  \"pageCount\": 페이지수,\n");
         sb.append("  \"categoryCode\": \"카테고리 코드\",\n");
         sb.append("  \"priceStandard\": 0,\n");
         sb.append("  \"description\": \"상세 설명 (최대한 풍부하게)\",\n");
