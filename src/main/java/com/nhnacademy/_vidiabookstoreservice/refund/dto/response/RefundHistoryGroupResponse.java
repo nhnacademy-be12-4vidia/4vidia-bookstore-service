@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.refund.dto.response;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundItemNotFoundException;
 
@@ -25,7 +26,7 @@ public record RefundHistoryGroupResponse(
             String title,
             int quantity,
             int price,
-            RefundStatus refundItemStatus,
+            RefundItemStatus refundItemStatus,
             String rejectDetail // 거절 사유 (아이템별)
 
     ) {}
@@ -43,7 +44,7 @@ public record RefundHistoryGroupResponse(
                                 item.getOrderItem().getBook().getTitle(),
                                 item.getOrderItem().getQuantity(),
                                 item.getRefundPrice() == null ? 0 : item.getRefundPrice(),
-                                item.getRefundStatus(),
+                                item.getRefundItemStatus(),
                                 item.getRejectDetail()
                         ))
                         .toList();

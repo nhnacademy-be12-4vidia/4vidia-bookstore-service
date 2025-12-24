@@ -7,6 +7,7 @@ import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundItemUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundStatusInvalidException;
@@ -91,7 +92,7 @@ public class AdminRefundServiceImpl implements AdminRefundService {
      */
     @Override
     public void updateRefundStatus(Long refundItemId, RefundItemUpdateRequest request) {
-        switch (request.refundStatus()) {
+        switch (request.refundItemStatus()) {
             case APPROVED -> acceptRefund(refundItemId);
             case REJECTED -> rejectRefund(refundItemId, request.rejectDetail());
             default -> throw new RefundStatusInvalidException();
@@ -147,9 +148,9 @@ public class AdminRefundServiceImpl implements AdminRefundService {
 
     private void updateRefundStatusIfCompleted(Refund refund) {
         boolean hasProcessItem =
-                refundItemRepository.existsByRefund_RefundIdAndRefundStatus(
+                refundItemRepository.existsByRefund_RefundIdAndRefundItemStatus(
                         refund.getRefundId(),
-                        RefundStatus.PROCESS
+                        RefundItemStatus.PROCESS
                 );
 
         if (!hasProcessItem) {

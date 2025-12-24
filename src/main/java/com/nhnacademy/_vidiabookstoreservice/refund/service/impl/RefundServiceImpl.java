@@ -53,12 +53,14 @@ public class RefundServiceImpl implements RefundService {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         List<OrderItem> orderItems =
-                orderItemRepository.findNotRefundedOrderItems(orderId);
+                orderItemRepository.findAllByOrderIdWithRefunds(orderId);
 
-        return new RefundResponse(
-                orderId,
-                orderItems.stream().map(OrderItemResponse::from).toList()
-        );
+        List<OrderItemResponse> returnableItems = orderItems.stream()
+                .filter(OrderItem::isReturnable)
+                .map(OrderItemResponse::from)
+                .toList();
+
+        return new RefundResponse(orderId, returnableItems);
     }
 
     /**
