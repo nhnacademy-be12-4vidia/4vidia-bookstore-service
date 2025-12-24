@@ -7,6 +7,8 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderTracki
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -20,7 +22,8 @@ public interface OrderService {
 
     Order getOrder(Long orderId);
 
-    List<OrderPreviewResponse> getOrdersByUserId(Long userId);
+    Page<OrderPreviewResponse> getOrdersByUserId(Long userId, String status, Pageable pageable);
+    OrderCountResponse getOrderCounts(Long userId);
 
     void cancelOrderIfPending(Long orderId);
 
