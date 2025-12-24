@@ -43,28 +43,26 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 3개월 순수 주문금액 계산
     @Query(value = """
-    SELECT
-        o.user_id AS userId,
-        COALESCE(SUM(
-            o.total_book_price
-            - o.coupon_discount
-            - o.delivery_fee
-            - o.packaging_fee
-            - COALESCE(pd.cancel_point, 0)
-        ), 0) AS netSum
-    FROM orders o
-    LEFT JOIN (
         SELECT
-            order_id,
-            SUM(price) AS cancel_point
-        FROM point_detail
-        WHERE reason = :reasonCode 
-        GROUP BY order_id
-    ) pd ON o.order_id = pd.order_id
-    WHERE o.created_at >= :fromDt
-      AND o.created_at < :toDt
-    GROUP BY o.user_id
-""", nativeQuery = true)
+            o.user_id AS userId,
+            COALESCE(SUM(
+                o.total_book_price
+                - o.coupon_discount
+                - COALESCE(pd.cancel_point, 0)
+            ), 0) AS netSum
+        FROM orders o
+        LEFT JOIN (
+            SELECT
+                order_id,
+                SUM(price) AS cancel_point
+            FROM point_detail
+            WHERE reason = :reasonCode
+            GROUP BY order_id
+        ) pd ON o.order_id = pd.order_id
+        WHERE o.created_at >= :fromDt
+          AND o.created_at < :toDt
+        GROUP BY o.user_id
+        """, nativeQuery = true)
     List<UserNetSum> findUserNetSumLast3Months(
             @Param("fromDt") LocalDateTime fromDt,
             @Param("toDt") LocalDateTime toDt,

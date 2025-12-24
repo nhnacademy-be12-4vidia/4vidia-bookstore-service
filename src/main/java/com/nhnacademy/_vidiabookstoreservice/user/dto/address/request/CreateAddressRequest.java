@@ -8,19 +8,19 @@ import jakarta.validation.constraints.Size;
 
 // 주소 등록 DTO
 public record CreateAddressRequest(
-        @Size(max = 20)
+        @Size(max = 50)
         @NotBlank
         String alias,// 별칭
 
-        @Size(max = 30)
+        @Size(max = 255)
         @NotBlank(message = "도로명 주소는 필수 입력값입니다.")
         String roadAddress,//도로명 주소
 
-        @Size(max = 5)
+        @Size(max = 10)
         @NotBlank(message = "우편번호는 필수 입력값입니다.")
         String zipCode, // 우편번호
 
-        @Size(max = 30)
+        @Size(max = 255)
         String addressDetail
 ){
     public Address toEntity(User user) {
