@@ -8,6 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.book.ai.cache.AiCacheHitService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BaseBookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
 
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
@@ -217,6 +218,13 @@ public class BookSearchService {
 
         return PageResponse.from(page);
 
+    }
+
+    public List<BookListResponse> searchBooksForCoupon(String bookTitle) {
+        EsBookSearchRequest request = EsBookSearchRequest.builder().keyword(bookTitle).build();
+        List<BookDocument> docs = searchClient.search(request, null, 50);
+
+        return resultAssembler.assembleForCoupon(docs);
     }
 
 

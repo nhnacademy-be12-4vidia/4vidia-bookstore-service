@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.repository;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.repository.custom.BookRepositoryCustom;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
@@ -15,7 +16,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Long>, BookRepositoryCustom {
 
     boolean existsByIsbn(String isbn);
 

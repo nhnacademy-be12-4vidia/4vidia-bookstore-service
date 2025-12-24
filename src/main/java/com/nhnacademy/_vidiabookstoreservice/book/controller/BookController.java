@@ -119,4 +119,11 @@ public class BookController {
 
         return ResponseEntity.ok().body(bestSellerList);
     }
+
+    @GetMapping("/search-simple")
+    public ResponseEntity<List<BookListResponse>> getBookList(@RequestParam String keyword) {
+        List<BookListResponse> response = bookSearchService.searchBooksForCoupon(keyword);
+
+        return ResponseEntity.ok(response);
+    }
 }
