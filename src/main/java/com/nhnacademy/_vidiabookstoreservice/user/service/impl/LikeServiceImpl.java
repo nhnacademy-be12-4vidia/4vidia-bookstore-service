@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
@@ -14,6 +15,8 @@ import com.nhnacademy._vidiabookstoreservice.user.repository.LikeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,17 @@ public class LikeServiceImpl implements LikeService {
     private final BookRepository bookRepository;
 
     /**
+     * 좋아요 리스트 조회(my page)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<LikeResponse> getLikesPage(Long userId, Pageable pageable) {
+        Page<Like> likesPage = likeRepository.findByUser_UserId(userId, pageable);
+        Page<LikeResponse> responsePage = likesPage.map(LikeResponse::fromEntity);
+        return PageResponse.from(responsePage);
+    }
+
+    /**
      * 좋아요 리스트 조회
      * */
     @Override
@@ -40,10 +54,7 @@ public class LikeServiceImpl implements LikeService {
 
         List<Like> likeList = likeRepository.findAllByUser_UserId(userId);
         return likeList.stream()
-                .map(LikeResponse::fromEntity) // n+1 ?
-                // 만약 Like → Book이 LAZY라면
-                // Like 10개 가져오면 Book 조회 10번 나갈 수도 있음.
-                // -> 해결: LikeRepository에서 fetch join 사용
+                .map(LikeResponse::fromEntity)
                 .toList();
     }
 

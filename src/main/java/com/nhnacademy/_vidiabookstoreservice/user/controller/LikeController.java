@@ -1,10 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
-import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +15,24 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/users/me/likes") // 기존 "/my/likes"
+@RequestMapping("/users/me/likes")
 public class LikeController {
     private final LikeService likeService;
 
     /**
-     * 좋아요 리스트 조회
+     * 좋아요 리스트 조회(my page에서 사용)
      */
     @GetMapping
+    public ResponseEntity<PageResponse<LikeResponse>> getLikeListPage(@PageableDefault(size = 10) Pageable pageable){
+        Long userId = UserContext.get().getUserId();
+
+        return ResponseEntity.ok().body(likeService.getLikesPage(userId, pageable));
+    }
+
+    /**
+     * 좋아요 리스트 조회
+     */
+    @GetMapping("/all")
     public ResponseEntity<List<LikeResponse>> getLikeList(){
         Long userId = UserContext.get().getUserId();
 
