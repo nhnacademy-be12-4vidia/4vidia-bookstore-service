@@ -119,6 +119,7 @@ public class GeminiRagService {
 
         sb.append("\n[지시사항]\n");
         sb.append("1. **Google Search**를 반드시 사용하여 위 정보 중 '정보 없음'이거나 내용이 부실한 필드를 보강하세요.\n");
+        sb.append("1-1. Google Search 결과에서 신뢰할 수 있는 출처(출판사, 서점, 공식 페이지 등)의 상세 페이지 정보를 우선 사용하세요.\n");
         sb.append("2. 특히 **'목차(bookIndex)'**와 **'상세 설명(description)'**은 반드시 검색을 통해 풍부하게 작성해야 합니다.\n");
         sb.append("2-1. 목차는 도서의 실제 목차를 전부 가져와야합니다.\n");
         sb.append("2-2. 상세 설명은 도서의 핵심 내용을 요약하고, 가능한 한 풍부하게 작성하세요.\n");

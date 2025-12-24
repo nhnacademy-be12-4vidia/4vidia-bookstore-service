@@ -51,7 +51,7 @@ public class BookCacheConfig {
                                 .allowIfSubType("java.time")
                                 .allowIfSubType("java.lang")
                                 .build(),
-                        ObjectMapper.DefaultTyping.EVERYTHING,
+                        ObjectMapper.DefaultTyping.NON_FINAL,
                         JsonTypeInfo.As.PROPERTY
                 );
 
