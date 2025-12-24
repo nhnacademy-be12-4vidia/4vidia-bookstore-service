@@ -224,9 +224,7 @@ public class BookSearchService {
         EsBookSearchRequest request = EsBookSearchRequest.builder().keyword(bookTitle).build();
         List<BookDocument> docs = searchClient.search(request, null, 50);
 
-        List<Long> idList = docs.stream().map(BookDocument::getId).map(Long::parseLong).toList();
-
-
+        return resultAssembler.assembleForCoupon(docs);
     }
 
 
