@@ -3,9 +3,12 @@ package com.nhnacademy._vidiabookstoreservice.book.document;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import jakarta.persistence.Id;
+
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.elasticsearch.annotations.*;
 
 @Document(indexName = "4vidia-books")
@@ -42,6 +45,10 @@ public class BookDocument {
             otherFields = @InnerField(suffix = "keyword", type = FieldType.Keyword)
     )
     private List<String> tags;
+
+    @Field(type = FieldType.Date, format = DateFormat.date, pattern = "yyyy-MM-dd")
+    @Setter
+    private LocalDate publishedDate;
 
     @Field(type = FieldType.Dense_Vector, dims = 1024)
     private double[] embedding;
