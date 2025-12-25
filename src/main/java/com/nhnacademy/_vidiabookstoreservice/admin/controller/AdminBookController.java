@@ -34,6 +34,14 @@ public class AdminBookController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/augment")
+    public ResponseEntity<AdminIsbnSearchResponse> augmentBookInfo(
+            @RequestParam @ISBN(type = ISBN.Type.ANY) String isbn
+    ) {
+        AdminIsbnSearchResponse response = adminBookService.augmentBookInfo(isbn);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<Void> createBook (
             @Valid @RequestBody BookCreateRequest request

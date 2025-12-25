@@ -9,4 +9,8 @@ public class BookNotFoundException extends BaseException {
         super(BookErrorCode.BOOK_NOT_FOUND, "도서 ID: %d".formatted(bookId));
     }
 
+    public BookNotFoundException(String isbn) {
+        super(BookErrorCode.BOOK_NOT_FOUND, "ISBN: %s".formatted(isbn));
+    }
+
 }
