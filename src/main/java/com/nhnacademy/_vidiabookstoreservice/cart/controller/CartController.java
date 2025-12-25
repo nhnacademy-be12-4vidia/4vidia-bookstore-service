@@ -132,15 +132,7 @@ public class CartController {
     @PostMapping("/logout-sync")
     public ResponseEntity<Void> logoutSync() {
         Long userId = UserContext.get().getUserId();
-        cartService.flushCartFromRedisToMySql(userId);
-        return ResponseEntity.noContent().build();
-    }
-
-    // 정상 로그인 직후 호출 (redis에 없으면 MySQL -> Redis 복원)
-    @PostMapping("/login-sync")
-    public ResponseEntity<Void> loginSync() {
-        Long userId = UserContext.get().getUserId();
-        cartService.loginSyncCart(userId);
+        cartService.logoutSyncCart(userId);
         return ResponseEntity.noContent().build();
     }
 
