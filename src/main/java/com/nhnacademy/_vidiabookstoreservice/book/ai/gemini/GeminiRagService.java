@@ -213,8 +213,7 @@ public class GeminiRagService {
             Integer pageCount = pickInteger(
                     parseIntegerFlexible(root.get("pageCount")),
                     dbData != null ? dbData.pageCount() : null,
-                    (aladin != null && aladin.bookinfo() != null) ? aladin.bookinfo().itemPage() : null,
-                    0
+                    (aladin != null && aladin.bookinfo() != null) ? aladin.bookinfo().itemPage() : null
             );
 
             String categoryCode = firstNonEmpty(
@@ -278,10 +277,10 @@ public class GeminiRagService {
                 null,
                 null,
                 null,
-                0,
                 null,
-                0,
-                0,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -304,7 +303,7 @@ public class GeminiRagService {
                     aladin.publisher(),
                     parseLocalDateFlexible(aladin.pubDate(), null),
                     null,
-                    aladin.bookinfo() != null ? aladin.bookinfo().itemPage() : 0,
+                    aladin.bookinfo() != null ? aladin.bookinfo().itemPage() : null,
                     null,
                     aladin.priceStandard(),
                     0,
