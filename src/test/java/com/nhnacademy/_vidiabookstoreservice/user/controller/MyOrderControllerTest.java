@@ -31,6 +31,8 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -113,35 +115,48 @@ class MyOrderControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[주문내역 미리보기]")
+    @DisplayName("[주문내역 미리보기 (pageable)]")
     void getOrderPreview() throws Exception {
         mockMvc.perform(get("/users/me/orders")
                         .header("X-User-Id", testUserId)
+                        .param("page", "0")
+                        .param("size", "10")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andDo(document("user-me-orders-get",
+                .andDo(document("user-me-orders-page-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
 
                         requestHeaders(
                                 headerWithName("X-User-Id").description("사용자 식별 ID")
                         ),
+                        queryParameters(
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)").optional(),
+                                parameterWithName("size").description("페이지 크기 (기본 10)").optional(),
+                                parameterWithName("status").description("주문 상태 필터 (ALL, WAITING 등)").optional()
+                        ),
                         responseFields(
-                                fieldWithPath("[].orderId").description("주문 아이디"),
-                                fieldWithPath("[].userId").description("유저 아이디"),
-                                fieldWithPath("[].createdAt").description("주문 생성일"),
-                                fieldWithPath("[].deliveryStatus").description("배송상태"),
-                                fieldWithPath("[].orderItems").description("주문 도서 목록"),
+                                fieldWithPath("content[].orderId").description("주문 아이디"),
+                                fieldWithPath("content[].userId").description("유저 아이디"),
+                                fieldWithPath("content[].createdAt").description("주문 생성일"),
+                                fieldWithPath("content[].deliveryStatus").description("배송상태"),
 
-                                fieldWithPath("[].orderItems[].orderItemId").description("주문 상품 아이디"),
-                                fieldWithPath("[].orderItems[].bookId").description("도서 아이디"),
-                                fieldWithPath("[].orderItems[].bookTitle").description("도서 제목"),
-                                fieldWithPath("[].orderItems[].bookAuthor").description("도서 저자").optional(),
-                                fieldWithPath("[].orderItems[].bookImageUrl").description("도서 이미지").optional(),
-                                fieldWithPath("[].orderItems[].quantity").description("주문 수량"),
-                                fieldWithPath("[].orderItems[].salePrice").description("구매 당시 가격"),
-                                fieldWithPath("[].orderItems[].orderItemViewStatus").description("주문 확정 상태"),
-                                fieldWithPath("[].orderItems[].isReviewed").description("리뷰 작성 여부")
+                                fieldWithPath("content[].orderItems").description("주문 도서 목록"),
+                                fieldWithPath("content[].orderItems[].orderItemId").description("주문 상품 아이디"),
+                                fieldWithPath("content[].orderItems[].bookId").description("도서 아이디"),
+                                fieldWithPath("content[].orderItems[].bookTitle").description("도서 제목"),
+                                fieldWithPath("content[].orderItems[].bookAuthor").description("도서 저자").optional(),
+                                fieldWithPath("content[].orderItems[].bookImageUrl").description("도서 이미지").optional(),
+                                fieldWithPath("content[].orderItems[].quantity").description("주문 수량"),
+                                fieldWithPath("content[].orderItems[].salePrice").description("구매 당시 가격"),
+                                fieldWithPath("content[].orderItems[].orderItemViewStatus").description("주문 확정 상태"),
+                                fieldWithPath("content[].orderItems[].isReviewed").description("리뷰 작성 여부"),
+
+                                fieldWithPath("page").description("현재 페이지 번호"),
+                                fieldWithPath("size").description("페이지 크기"),
+                                fieldWithPath("totalElements").description("전체 요소 수"),
+                                fieldWithPath("totalPages").description("전체 페이지 수"),
+                                fieldWithPath("last").description("마지막 페이지 여부")
                         )
                 ));
     }
@@ -176,6 +191,30 @@ class MyOrderControllerTest extends SupportControllerTest {
                                 fieldWithPath("addressResponses[].roadAddress").description("도로명 주소들"),
                                 fieldWithPath("addressResponses[].zipCode").description("우편번호들"),
                                 fieldWithPath("addressResponses[].addressDetail").description("상세주소들")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[탭 카운트 조회 API]")
+    void getOrderCounts() throws Exception {
+        mockMvc.perform(get("/users/me/orders/counts")
+                        .header("X-User-Id", testUserId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("user-me-orders-counts-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName("X-User-Id").description("사용자 식별 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("total").description("전체 주문 수"),
+                                fieldWithPath("waiting").description("입금/결제 대기 및 완료 수"),
+                                fieldWithPath("shipping").description("배송 중 수"),
+                                fieldWithPath("delivered").description("배송 완료 수"),
+                                fieldWithPath("canceled").description("취소/반품/교환 수")
                         )
                 ));
     }

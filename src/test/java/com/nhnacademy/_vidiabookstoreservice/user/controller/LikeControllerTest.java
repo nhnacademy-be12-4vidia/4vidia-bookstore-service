@@ -71,9 +71,41 @@ class LikeControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[좋아요 리스트 조회]")
-    void getLikeList() throws Exception {
+    @DisplayName("[좋아요 리스트 조회(pageable)]")
+    void getLikeListPage() throws Exception {
         mockMvc.perform(get("/users/me/likes")
+                        .header("X-User-Id", testUserId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("user-likes-page-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName("X-User-Id").description("사용자 식별 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("content[].bookId").description("도서 아이디"),
+                                fieldWithPath("content[].bookTitle").description("도서 제목"),
+                                fieldWithPath("content[].authorName").description("저자"), // Book entity에 저자가 없으면 null일 수 있음
+                                fieldWithPath("content[].priceStandard").description("정가"),
+                                fieldWithPath("content[].priceSales").description("할인가"),
+                                fieldWithPath("content[].stockStatus").description("재고상태"),
+                                fieldWithPath("content[].bookImage").description("도서 이미지").optional(),
+
+                                fieldWithPath("page").description("현재 페이지 번호 (0부터 시작)"),
+                                fieldWithPath("size").description("페이지 크기"),
+                                fieldWithPath("totalElements").description("전체 요소 수"),
+                                fieldWithPath("totalPages").description("전체 페이지 수"),
+                                fieldWithPath("last").description("마지막 페이지 여부")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[좋아요 리스트 조회(list)]")
+    void getLikeList() throws Exception {
+        mockMvc.perform(get("/users/me/likes/all")
                         .header("X-User-Id", testUserId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
