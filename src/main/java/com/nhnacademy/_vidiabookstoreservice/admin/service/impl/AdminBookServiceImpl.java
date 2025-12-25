@@ -11,7 +11,9 @@ import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.resolver.IsbnResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -38,7 +40,7 @@ public class AdminBookServiceImpl implements AdminBookService {
         String normalizedIsbn = IsbnResolver.toIsbn13(isbn);
 
         // 1. DB 조회: 있으면 바로 반환 (보강 X), 없으면 외부 검색 (보강 O)
-        return bookRepository.findByIsbn(normalizedIsbn)
+        return bookRepository.findByIsbnWithDetails(normalizedIsbn)
                 .map(AdminIsbnSearchResponse::foundFromDb)
                 .orElseGet(() -> geminiRagService.augmentBookInfo(normalizedIsbn, null));
     }
@@ -54,11 +56,25 @@ public class AdminBookServiceImpl implements AdminBookService {
         String normalizedIsbn = IsbnResolver.toIsbn13(isbn);
 
         // 1. DB 조회 (필수: 보강은 기존 도서가 있을 때만 가능)
-        AdminIsbnSearchResponse dbBase = bookRepository.findByIsbn(normalizedIsbn)
+        AdminIsbnSearchResponse dbBase = bookRepository.findByIsbnWithDetails(normalizedIsbn)
                 .map(AdminIsbnSearchResponse::foundFromDb)
                 .orElseThrow(() -> new BookNotFoundException(isbn));
 
         // 2. DB 데이터를 기반으로 외부 API + Gemini 보강 수행
         return geminiRagService.augmentBookInfo(normalizedIsbn, dbBase);
+    }
+
+    @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    value = "adminIsbnSearch",
+                    key = "T(com.nhnacademy._vidiabookstoreservice.book.service.resolver.IsbnResolver).toIsbn13(#isbn)",
+                    cacheManager = "isbnSearchCacheManager"),
+            @CacheEvict(value = "bookAugmentation",
+                    key = "T(com.nhnacademy._vidiabookstoreservice.book.service.resolver.IsbnResolver).toIsbn13(#isbn)",
+                    cacheManager = "isbnSearchCacheManager")
+    })
+    public void evictIsbnCaches(String isbn) {
+        log.info("Evicting ISBN caches for: {}", isbn);
     }
 }

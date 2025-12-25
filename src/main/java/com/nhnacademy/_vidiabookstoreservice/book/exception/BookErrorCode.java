@@ -16,8 +16,8 @@ public enum BookErrorCode implements ErrorCodeProvider {
     // BAD_REQUEST (400)
 
     // ALREADY_EXISTS (409)
-    AUTHOR_ALREADY_EXISTS(HttpStatus.CONFLICT, "B201", "이미 존재하는 도서입니다."),
-    BOOK_ALREADY_EXISTS(HttpStatus.CONFLICT, "B202", "해당하는 이름의 작가가 이미 존재합니다."),
+    AUTHOR_ALREADY_EXISTS(HttpStatus.CONFLICT, "B201", "해당하는 이름의 작가가 이미 존재합니다."),
+    BOOK_ALREADY_EXISTS(HttpStatus.CONFLICT, "B202", "이미 존재하는 도서입니다."),
     BOOK_AUTHOR_ALREADY_EXISTS(HttpStatus.CONFLICT, "B203", "이미 해당 도서에 등록된 작가입니다."),
     IMAGE_ALREADY_EXISTS(HttpStatus.CONFLICT, "B204", "해당 Url은 이미 저장되어있습니다."),
     BOOK_TAG_ALREADY_EXISTS(HttpStatus.CONFLICT, "B205", "이미 해당 도서에 등록된 태그입니다."),

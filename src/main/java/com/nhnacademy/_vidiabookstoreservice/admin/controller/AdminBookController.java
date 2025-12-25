@@ -46,7 +46,7 @@ public class AdminBookController {
     public ResponseEntity<Void> createBook (
             @Valid @RequestBody BookCreateRequest request
     ) {
-
+        bookService.createBook(request, null);
         return ResponseEntity.ok().build();
     }
 
@@ -55,8 +55,7 @@ public class AdminBookController {
             @PathVariable("book-id") Long bookId,
             @Valid @RequestBody BookUpdateRequest request
     ) {
-
-
+        bookService.updateBook(bookId, request, null);
         return ResponseEntity.ok().build();
     }
 

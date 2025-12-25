@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface BookService {
 
-    BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail, List<MultipartFile> detailImages);
+    BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail);
 
     Page<BookListResponse> getBookList(BookSearchRequest request, Pageable pageable);
 

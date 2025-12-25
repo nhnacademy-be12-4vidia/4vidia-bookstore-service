@@ -8,4 +8,6 @@ public interface AdminBookService {
     AdminIsbnSearchResponse processIsbnSearch(String isbn);
 
     AdminIsbnSearchResponse augmentBookInfo(String isbn);
+    
+    void evictIsbnCaches(String isbn);
 }

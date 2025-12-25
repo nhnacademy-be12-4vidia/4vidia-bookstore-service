@@ -31,6 +31,20 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
             """)
     Optional<Book> findByIdWithAuthors(@Param("bookId") Long bookId);
 
+    @Query("""
+            SELECT DISTINCT b
+            FROM Book b
+            LEFT JOIN FETCH b.publisher
+            LEFT JOIN FETCH b.category
+            LEFT JOIN FETCH b.bookAuthorList ba
+            LEFT JOIN FETCH ba.author
+            LEFT JOIN FETCH b.bookImageList
+            LEFT JOIN FETCH b.bookTagList bt
+            LEFT JOIN FETCH bt.tag
+            WHERE b.isbn = :isbn
+            """)
+    Optional<Book> findByIsbnWithDetails(@Param("isbn") String isbn);
+
     Page<Book> findByTitleContaining(String keyword, Pageable pageable);
 
     Page<Book> findByCategoryKdcCode(String categoryKdcCode, Pageable pageable);

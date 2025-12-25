@@ -59,6 +59,19 @@ public class MinioService {
         amazonS3.deleteObject(bucket, objectKey);
     }
 
+    public boolean isMinioUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) return false;
+        try {
+            URI uri = new URI(imageUrl);
+            String path = uri.getPath();
+            String decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8);
+            String bucketPrefix = "/" + bucket + "/";
+            return decodedPath.startsWith(bucketPrefix);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private String extractKeyFromUrl(String imageUrl) {
         try {
             URI uri = new URI(imageUrl);
