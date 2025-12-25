@@ -3,13 +3,13 @@ package com.nhnacademy._vidiabookstoreservice.book.dto.book.request;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
@@ -40,6 +40,9 @@ public class BookCreateRequest {
     @Min(0)
     private Integer stock;
 
+    @NotNull(message = "판매 상태는 필수입니다.")
+    private StockStatus stockStatus;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate publishedDate;
 
@@ -67,6 +70,7 @@ public class BookCreateRequest {
             .priceStandard(this.priceStandard)
             .priceSales(this.priceSales)
             .stock(this.stock)
+            .stockStatus(this.stockStatus)
             .pageCount(this.pageCount)
             .language(this.language)
             .packagingAvailable(Boolean.TRUE.equals(this.packagingAvailable))

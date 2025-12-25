@@ -37,6 +37,7 @@ public record AdminIsbnSearchResponse(
 
         Integer priceStandard,
         Integer stock,
+        Boolean packagingAvailable,
 
         String description,
         String bookIndex,
@@ -75,6 +76,7 @@ public record AdminIsbnSearchResponse(
                 book.getCategory() != null ? book.getCategory().getKdcCode() : null,
                 book.getPriceStandard(),
                 book.getStock(),
+                book.isPackagingAvailable(),
                 book.getDescription(),
                 book.getBookIndex(),
                 tags

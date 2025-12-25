@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminIsbnSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.book.aladin.client.AladinApiClient;
 import com.nhnacademy._vidiabookstoreservice.book.aladin.dto.AladinItemDto;
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorNameRoleResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -254,6 +255,7 @@ public class GeminiRagService {
                     categoryCode,
                     priceStandard,
                     stock,
+                    dbData != null ? dbData.packagingAvailable() : null,
                     description,
                     bookIndex,
                     tags
@@ -266,7 +268,25 @@ public class GeminiRagService {
     }
 
     private AdminIsbnSearchResponse createEmptyResponse() {
-        return new AdminIsbnSearchResponse(false, null, null, "검색 결과 없음", null, List.of(), null, null, null, 0, null, 0, 0, null, null, List.of());
+        return new AdminIsbnSearchResponse(
+                false,
+                null,
+                null,
+                "검색 결과 없음",
+                null,
+                List.of(),
+                null,
+                null,
+                null,
+                0,
+                null,
+                0,
+                0,
+                null,
+                null,
+                null,
+                List.of()
+        );
     }
 
     private AdminIsbnSearchResponse fallbackResponse(AdminIsbnSearchResponse dbData, AladinItemDto aladin) {
@@ -288,6 +308,7 @@ public class GeminiRagService {
                     null,
                     aladin.priceStandard(),
                     0,
+                    null,
                     aladin.description(),
                     aladin.bookinfo() != null ? aladin.bookinfo().toc() : null,
                     parseTags(null, aladin, null)
