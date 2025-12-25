@@ -29,7 +29,7 @@ public class MyOrderController {
     private final UserService userService;
 
     /**
-     * 주문내역 미리보기
+     * 주문내역 미리보기 (pageable)
      */
     @GetMapping("/orders")
     public ResponseEntity<PageResponse<OrderPreviewResponse>> getOrderPreview(

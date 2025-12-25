@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/users") // 기존 "/my"
+@RequestMapping("/users")
 @RestController
 public class UserController {
 
@@ -28,7 +28,7 @@ public class UserController {
     /**
      * 이메일로 회원 조회
      */
-    @GetMapping // 기존 "/users?email=.."
+    @GetMapping
     public ResponseEntity<UserInfoResponse> getUserByEmail(@RequestParam String email) {
         UserInfoResponse user = userService.getUserByEmail(email);
         return ResponseEntity.ok().body(user); // 200 OK + JSON
@@ -45,10 +45,10 @@ public class UserController {
     }
 
     /**
-     * userId 받는게 필요함..
+     * 회원 존재여부 조회? userId 받는게 필요함..
      * @param userId
      */
-    @GetMapping("/{userId}/exists")
+    @GetMapping("/{userId}/exists") // todo : {user-id}로 수정 좀 해주세요.. @tjddn327
     public ResponseEntity<Void> exists(@PathVariable Long userId) {
         userService.getUserById(userId); // 없으면 예외
         return ResponseEntity.ok().build();
@@ -91,7 +91,7 @@ public class UserController {
     /**
      * 비밀번호 수정
      */
-    @PutMapping("/me/password") // 기존 "/change-password"
+    @PutMapping("/me/password")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
         Long userId = UserContext.get().getUserId();
 
