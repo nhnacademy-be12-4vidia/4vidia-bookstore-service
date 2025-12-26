@@ -435,6 +435,16 @@ public class BookServiceImpl implements BookService {
         return getBookListResponseByTagId(tagId, userId, resolved);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookListResponse> getMainBookList(Long tagId, Long userId) {
+
+        if (tagId == 0) {
+            return bookRepository.getMainPageNoCategoryBookList(userId);
+        }
+        return bookRepository.getMainPageCategoryBookList(tagId, userId);
+    }
+
     private Integer parseIntegerSafe(String value) {
         try {
             return value != null && !value.isBlank() ? Integer.parseInt(value) : null;
