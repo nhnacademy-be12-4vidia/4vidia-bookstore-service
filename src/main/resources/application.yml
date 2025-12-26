@@ -38,7 +38,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://s4.java21.net:13306/project_be12_team4
+    url: jdbc:mysql://s4.java21.net:13306/project_be12_team4?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 
     username: project_be12_team4
     password: ${MYSQL_PASSWORD}
