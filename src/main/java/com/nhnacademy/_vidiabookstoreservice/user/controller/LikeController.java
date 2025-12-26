@@ -44,6 +44,10 @@ public class LikeController {
      */
     @PostMapping("/{book-id}")
     public ResponseEntity<Void> addLike(@PathVariable("book-id") Long bookId) {
+        if (UserContext.get() == null || UserContext.get().getUserId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 반환
+        }
+
         Long userId = UserContext.get().getUserId();
 
         likeService.addLike(userId, bookId);
@@ -55,6 +59,10 @@ public class LikeController {
      */
     @DeleteMapping("/{book-id}")
     public ResponseEntity<Void> removeLike(@PathVariable("book-id") Long bookId) {
+        if (UserContext.get() == null || UserContext.get().getUserId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 반환
+        }
+
         Long userId = UserContext.get().getUserId();
 
         likeService.removeLike(userId, bookId);
