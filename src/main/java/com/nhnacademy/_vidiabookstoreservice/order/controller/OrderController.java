@@ -59,7 +59,7 @@ public class OrderController {
             OrderResponse orderResponse = orderService.getOrderResponse(orderTrackingRequest.orderId());
             return ResponseEntity.status(HttpStatus.OK).body(orderResponse);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }
 
     /**
