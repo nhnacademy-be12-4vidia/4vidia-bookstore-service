@@ -85,6 +85,8 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void addItem(CartOwner owner, AddCartItemRequest addItemRequest) {
+        ensureCartLoaded(owner);
+
         if(!bookRepository.existsById(addItemRequest.bookId())){
             throw new BookNotFoundException(addItemRequest.bookId());
         }
@@ -104,6 +106,8 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest) {
+        ensureCartLoaded(owner);
+
         if(!bookRepository.existsById(bookId)){
             throw new BookNotFoundException(bookId);
         }
@@ -125,6 +129,8 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void removeItem(CartOwner owner, Long bookId){
+        ensureCartLoaded(owner);
+
         if(!bookRepository.existsById(bookId)){
             throw new BookNotFoundException(bookId);
         }
@@ -218,52 +224,16 @@ public class CartServiceImpl implements CartService {
 
 
     /**
-     * Redis -> MySQL
-     * @param userId
+     * 스케줄러로 redis -> mysql 처리 시
      */
     @Override
     public void flushCartFromRedisToMySql(Long userId) {
-        CartOwner owner = CartOwner.user(userId);
-
-        Map<Long, Integer> items = redisCartRepository.getCartItems(owner);
-
-        Cart cart = findOrCreateCart(userId);
-
-        // Redis 장바구니가 비어 있으면 -> MySQL (cart_book) 비우기
-        if (items.isEmpty()) {
-            cart.getCartBooks().clear();
+        if (redisCartRepository.existsExpireKey(userId)) {
+            log.info("[장바구니] 유저(userId={})가 다시 활동 중이므로 flush를 중단", userId);
             return;
         }
 
-        List<Long> bookIds = new ArrayList<>(items.keySet());
-        Map<Long, Book> bookMap = bookRepository.findAllById(bookIds).stream()
-                .collect(Collectors.toMap(Book::getId, book -> book));
-
-        // ! 현재 Cart의 CartBook들을 bookId 기준으로 맵핑
-        Map<Long, CartBook> existingMap = cart.getCartBooks().stream()
-                .collect(Collectors.toMap(
-                        cb -> cb.getBook().getId(),
-                        cb -> cb
-                ));
-
-        // Redis 기준으로 insert/update
-        items.forEach((bookId, quantity) -> {
-            CartBook existing = existingMap.remove(bookId);
-
-            if (existing != null) {
-                existing.changeQuantity(quantity); // 이미 있으면 수량 합
-            } else {
-                Book book = bookMap.get(bookId);
-                if (book != null) {
-                    cart.addItem(book, quantity);
-                } else {
-                    log.warn("[CartSync] 존재하지 않는 도서 무시: bookId={}", bookId);
-                }
-            }
-        });
-
-        // DB에는 있는데 Redis에는 없는 도서 => 삭제
-        existingMap.values().forEach(cb -> cart.getCartBooks().remove(cb));
+        performFlush(userId);
     }
 
     @Override
@@ -279,7 +249,7 @@ public class CartServiceImpl implements CartService {
             return;
         }
 
-        flushCartFromRedisToMySql(userId);
+        performFlush(userId);
 
         redisCartRepository.clearCart(owner);
     }
@@ -301,5 +271,53 @@ public class CartServiceImpl implements CartService {
                 redisCartRepository.setItemQuantity(owner, bookId, quantity);
             });
         });
+    }
+
+    /**
+     * Redis에 데이터가 없는 경우 DB에서 복원하는 유틸리티 메서드
+     */
+    private void ensureCartLoaded(CartOwner owner) {
+        if (owner.isUser() && !redisCartRepository.existsKey(owner)) {
+            loginSyncCart(owner.id());
+        }
+    }
+
+    /**
+     * DB 저장 로직 분리
+     */
+    private void performFlush(Long userId) {
+        CartOwner owner = CartOwner.user(userId);
+        Map<Long, Integer> items = redisCartRepository.getCartItems(owner);
+        Cart cart = findOrCreateCart(userId);
+
+        // Redis 장바구니가 비어 있으면 -> MySQL (cart_book) 비우기
+        if (items.isEmpty()) {
+            cart.getCartBooks().clear();
+            return;
+        }
+
+        List<Long> bookIds = new ArrayList<>(items.keySet());
+        Map<Long, Book> bookMap = bookRepository.findAllById(bookIds).stream()
+                .collect(Collectors.toMap(Book::getId, book -> book));
+
+        Map<Long, CartBook> existingMap = cart.getCartBooks().stream()
+                .collect(Collectors.toMap(
+                        cb -> cb.getBook().getId(),
+                        cb -> cb
+                ));
+
+        items.forEach((bookId, quantity) -> {
+            CartBook existing = existingMap.remove(bookId);
+            if (existing != null) {
+                existing.changeQuantity(quantity);
+            } else {
+                Book book = bookMap.get(bookId);
+                if (book != null) {
+                    cart.addItem(book, quantity);
+                }
+            }
+        });
+
+        existingMap.values().forEach(cb -> cart.getCartBooks().remove(cb));
     }
 }

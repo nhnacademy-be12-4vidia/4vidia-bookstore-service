@@ -28,7 +28,7 @@ public class RedisCartRepository {
     private static final String EXPIRE_PREFIX = "cart:expire:user:";
 
     // 회원 장바구니 수명 (이벤트 발생용)
-    private static final Duration USER_CART_TTL = Duration.ofDays(1);
+    private static final Duration USER_CART_TTL = Duration.ofHours(3);
     // 비회원 장바구니 수명 (메모리 관리용 - DB 저장 안 함)
     private static final Duration GUEST_CART_TTL = Duration.ofDays(3);
 
@@ -52,7 +52,7 @@ public class RedisCartRepository {
             // [회원] 2-Key 방식 사용
             cartRedisTemplate.opsForValue().set(expireKey(owner.id()), "1", USER_CART_TTL);
 
-            cartRedisTemplate.expire(dataKey, USER_CART_TTL.plusHours(5));
+            cartRedisTemplate.expire(dataKey, USER_CART_TTL.plusHours(3));
         } else {
             cartRedisTemplate.expire(dataKey, GUEST_CART_TTL);
         }
@@ -60,6 +60,11 @@ public class RedisCartRepository {
 
     public boolean existsKey(CartOwner owner) {
         return cartRedisTemplate.hasKey(cartKey(owner));
+    }
+
+
+    public boolean existsExpireKey(Long userId) {
+        return cartRedisTemplate.hasKey(EXPIRE_PREFIX + userId);
     }
 
     public Map<Long, Integer> getCartItems(CartOwner owner) {
