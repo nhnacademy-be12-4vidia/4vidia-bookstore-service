@@ -16,4 +16,6 @@ public interface AuthService {
     Boolean isDormant(String email);
     int convertDormantUsers(LocalDateTime day);
     OAuth2UserDto findOrCreateOAuthUser(String provider, PaycoUserRequest paycoUserRequest);
+    void sendSignupEmailCode(String email);
+    void verifySignupEmailCode(String email, String code);
 }
