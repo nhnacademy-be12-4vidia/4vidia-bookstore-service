@@ -49,6 +49,13 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderResponse);
     }
 
+    @GetMapping("/{order-id}/amount")
+    public ResponseEntity<OrderAmountResponse> getOrderPayPrice(@PathVariable(value = "order-id") long orderId) {
+        OrderAmountResponse orderAmountResponse = orderService.getOrderPayPrice(orderId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(orderAmountResponse);
+    }
+
     /**
      * 비회원 주문 상세 내역 보기
      * @param orderTrackingRequest : 주문아이디, 주문비밀번호

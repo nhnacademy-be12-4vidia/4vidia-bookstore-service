@@ -16,6 +16,8 @@ public interface OrderService {
 
     OrderResponse getGuestOrderResponse(OrderTrackingRequest request);
 
+    OrderAmountResponse getOrderPayPrice(Long orderId);
+
     OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request);
 
     PaymentResponse payAndCompleteOrder(Long orderId, PaymentConfirmRequest confirmRequest, Long userId);
@@ -23,6 +25,7 @@ public interface OrderService {
     Order getOrder(Long orderId);
 
     Page<OrderPreviewResponse> getOrdersByUserId(Long userId, String status, Pageable pageable);
+
     OrderCountResponse getOrderCounts(Long userId);
 
     void cancelOrderIfPending(Long orderId);
