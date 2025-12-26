@@ -5,13 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,93 +17,106 @@ import java.util.Set;
 public class BestSellerScheduler {
     private final StringRedisTemplate bestsellerRedisTemplate;
 
-    private static final String KEY_DAILY_SALES_STATS = "stats:bestseller:daily"; // 오늘 하루 실시간으로 주문이 들어올 때마다 쌓이는 누적 판매량(ZSet)
-    private static final String KEY_BESTSELLER_VIEW_CACHE = "view:bestseller:top10"; // 프론트엔드에서 조회해가는 결과 리스트(List), 스케줄러가 계산을 끝내고 최종 결과만 여기에 넣어줌
-    private static final String KEY_YESTERDAY_BACKUP = "backup:bestseller:yesterday"; // 어제 판매 데이터 (오늘 판매량이 아직 적을 때, 랭킹 10위를 채우기 위한 보충 데이터로 사용)
+    private static final String KEY_DAILY_SALES_STATS = "stats:bestseller:daily";
+    private static final String KEY_BESTSELLER_VIEW_CACHE = "view:bestseller:top10";
+    private static final String KEY_YESTERDAY_BACKUP = "backup:bestseller:yesterday";
 
     /**
-     * 1시간마다 랭킹을 갱신하는
-     * - 1. 오늘 데이터 조회: bestseller 키에서 판매량 상위 10개를 가져옴
-     * - 2. 데이터 보정 (Backfill): 만약 오늘 판매된 책이 3권밖에 없다면, 나머지 7권은 backup:bestseller:yesterday(어제 데이터)에서 상위권 순서대로 가져와 채움
-     * - 3. 중복 제거 (LinkedHashSet): 오늘 판매된 책이 어제도 판매되었을 수 있음. LinkedHashSet을 사용해 중복을 제거하면서도 랭킹 순서(오늘 판매 우선)는 유지
-     * - 4. 최종 저장: 계산된 10개 리스트를 top10 키에 덮어씀. (기존 키 삭제 후 저장)
+     * 1시간마다 랭킹 갱신
      */
-//    @Scheduled(cron = "0 0/5 * * * *") // 테스트용 10분마다 스케줄링
     @Scheduled(cron = "0 0 * * * *")
     public void updateBestsellerRanking() {
-        log.info("========== [Scheduler] 베스트셀러 랭킹 집계 시작 ==========");
+        log.info("========== [Scheduler] 🥇 베스트셀러 랭킹 집계 시작 ==========");
 
         ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
         ListOperations<String, String> listOps = bestsellerRedisTemplate.opsForList();
 
-        Set<String> finalRankingSet = new LinkedHashSet<>(); // 중복 방지, 순서 보장
+        Set<String> finalRankingSet = new LinkedHashSet<>(); // 최종 ID 저장용 (중복 제거, 순서 유지)
+        List<String> logMessages = new ArrayList<>(); // 로그 출력용 메시지 저장
 
-        Long sourceSize = zSetOps.zCard(KEY_DAILY_SALES_STATS);
-        log.info("[Scheduler] 베스트셀러 랭킹 갱신 시작");
-        log.info("현재 누적된 책 종류: {}개", sourceSize);
+        // 1. 오늘의 Top 10 조회 (Score 포함)
+        // reverseRangeWithScores를 사용하면 값(Value)과 점수(Score)를 같이 줍니다.
+        Set<TypedTuple<String>> todayTuples = zSetOps.reverseRangeWithScores(KEY_DAILY_SALES_STATS, 0, 9);
+        if (todayTuples != null) {
+            for (TypedTuple<String> tuple : todayTuples) {
+                String bookId = tuple.getValue();
+                Double score = tuple.getScore(); // 판매량
+                int salesCount = (score != null) ? score.intValue() : 0;
 
-
-        // 1. 오늘의 Top 10 조회 (점수 높은 순)
-        Set<String> todayTop10 = zSetOps.reverseRange(KEY_DAILY_SALES_STATS, 0, 9);
-
-        if (todayTop10 != null) {
-            finalRankingSet.addAll(todayTop10);
+                finalRankingSet.add(bookId);
+                // 로그 메시지 포맷: "ID (판매량) *"
+                logMessages.add(String.format("📖 도서ID: %s (%d권) *", bookId, salesCount));
+            }
         }
-        log.info(">> 오늘 판매된 도서: {}권 집계됨 (우선 순위)", finalRankingSet.size());
+        log.info(">> 오늘 판매 데이터: {}건 반영됨", finalRankingSet.size());
 
 
         // 2. 데이터가 10개 미만일 때 어제 데이터(백업)에서 채우기 로직
         if (finalRankingSet.size() < 10) {
-            log.info(">> 데이터 부족 (현재 {}개). 백업 데이터에서 상위권 도서 보충 시도...", finalRankingSet.size());
+            int needed = 10 - finalRankingSet.size();
+            log.info(">> 데이터 부족 (현재 {}개). 백업 데이터 보충 시도...", finalRankingSet.size());
 
-            // 백업 데이터에서 넉넉하게 상위 20개 가져옴 (중복이 있을 수 있으므로)
-            Set<String> backupIds = zSetOps.reverseRange(KEY_YESTERDAY_BACKUP, 0, 19);
+            // 백업 데이터 조회 (Score 포함)
+            Set<TypedTuple<String>> backupTuples = zSetOps.reverseRangeWithScores(KEY_YESTERDAY_BACKUP, 0, 19);
 
-            if (backupIds != null) {
-                for (String id : backupIds) {
-                    if (finalRankingSet.size() >= 10) {
-                        break; // 10개가 채워지면 즉시 중단
+            if (backupTuples != null) {
+                for (TypedTuple<String> tuple : backupTuples) {
+                    if (finalRankingSet.size() >= 10) break;
+
+                    String bookId = tuple.getValue();
+                    // add가 true를 반환하면 -> Set에 없던 새로운 값이므로 추가 성공 (즉, 오늘 판매된 책이 아님)
+                    if (finalRankingSet.add(bookId)) {
+                        Double score = tuple.getScore();
+                        int salesCount = (score != null) ? score.intValue() : 0;
+
+                        // 백업 데이터는 '*' 표시 없음
+                        logMessages.add(String.format("📖 도서ID: %s (%d권)", bookId, salesCount));
                     }
-                    // LinkedHashSet이므로 이미 오늘 판매된 책이라면(중복) 무시되고,
-                    // 없으면 리스트의 맨 뒤에 추가됨 -> 순위 밀림 효과 자동 적용
-                    finalRankingSet.add(id);
                 }
             }
         }
 
-        List<String> finalRankingList = new ArrayList<>(finalRankingSet); // set -> list
-        // 3. 결과 저장
+        // 3. 결과 Redis 저장 (Atomic Rename)
+        List<String> finalRankingList = new ArrayList<>(finalRankingSet);
         if (!finalRankingList.isEmpty()) {
-            bestsellerRedisTemplate.delete(KEY_BESTSELLER_VIEW_CACHE); // 기존 랭킹 삭제
-            listOps.rightPushAll(KEY_BESTSELLER_VIEW_CACHE, finalRankingList);
+            String tempKey = "temp:bestseller:update:" + UUID.randomUUID();
+
+            listOps.rightPushAll(tempKey, finalRankingList);
+            bestsellerRedisTemplate.expire(tempKey, 60, java.util.concurrent.TimeUnit.SECONDS);
+            bestsellerRedisTemplate.rename(tempKey, KEY_BESTSELLER_VIEW_CACHE);
 
             log.info(">> 최종 랭킹 반영 완료 (총 {}권)", finalRankingList.size());
-            log.info(">> 리스트: {}", finalRankingList);
+
+            // 요청하신 상세 로그 출력
+            for (int i = 0; i < logMessages.size(); i++) {
+                log.info("{}위 - {}", i + 1, logMessages.get(i));
+            }
+
         } else {
-            log.warn(">> [주의] 판매 데이터가 0건입니다. (오늘 + 어제 데이터 없음)");
+            // 오늘 데이터도 없고 백업도 없어서 리스트가 비었을 때 (삭제 대신 유지하도록 정책 변경 시 이 부분 수정 가능)
+            log.warn(">> 판매 데이터 0건. 베스트셀러 리스트 갱신 없음 (기존 데이터 유지 또는 삭제)");
         }
 
         log.info("========================================================");
     }
 
     /**
-     * 매일 자정에 데이터를 초기화하는 로직 (하루가 지나면 오늘의 판매량을 어제로 넘기고, 오늘은 0부터 다시 시작해야 함)
+     * 매일 자정 실행
      */
-//    @Scheduled(cron = "0 0/30 * * * *") // 테스트용 매 시간마다 초기화
     @Scheduled(cron = "0 0 0 * * *")
     public void dailyReset() {
-        log.info("========== [Scheduler] 일일 데이터 초기화 및 백업 수행 ==========");
+        log.info("========== [Scheduler] 일일 데이터 초기화 (오늘 -> 어제) ==========");
 
-        Boolean hasTodayData = bestsellerRedisTemplate.hasKey(KEY_DAILY_SALES_STATS);
-
-        if (Boolean.TRUE.equals(hasTodayData)) {
-            // 오늘 집계(ZSet) -> 어제 백업(ZSet)으로 이름 변경 (덮어쓰기)
+        if (Boolean.TRUE.equals(bestsellerRedisTemplate.hasKey(KEY_DAILY_SALES_STATS))) {
+            // Rename(덮어쓰기) 사용
+            // 오늘 쌓인 데이터를 백업 키로 이름만 바꿈 (기존 백업 데이터는 사라짐 -> 누적 방지)
             bestsellerRedisTemplate.rename(KEY_DAILY_SALES_STATS, KEY_YESTERDAY_BACKUP);
-            log.info(">> 오늘 판매 데이터를 백업 키({})로 이관 완료 (점수 보존)", KEY_YESTERDAY_BACKUP);
+            bestsellerRedisTemplate.expire(KEY_YESTERDAY_BACKUP, 3, java.util.concurrent.TimeUnit.DAYS); // 백업 데이터 유효 기간 설정 (데이터가 없을 때를 대비해 2~3일 정도 유지)
+
+            log.info(">> 오늘 판매 데이터를 백업 키({})로 이관 완료. (누적 X, 단순 교체)", KEY_YESTERDAY_BACKUP);
         } else {
-            // 오늘 판매량이 하나도 없었다면, 백업 데이터도 비워야 함 (어제의 어제 데이터가 남지 않도록)
-            bestsellerRedisTemplate.delete(KEY_YESTERDAY_BACKUP);
-            log.info(">> 오늘 판매 데이터 없음. 백업 데이터 초기화.");
+            // 오늘 하나도 안 팔렸다면? -> 기존 백업(어제 데이터)을 지우지 않고 내일도 재사용 (빈 화면 방지)
+            log.info(">> 오늘 판매 데이터 없음. 기존 백업 데이터({})를 유지합니다.", KEY_YESTERDAY_BACKUP);
         }
 
         log.info("=============================================================");
