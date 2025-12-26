@@ -44,18 +44,20 @@ public class AdminBookController {
 
     @PostMapping
     public ResponseEntity<Void> createBook (
-            @Valid @RequestBody BookCreateRequest request
+            @RequestPart("request") @Valid BookCreateRequest request,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail
     ) {
-        bookService.createBook(request, null);
+        bookService.createBook(request, thumbnail);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{book-id}")
     public ResponseEntity<Void> updateBook (
             @PathVariable("book-id") Long bookId,
-            @Valid @RequestBody BookUpdateRequest request
+            @RequestPart("request") @Valid BookUpdateRequest request,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail
     ) {
-        bookService.updateBook(bookId, request, null);
+        bookService.updateBook(bookId, request, thumbnail);
         return ResponseEntity.ok().build();
     }
 
