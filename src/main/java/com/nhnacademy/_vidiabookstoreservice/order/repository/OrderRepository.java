@@ -5,6 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCountResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.impl.OrderServiceImpl;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
 import org.springframework.data.domain.Page;
@@ -21,47 +22,56 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Order> findByOrderId(Long orderId);
 
-    // 전체 조회
-    Page<Order> findAllByUser_UserId(Long userUserId, Pageable pageable);
-    // 배송 상태별 조회
-    Page<Order> findAllByUser_UserIdAndDeliveryStatus(Long userUserId, DeliveryStatus deliveryStatus, Pageable pageable);
-    // 반품/교환 요청 조회 (OrderItem 상태가 REFUND_REQUESTED인 주문들)
-    @Query("SELECT DISTINCT ri.orderItem.order FROM RefundItem ri " +
-            "WHERE ri.orderItem.order.user.userId = :userId " +
-            "AND ri.refundItemStatus = com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus.PROCESS")
-    Page<Order> findRefundRequestsByUserId(@Param("userId") Long userId, Pageable pageable);
+    /**
+     * 페이징 전체 조회
+     */
+    Page<Order> findAllByUser_UserId(Long userId, Pageable pageable);
 
+    /**
+     * 배송 상태별 조회
+     */
+    Page<Order> findAllByUser_UserIdAndDeliveryStatus(
+            Long userId,
+            DeliveryStatus deliveryStatus,
+            Pageable pageable
+    );
+
+    /**
+     * 반품/교환 요청 조회 (OrderItem 상태가 REFUND_REQUESTED인 주문들)
+     */
     @Query("""
-        SELECT new com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCountResponse(
-            COUNT(DISTINCT o),
-            SUM(CASE WHEN o.deliveryStatus = com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus.WAITING THEN 1 ELSE 0 END),
-            SUM(CASE WHEN o.deliveryStatus = com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus.SHIPPING THEN 1 ELSE 0 END),
-            SUM(CASE WHEN o.deliveryStatus = com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus.DELIVERED THEN 1 ELSE 0 END),
-            SUM(CASE WHEN o.deliveryStatus = com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus.CANCELED THEN 1 ELSE 0 END)
-        )
-        FROM Order o
-        WHERE o.user.userId = :userId
-    """)
-    OrderCountResponse countOrdersByUserId(@Param("userId") Long userId);
-    // TODO 수정할 예정.......
-//    @Query("""
-//            SELECT new com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCountResponse(
-//                COUNT(DISTINCT o),
-//                SUM(CASE WHEN o.deliveryStatus = :waiting THEN 1 ELSE 0 END),
-//                SUM(CASE WHEN o.deliveryStatus = :shipping THEN 1 ELSE 0 END),
-//                SUM(CASE WHEN o.deliveryStatus = :delivered THEN 1 ELSE 0 END),
-//                SUM(CASE WHEN o.deliveryStatus = :canceled THEN 1 ELSE 0 END)
-//            )
-//            FROM Order o
-//            WHERE o.user.userId = :userId
-//        """)
-//    OrderCountResponse countOrdersByUserId(
-//            @Param("userId") Long userId,
-//            @Param("waiting") DeliveryStatus waiting,
-//            @Param("shipping") DeliveryStatus shipping,
-//            @Param("delivered") DeliveryStatus delivered,
-//            @Param("canceled") DeliveryStatus canceled
-//    );
+            select distinct ri.orderItem.order
+            from RefundItem ri
+            where ri.orderItem.order.user.userId = :userId
+            and ri.refundItemStatus = :process
+        """)
+    Page<Order> findRefundRequestsByUserId(
+            @Param("userId") Long userId,
+            @Param("process") RefundItemStatus process,
+            Pageable pageable
+    );
+
+    /**
+     * 주문 리스트의 탭(배송상태)별 카운트
+     */
+    @Query("""
+            select new com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCountResponse(
+                COUNT(distinct o),
+                SUM(case when o.deliveryStatus = :waiting then 1 else 0 end ),
+                SUM(case when o.deliveryStatus = :shipping then 1 else 0 end),
+                SUM(case when o.deliveryStatus = :delivered then 1 else 0 end),
+                SUM(case when o.deliveryStatus = :canceled then 1 else 0 end)
+            )
+            from Order o
+            where o.user.userId = :userId
+        """)
+    OrderCountResponse countOrdersByUserId(
+            @Param("userId") Long userId,
+            @Param("waiting") DeliveryStatus waiting,
+            @Param("shipping") DeliveryStatus shipping,
+            @Param("delivered") DeliveryStatus delivered,
+            @Param("canceled") DeliveryStatus canceled
+    );
 
 
     @Query("select distinct o from Order o " +
