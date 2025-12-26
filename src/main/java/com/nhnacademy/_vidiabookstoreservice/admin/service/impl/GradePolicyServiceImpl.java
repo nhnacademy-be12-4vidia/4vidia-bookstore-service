@@ -19,6 +19,13 @@ public class GradePolicyServiceImpl implements GradePolicyService {
     private final GradeRepository repository;
 
     @Override
+    public GradePolicyResponse get(Long gradePolicyId) {
+        Grade policy = repository.findById(gradePolicyId)
+                .orElseThrow(() -> new GradeNotFoundException(gradePolicyId));
+        return GradePolicyResponse.from(policy);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<GradePolicyResponse> getAll() {
         return repository.findAll().stream()
