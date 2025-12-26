@@ -1,14 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.*;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeByEmailRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantVerifyRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateLastLoginRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.DormantAuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
@@ -126,6 +123,26 @@ public class AuthController {
         userService.updateLastLoginAt(updateLastLoginRequest.email());
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     *  회원가입 이메일 인증코드 전송
+     */
+    @PostMapping("/email/send-code")
+    public ResponseEntity<Void> sendSignupEmailCode(@RequestBody EmailSendCodeRequest request) {
+        authService.sendSignupEmailCode(request.email());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 회원가입 이메일 인증코드 검증
+     */
+    @PostMapping("/email/verify-code")
+    public ResponseEntity<Void> verifySignupEmailCode(@RequestBody EmailVerifyCodeRequest request) {
+        authService.verifySignupEmailCode(request.email(),  request.code());
+        return ResponseEntity.ok().build();
+    }
+
+
 
 
 }

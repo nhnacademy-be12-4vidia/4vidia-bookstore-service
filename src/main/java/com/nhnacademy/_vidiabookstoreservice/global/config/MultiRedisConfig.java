@@ -83,6 +83,30 @@ public class MultiRedisConfig {
     ) {
         return new StringRedisTemplate(cf);
     }
+    @Bean
+    public LettuceConnectionFactory signupRedisConnectionFactory() {
+        MultiRedisProperties.RedisNode s = props.getSignup();
+        if (s == null) {
+            throw new IllegalStateException("data.redis.signup 설정이 없습니다.");
+        }
+
+        RedisStandaloneConfiguration config =
+                new RedisStandaloneConfiguration(s.getHost(), s.getPort());
+        config.setDatabase(s.getDatabase());
+
+        if (s.getPassword() != null && !s.getPassword().isBlank()) {
+            config.setPassword(RedisPassword.of(s.getPassword()));
+        }
+        return new LettuceConnectionFactory(config);
+    }
+
+    @Bean
+    public StringRedisTemplate signupRedisTemplate(
+            @Qualifier("signupRedisConnectionFactory") LettuceConnectionFactory cf
+    ) {
+        return new StringRedisTemplate(cf);
+    }
+
 
 
 

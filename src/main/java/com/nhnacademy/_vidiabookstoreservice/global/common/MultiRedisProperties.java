@@ -13,6 +13,7 @@ public class MultiRedisProperties {
     private RedisNode dormant;
     private RedisNode bestseller;
     private RedisNode ai;
+    private RedisNode signup;
 
     @Getter
     @Setter

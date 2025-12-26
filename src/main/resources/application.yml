@@ -27,6 +27,13 @@ spring:
         password: ${REDIS_PASSWORD}
         database: 388
         timeout: 5000ms
+      signup:
+        host: s4.java21.net
+        port: 6379
+        password: ${REDIS_PASSWORD}
+        database: 381
+        timeout: 5000ms
+
 
 
   datasource:
