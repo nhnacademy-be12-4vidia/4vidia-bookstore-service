@@ -144,7 +144,7 @@ google:
 
 aladin:
   api:
-    key: ${ALADIN_API_KEY}
+    key: ${ALADIN_API_KEY1}
 
 toss:
   secretKey: ${TOSS_SECRET_KEY}
