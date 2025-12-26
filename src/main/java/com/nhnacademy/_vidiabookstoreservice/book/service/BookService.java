@@ -49,4 +49,6 @@ public interface BookService {
     PageResponse<BaseBookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable);
 
     PageResponse<BaseBookListResponse> getBooksByTag(Long tagId, String tagName, BookSortKey sortKey, boolean asc, Pageable pageable, Long userId);
+
+    List<BookListResponse> getMainBookList(Long tagId, Long userId);
 }
