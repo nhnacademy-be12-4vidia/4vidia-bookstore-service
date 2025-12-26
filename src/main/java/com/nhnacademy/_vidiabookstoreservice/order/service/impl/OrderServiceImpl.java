@@ -28,6 +28,7 @@ import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
 import com.nhnacademy._vidiabookstoreservice.point.exception.invalid.PointGuestUseException;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
@@ -239,13 +240,14 @@ public class OrderServiceImpl implements OrderService {
         if (status == null || status.equalsIgnoreCase("ALL")) { // 전체 조회
             orderPage = orderRepository.findAllByUser_UserId(userId, pageable);
         } else if (status.equalsIgnoreCase("REFUND_REQUEST")) { // 반품/교환
-            orderPage = orderRepository.findRefundRequestsByUserId(userId, pageable);
+            orderPage = orderRepository.findRefundRequestsByUserId(userId, RefundItemStatus.PROCESS, pageable);
         } else {
             try {
                 DeliveryStatus deliveryStatus = DeliveryStatus.valueOf(status.toUpperCase());
                 orderPage = orderRepository.findAllByUser_UserIdAndDeliveryStatus(userId, deliveryStatus, pageable);
             } catch (IllegalArgumentException e) {
-                log.warn("잘못된 status");
+                log.warn("잘못된 status: {}", status);
+                // 잘못된 상태값이 오면 전체 조회로 fallback
                 orderPage = orderRepository.findAllByUser_UserId(userId, pageable);
             }
         }
@@ -258,8 +260,21 @@ public class OrderServiceImpl implements OrderService {
         List<Long> writtenReview = ordersItemIds.isEmpty() ? Collections.emptyList() : reviewService.getReviewedOrderItemIdList(ordersItemIds);
         List<RefundItem> refundItems = ordersItemIds.isEmpty() ? Collections.emptyList() : refundItemRepository.findByOrderItem_OrderItemId(ordersItemIds);
 
+        // 문제 원인: 리스트에 같은 OrderItem에 대한 반품 내역이 여러 개(거절됨, 재신청됨 등) 있을 때 HashSet에 다 들어가서 랜덤으로 뽑힘.
+        // 해결: Map을 이용해 OrderItemId 별로 '가장 최근(ID가 큰)' 반품 내역 하나만 남김
+        Map<Long, RefundItem> latestRefundMap = refundItems.stream()
+                .collect(Collectors.toMap(
+                        ri -> ri.getOrderItem().getOrderItemId(), // Key: 주문아이템 ID
+                        ri -> ri, // Value: 반품 객체
+                        (existing, replacement) -> { // 중복 발생 시 로직
+                            // ID가 더 큰 것(나중에 생성된 것)을 선택 -> 최신 상태 반영
+                            return existing.getRefundItemId() > replacement.getRefundItemId() ? existing : replacement;
+                        }
+                ));
+
         Set<Long> reviewedItemIds = new HashSet<>(writtenReview);
-        Set<RefundItem> refundItemsSet = new HashSet<>(refundItems);
+        // Map의 values()만 뽑아서 Set으로 만듦 (이제 중복 없음)
+        Set<RefundItem> refundItemsSet = new HashSet<>(latestRefundMap.values());
 
         return orderPage.map(order -> OrderPreviewResponse.from(order, reviewedItemIds, refundItemsSet, resolver));
     }
@@ -267,7 +282,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public OrderCountResponse getOrderCounts(Long userId) {
-        return orderRepository.countOrdersByUserId(userId);
+        return orderRepository.countOrdersByUserId(
+                userId,
+                DeliveryStatus.WAITING,
+                DeliveryStatus.SHIPPING,
+                DeliveryStatus.DELIVERED,
+                DeliveryStatus.CANCELED
+        );
     }
 
 
