@@ -9,12 +9,14 @@ import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
@@ -133,6 +135,14 @@ public class CartController {
     public ResponseEntity<Void> logoutSync() {
         Long userId = UserContext.get().getUserId();
         cartService.logoutSyncCart(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 정상 로그인 직후 호출 (redis에 없으면 MySQL -> Redis 복원)
+    @PostMapping("/login-sync")
+    public ResponseEntity<Void> loginSync() {
+        Long userId = UserContext.get().getUserId();
+        cartService.loginSyncCart(userId);
         return ResponseEntity.noContent().build();
     }
 
