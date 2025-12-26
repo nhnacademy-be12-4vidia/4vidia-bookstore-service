@@ -210,6 +210,20 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderAmountResponse getOrderPayPrice(Long orderId) {
+        Order order = orderRepository.findByOrderIdWithAll(orderId).orElseThrow(
+                () -> new OrderNotFoundException(orderId)
+        );
+
+        return new OrderAmountResponse(order.getTotalBookPrice() +
+                order.getPackagingFee() +
+                order.getDeliveryFee() -
+                order.getCouponDiscount() -
+                order.getPointUsed()
+                );
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
         return orderRepository.findByOrderId(orderId).orElseThrow(
