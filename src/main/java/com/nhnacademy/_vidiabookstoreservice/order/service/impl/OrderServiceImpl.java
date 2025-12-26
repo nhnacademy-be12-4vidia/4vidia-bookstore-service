@@ -184,11 +184,28 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getOrderResponse(Long orderId) {
+    public OrderResponse getOrderResponse(Long userId, Long orderId) {
         Order order = orderRepository.findByOrderIdWithAll(orderId).orElseThrow(
                 () -> new OrderNotFoundException(orderId)
         );
 
+        if (!Objects.equals(order.getUser().getUserId(), userId)) {
+            throw new OrderAccessDeniedException(orderId, "주문 조회 권한이 없습니다.");
+        }
+
+        return OrderResponse.from(order);
+    }
+
+    @Override
+    public OrderResponse getGuestOrderResponse(OrderTrackingRequest orderTrackingRequest) {
+        Order order = getOrder(orderTrackingRequest.orderId());
+
+        if (order.getUser() != null) {
+            throw new OrderAccessDeniedException(orderTrackingRequest.orderId(), "회원은 로그인 후 조회 가능합니다.");
+        }
+        if (!order.getOrderPassword().equals(orderTrackingRequest.orderPassword())) {
+            throw new InvalidOrderPasswordException(orderTrackingRequest.orderId());
+        }
         return OrderResponse.from(order);
     }
 
@@ -348,13 +365,6 @@ public class OrderServiceImpl implements OrderService {
         if (order.getPointUsed() != 0) {
             pointCommandService.cancelUse(orderId, order.getUser().getUserId());
         }
-    }
-
-    @Override
-    public Boolean validateGuest(OrderTrackingRequest orderTrackingRequest) {
-        Order order = getOrder(orderTrackingRequest.orderId());
-
-        return order.getOrderPassword().equals(orderTrackingRequest.orderPassword());
     }
 
     @Override
