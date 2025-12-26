@@ -64,8 +64,17 @@ public class RedisCartRepository {
 
 
     public boolean existsExpireKey(Long userId) {
-        return cartRedisTemplate.hasKey(EXPIRE_PREFIX + userId);
+        String dataKey = USER_CART_PREFIX + userId;
+        String expireKey = EXPIRE_PREFIX + userId;
+
+        if (!cartRedisTemplate.hasKey(dataKey)) {
+            cartRedisTemplate.delete(expireKey);
+            return false;
+        }
+
+        return cartRedisTemplate.hasKey(expireKey);
     }
+
 
     public Map<Long, Integer> getCartItems(CartOwner owner) {
         Map<Object, Object> entries = cartRedisTemplate.opsForHash().entries(cartKey(owner));

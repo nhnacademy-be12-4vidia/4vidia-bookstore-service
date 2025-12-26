@@ -51,12 +51,6 @@ public class CartServiceImpl implements CartService {
     public CartResponse getCart(CartOwner owner){
         Map<Long, Integer> redisItems = redisCartRepository.getCartItems(owner); // 레디스에서 조회
 
-        // 2. 만약 Redis가 비어있고 회원이라면? DB에서 복원 시도 (Lazy Loading)
-        if (redisItems.isEmpty() && owner.isUser()) {
-            loginSyncCart(owner.id()); // DB -> Redis 복원 로직 호출 (기존: 로그인 시 호출)
-            redisItems = redisCartRepository.getCartItems(owner);
-        }
-
         List<CartBookResponse> items = redisItems.entrySet().stream()
                 .map(entry -> {
                     Long bookId = entry.getKey();
@@ -85,8 +79,6 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void addItem(CartOwner owner, AddCartItemRequest addItemRequest) {
-        ensureCartLoaded(owner);
-
         if(!bookRepository.existsById(addItemRequest.bookId())){
             throw new BookNotFoundException(addItemRequest.bookId());
         }
@@ -106,8 +98,6 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest) {
-        ensureCartLoaded(owner);
-
         if(!bookRepository.existsById(bookId)){
             throw new BookNotFoundException(bookId);
         }
@@ -129,8 +119,6 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void removeItem(CartOwner owner, Long bookId){
-        ensureCartLoaded(owner);
-
         if(!bookRepository.existsById(bookId)){
             throw new BookNotFoundException(bookId);
         }
@@ -245,7 +233,7 @@ public class CartServiceImpl implements CartService {
     public void logoutSyncCart(Long userId) {
         CartOwner owner = CartOwner.user(userId);
 
-        if (!redisCartRepository.existsKey(owner)) {
+        if (redisCartRepository.getCartItems(owner).isEmpty()) {
             return;
         }
 
@@ -259,7 +247,10 @@ public class CartServiceImpl implements CartService {
     public void loginSyncCart(Long userId) {
         CartOwner owner = CartOwner.user(userId);
 
-        if(redisCartRepository.existsKey(owner)){
+        Map<Long, Integer> redisItems = redisCartRepository.getCartItems(owner);
+
+        // 🔥 Redis에 실제 아이템이 있으면 DB 복원 안 함
+        if (!redisItems.isEmpty()) {
             return;
         }
 
@@ -271,15 +262,6 @@ public class CartServiceImpl implements CartService {
                 redisCartRepository.setItemQuantity(owner, bookId, quantity);
             });
         });
-    }
-
-    /**
-     * Redis에 데이터가 없는 경우 DB에서 복원하는 유틸리티 메서드
-     */
-    private void ensureCartLoaded(CartOwner owner) {
-        if (owner.isUser() && !redisCartRepository.existsKey(owner)) {
-            loginSyncCart(owner.id());
-        }
     }
 
     /**
