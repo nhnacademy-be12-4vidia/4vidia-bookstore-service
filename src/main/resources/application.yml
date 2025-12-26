@@ -33,8 +33,12 @@ spring:
         password: ${REDIS_PASSWORD}
         database: 381
         timeout: 5000ms
-
-
+      isbn:
+        host: s4.java21.net
+        port: 6379
+        password: ${REDIS_PASSWORD}
+        database: 385
+        timeout: 5000ms
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -138,6 +142,9 @@ google:
     api-key2: ${GOOGLE_API_KEY2}
     model: gemini-2.5-flash
 
+aladin:
+  api:
+    key: ${ALADIN_API_KEY1}
 
 toss:
   secretKey: ${TOSS_SECRET_KEY}

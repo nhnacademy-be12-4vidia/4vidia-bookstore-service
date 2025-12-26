@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
+import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
@@ -8,6 +9,8 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
+import com.nhnacademy._vidiabookstoreservice.book.dto.author.request.AuthorRequest;
+import com.nhnacademy._vidiabookstoreservice.book.service.*;
 import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
@@ -21,14 +24,6 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookAuthorRe
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
-import com.nhnacademy._vidiabookstoreservice.book.service.AuthorService;
-import com.nhnacademy._vidiabookstoreservice.book.service.BookAuthorService;
-import com.nhnacademy._vidiabookstoreservice.book.service.BookImageService;
-import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
-import com.nhnacademy._vidiabookstoreservice.book.service.BookTagService;
-import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
-import com.nhnacademy._vidiabookstoreservice.book.service.PublisherService;
-import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,28 +63,48 @@ public class BookServiceImpl implements BookService {
     private final BookTagService bookTagService;
     private final LikeService likeService;
     private final BookSearchService bookSearchService;
+    private final DiscountPolicyService discountPolicyService;
+    private final AdminBookService adminBookService;
 
     @Value("${image.default.thumbnail}")
     private String defaultThumbnailUrl;
 
     @Override
+    public String getBookIsbnById(Long bookId) {
+        return bookRepository.findById(bookId)
+            .orElseThrow(() -> new BookNotFoundException(bookId))
+            .getIsbn();
+    }
+
+    @Override
     @Transactional
-    public BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail, List<MultipartFile> detailImages) {
+    public BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail) {
 
         if (bookRepository.existsByIsbn(request.getIsbn())) {
             throw new BookAlreadyExistsException(request.getIsbn());
         }
 
         Publisher publisher = publisherService.getOrCreateByName(request.getPublisherName());
-        Category categoryProxy = categoryService.getCategoryProxy(request.getCategoryId());
-        Book book = request.toEntity(publisher, categoryProxy);
+        Category category = categoryService.getCategory(request.getCategoryId());
+
+        Integer calculatedPriceSales = discountPolicyService.calculateSalesPrice(request.getPriceStandard(), category);
+
+        Book book = request.toEntity(publisher, category);
+        book.updatePriceAndStock(
+            book.getPriceStandard(),
+            calculatedPriceSales,
+            book.getStock(),
+            book.isPackagingAvailable(),
+            book.getStockStatus()
+        );
 
         Book savedBook = bookRepository.save(book);
-        saveThumbnail(thumbnail, savedBook);
-        saveBookImages(detailImages, savedBook);
+        saveThumbnail(thumbnail, request.getThumbnailUrl(), savedBook);
 
-        saveAuthors(savedBook, request.getAuthorList(), "지은이");
-        saveAuthors(savedBook, request.getContributorList(), "기여자/역자");
+        saveAuthors(savedBook, request.getAuthorList());
+
+        // 캐시 무효화
+        adminBookService.evictIsbnCaches(request.getIsbn());
 
         BookIdResponse bookIdDto = new BookIdResponse();
         bookIdDto.setId(savedBook.getId());
@@ -126,28 +141,29 @@ public class BookServiceImpl implements BookService {
     }
 
     @Transactional
-    public void saveAuthors(Book book, String nameStr, String role) {
-        if (nameStr == null || nameStr.isBlank()) {
+    public void saveAuthors(Book book, List<AuthorRequest> authors) {
+        if (authors == null || authors.isEmpty()) {
             return;
         }
-        String[] names = nameStr.split(",");
 
-        for (String name : names) {
-            String cleanName = name.trim();
+        for (AuthorRequest ar : authors) {
+            String cleanName = ar.name() != null ? ar.name().trim() : "";
             if (cleanName.isEmpty()) continue;
+            
             Author author = authorService.getOrCreateAuthor(cleanName);
 
-            BookAuthor bookAuthor = bookAuthorService.create(book, author, role);
+            BookAuthor bookAuthor = bookAuthorService.create(book, author, ar.role());
             book.addBookAuthor(bookAuthor);
         }
     }
 
-    @Transactional
-    public void saveThumbnail(MultipartFile thumbnail, Book savedBook) {
+    public void saveThumbnail(MultipartFile thumbnail, String thumbnailUrlRequest, Book savedBook) {
         String thumbnailUrl;
 
         if (thumbnail != null && !thumbnail.isEmpty()) {
             thumbnailUrl = minioService.upload(thumbnail);
+        } else if (StringUtils.hasText(thumbnailUrlRequest)) {
+            thumbnailUrl = thumbnailUrlRequest;
         } else {
             thumbnailUrl = defaultThumbnailUrl;
         }
@@ -307,7 +323,9 @@ public class BookServiceImpl implements BookService {
             () -> new BookNotFoundException(bookId));
 
         Publisher publisher = publisherService.getOrCreateByName(request.getPublisherName());
-        Category category = categoryService.getCategoryProxy(request.getCategoryId());
+        Category category = categoryService.getCategory(request.getCategoryId()); // Proxy -> Real Entity
+
+        Integer calculatedPriceSales = discountPolicyService.calculateSalesPrice(request.getPriceStandard(), category);
 
         book.updateBasicInfo(
             request.getTitle(), request.getSubtitle(), request.getDescription(),
@@ -317,24 +335,20 @@ public class BookServiceImpl implements BookService {
         );
 
         book.updatePriceAndStock(
-            request.getPriceStandard(), request.getPriceSales(), request.getStock(),
+            request.getPriceStandard(), calculatedPriceSales, request.getStock(),
             request.getPackagingAvailable(), request.getStockStatus()
         );
 
         List<AuthorSyncData> targetAuthorList = new ArrayList<>();
+        if (request.getAuthorList() != null) {
+            for (AuthorRequest ar : request.getAuthorList()) {
+                if (!StringUtils.hasText(ar.name())) continue;
+                Author author = authorService.getOrCreateAuthor(ar.name());
+                targetAuthorList.add(new AuthorSyncData(author, ar.role()));
+            }
+        }
 
-        if (StringUtils.hasText(request.getAuthorList())) {
-            getTargetAuthorList(targetAuthorList, request.getAuthorList(),
-                "지은이");
-        }
-        if (StringUtils.hasText(request.getContributorList())) {
-            getTargetAuthorList(targetAuthorList, request.getContributorList(), "기여자/역자");
-        }
-        if (!targetAuthorList.isEmpty()) {
-            book.syncBookAuthors(targetAuthorList);
-        } else {
-            book.syncBookAuthors(Collections.emptyList());
-        }
+        book.syncBookAuthors(targetAuthorList);
 
         if (StringUtils.hasText(request.getTagList())) {
             List<Tag> targetTagList = getTargetTagList(request.getTagList());
@@ -342,10 +356,17 @@ public class BookServiceImpl implements BookService {
         } else {
             throw new BookAuthorRequiredException();
         }
-        if (!thumbnail.isEmpty()) {
+
+        if (thumbnail != null && !thumbnail.isEmpty()) {
             bookImageService.replaceThumbnail(book, thumbnail);
+        } else if (StringUtils.hasText(request.getThumbnailUrl())) {
+            bookImageService.replaceThumbnail(book, request.getThumbnailUrl());
         }
 
+        // 캐시 무효화
+        adminBookService.evictIsbnCaches(book.getIsbn());
+
+        bookRepository.save(book);
         eventPublisher.publishEvent(new BookSavedEvent(book.getId(), book.getTitle()));
 
     }
@@ -420,19 +441,6 @@ public class BookServiceImpl implements BookService {
         } catch (NumberFormatException e) {
             return null;
         }
-    }
-
-    private List<AuthorSyncData> getTargetAuthorList(List<AuthorSyncData> targetAuthorList, String authorListString, String role) {
-
-        String[] authors = authorListString.split(",");
-        for (String s : authors) {
-            String name = s.trim();
-            if (name.isBlank()) continue;
-            Author author = authorService.getOrCreateAuthor(name);
-            targetAuthorList.add(new AuthorSyncData(author, role));
-        }
-
-        return targetAuthorList;
     }
 
     private List<Tag> getTargetTagList(String tagListString) {
