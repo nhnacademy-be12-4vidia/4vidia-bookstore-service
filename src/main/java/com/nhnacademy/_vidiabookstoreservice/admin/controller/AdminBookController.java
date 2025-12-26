@@ -59,6 +59,14 @@ public class AdminBookController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{book-id}/isbn")
+    public ResponseEntity<String> getBookIsbn(
+            @PathVariable("book-id") Long bookId
+    ) {
+        String isbn = bookService.getBookIsbnById(bookId);
+        return ResponseEntity.ok(isbn);
+    }
+
     @PostMapping("/images")
     public ResponseEntity<Map<String, String>> uploadImage(
             @RequestParam("image") MultipartFile image

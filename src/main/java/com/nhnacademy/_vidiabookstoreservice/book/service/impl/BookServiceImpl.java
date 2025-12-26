@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
+import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
@@ -63,10 +64,17 @@ public class BookServiceImpl implements BookService {
     private final LikeService likeService;
     private final BookSearchService bookSearchService;
     private final DiscountPolicyService discountPolicyService;
-    private final com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService adminBookService;
+    private final AdminBookService adminBookService;
 
     @Value("${image.default.thumbnail}")
     private String defaultThumbnailUrl;
+
+    @Override
+    public String getBookIsbnById(Long bookId) {
+        return bookRepository.findById(bookId)
+            .orElseThrow(() -> new BookNotFoundException(bookId))
+            .getIsbn();
+    }
 
     @Override
     @Transactional

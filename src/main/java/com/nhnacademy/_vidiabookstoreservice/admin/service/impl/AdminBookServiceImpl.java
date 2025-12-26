@@ -2,11 +2,8 @@ package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminIsbnSearchResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
-import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiRagService;
-import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorNameRoleResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.book.redis.repository.AiSearchRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.resolver.IsbnResolver;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +12,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.time.LocalDate;
-import java.util.List;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Slf4j
 @Service
@@ -28,6 +21,7 @@ public class AdminBookServiceImpl implements AdminBookService {
 
     private final BookRepository bookRepository;
     private final GeminiRagService geminiRagService;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
     @Cacheable(
@@ -39,10 +33,20 @@ public class AdminBookServiceImpl implements AdminBookService {
     public AdminIsbnSearchResponse processIsbnSearch(String isbn) {
         String normalizedIsbn = IsbnResolver.toIsbn13(isbn);
 
-        // 1. DB 조회: 있으면 바로 반환 (보강 X), 없으면 외부 검색 (보강 O)
-        return bookRepository.findByIsbnWithDetails(normalizedIsbn)
+        // 1. DB 조회 및 DTO 변환 (TransactionTemplate 사용으로 트랜잭션 범위 최소화)
+        // 지연 로딩(Lazy Loading)이 발생하는 foundFromDb() 호출 시점까지 트랜잭션을 유지하고, 이후 즉시 커넥션 반환
+        AdminIsbnSearchResponse dbResponse = transactionTemplate.execute(status -> 
+            bookRepository.findByIsbnWithDetails(normalizedIsbn)
                 .map(AdminIsbnSearchResponse::foundFromDb)
-                .orElseGet(() -> geminiRagService.augmentBookInfo(normalizedIsbn, null));
+                .orElse(null)
+        );
+
+        if (dbResponse != null) {
+            return dbResponse;
+        }
+
+        // 2. 외부 검색 (트랜잭션 없이 실행 -> Long Transaction 방지)
+        return geminiRagService.augmentBookInfo(normalizedIsbn, null);
     }
 
     @Override
@@ -56,11 +60,13 @@ public class AdminBookServiceImpl implements AdminBookService {
         String normalizedIsbn = IsbnResolver.toIsbn13(isbn);
 
         // 1. DB 조회 (필수: 보강은 기존 도서가 있을 때만 가능)
-        AdminIsbnSearchResponse dbBase = bookRepository.findByIsbnWithDetails(normalizedIsbn)
+        AdminIsbnSearchResponse dbBase = transactionTemplate.execute(status ->
+            bookRepository.findByIsbnWithDetails(normalizedIsbn)
                 .map(AdminIsbnSearchResponse::foundFromDb)
-                .orElseThrow(() -> new BookNotFoundException(isbn));
+                .orElseThrow(() -> new BookNotFoundException(isbn))
+        );
 
-        // 2. DB 데이터를 기반으로 외부 API + Gemini 보강 수행
+        // 2. DB 데이터를 기반으로 외부 API + Gemini 보강 수행 (트랜잭션 없이 실행)
         return geminiRagService.augmentBookInfo(normalizedIsbn, dbBase);
     }
 
@@ -75,6 +81,6 @@ public class AdminBookServiceImpl implements AdminBookService {
                     cacheManager = "isbnSearchCacheManager")
     })
     public void evictIsbnCaches(String isbn) {
-        log.info("Evicting ISBN caches for: {}", isbn);
+        log.info("[관리자 도서] CacheEvicting ISBN caches for: {}", isbn);
     }
 }

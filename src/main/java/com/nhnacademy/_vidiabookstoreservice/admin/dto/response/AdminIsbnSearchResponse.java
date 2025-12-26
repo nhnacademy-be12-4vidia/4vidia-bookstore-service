@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.admin.dto.response;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.book.dto.author.response.AuthorNameRoleResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -16,6 +17,7 @@ public record AdminIsbnSearchResponse(
 
         boolean found,
         Long bookId,
+        String isbn,
 
         String coverImageUrl,
         String title,
@@ -32,6 +34,7 @@ public record AdminIsbnSearchResponse(
 
         Integer priceStandard,
         Integer stock,
+        StockStatus stockStatus,
         Boolean packagingAvailable,
 
         String description,
@@ -60,6 +63,7 @@ public record AdminIsbnSearchResponse(
         return new AdminIsbnSearchResponse(
                 true,
                 book.getId(),
+                book.getIsbn(),
                 coverImageUrl,
                 book.getTitle(),
                 book.getSubtitle(),
@@ -71,6 +75,7 @@ public record AdminIsbnSearchResponse(
                 book.getCategory() != null ? book.getCategory().getKdcCode() : null,
                 book.getPriceStandard(),
                 book.getStock(),
+                book.getStockStatus(),
                 book.isPackagingAvailable(),
                 book.getDescription(),
                 book.getBookIndex(),

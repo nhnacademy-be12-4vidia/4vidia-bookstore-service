@@ -25,6 +25,8 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
     @Query("""
             SELECT DISTINCT b
             FROM Book b
+            LEFT JOIN FETCH b.publisher
+            LEFT JOIN FETCH b.category
             LEFT JOIN FETCH b.bookAuthorList ba
             LEFT JOIN FETCH ba.author
             WHERE b.id = :bookId
@@ -36,11 +38,6 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
             FROM Book b
             LEFT JOIN FETCH b.publisher
             LEFT JOIN FETCH b.category
-            LEFT JOIN FETCH b.bookAuthorList ba
-            LEFT JOIN FETCH ba.author
-            LEFT JOIN FETCH b.bookImageList
-            LEFT JOIN FETCH b.bookTagList bt
-            LEFT JOIN FETCH bt.tag
             WHERE b.isbn = :isbn
             """)
     Optional<Book> findByIsbnWithDetails(@Param("isbn") String isbn);
@@ -73,7 +70,7 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
 
     @Query(
             value = """
-                            SELECT DISTINCT b 
+                            SELECT DISTINCT b
                             FROM Book b
                             JOIN b.bookTagList bt
                             WHERE bt.tag.id = :tagId

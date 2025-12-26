@@ -68,7 +68,7 @@ public class GeminiRagService {
         String geminiJson = callGeminiWithSearchTool(prompt);
 
         // 4. 결과 매핑 (DB 없더라도 알라딘/LLM 결합해 관리자에게 최대 정보 제공)
-        return mapToResponse(geminiJson, dbData, aladinItem);
+        return mapToResponse(isbn, geminiJson, dbData, aladinItem);
     }
 
     private String buildRagPrompt(String isbn, AdminIsbnSearchResponse dbData, AladinItemDto aladin) {
@@ -163,12 +163,13 @@ public class GeminiRagService {
     }
 
     private AdminIsbnSearchResponse mapToResponse(
+            String isbn,
             String json,
             AdminIsbnSearchResponse dbData,
             AladinItemDto aladin
     ) {
         if (!StringUtils.hasText(json)) {
-            return fallbackResponse(dbData, aladin);
+            return fallbackResponse(isbn, dbData, aladin);
         }
 
         try {
@@ -176,7 +177,7 @@ public class GeminiRagService {
             String extracted = extractFirstJsonObjectOrNull(cleaned);
             if (!StringUtils.hasText(extracted)) {
                 log.warn("[관리자 도서] gemini 응답에서 JSON 추출 실패. preview={}", preview(cleaned));
-                return fallbackResponse(dbData, aladin);
+                return fallbackResponse(isbn, dbData, aladin);
             }
 
             JsonNode root = objectMapper.readTree(extracted);
@@ -221,6 +222,8 @@ public class GeminiRagService {
                     dbData != null ? dbData.categoryCode() : null,
                     "UNC");
 
+            StockStatus stockStatus = (dbData != null) ? dbData.stockStatus() : StockStatus.PRE_ORDER;
+
             Integer priceStandard = pickInteger(
                     parseIntegerFlexible(root.get("priceStandard")),
                     dbData != null ? dbData.priceStandard() : null,
@@ -243,6 +246,7 @@ public class GeminiRagService {
             return new AdminIsbnSearchResponse(
                     true,
                     dbData != null ? dbData.bookId() : null,
+                    isbn,
                     coverUrl,
                     title,
                     subtitle,
@@ -254,6 +258,7 @@ public class GeminiRagService {
                     categoryCode,
                     priceStandard,
                     stock,
+                    stockStatus,
                     dbData != null ? dbData.packagingAvailable() : null,
                     description,
                     bookIndex,
@@ -262,14 +267,15 @@ public class GeminiRagService {
 
         } catch (Exception e) {
             log.warn("[관리자 도서] gemini 파싱 실패", e);
-            return fallbackResponse(dbData, aladin);
+            return fallbackResponse(isbn, dbData, aladin);
         }
     }
 
-    private AdminIsbnSearchResponse createEmptyResponse() {
+    private AdminIsbnSearchResponse createEmptyResponse(String isbn) {
         return new AdminIsbnSearchResponse(
                 false,
                 null,
+                isbn,
                 null,
                 "검색 결과 없음",
                 null,
@@ -284,11 +290,16 @@ public class GeminiRagService {
                 null,
                 null,
                 null,
+                null,
                 List.of()
         );
     }
 
-    private AdminIsbnSearchResponse fallbackResponse(AdminIsbnSearchResponse dbData, AladinItemDto aladin) {
+    private AdminIsbnSearchResponse fallbackResponse(
+            String isbn,
+            AdminIsbnSearchResponse dbData,
+            AladinItemDto aladin
+    ) {
         if (dbData != null) {
             return dbData;
         }
@@ -296,6 +307,7 @@ public class GeminiRagService {
             return new AdminIsbnSearchResponse(
                     true,
                     null,
+                    isbn,
                     aladin.cover(),
                     firstNonEmpty(aladin.title(), "제목 없음"),
                     aladin.bookinfo() != null ? aladin.bookinfo().subTitle() : null,
@@ -307,13 +319,14 @@ public class GeminiRagService {
                     null,
                     aladin.priceStandard(),
                     0,
+                    StockStatus.PRE_ORDER,
                     null,
                     aladin.description(),
                     aladin.bookinfo() != null ? aladin.bookinfo().toc() : null,
                     parseTags(null, aladin, null)
             );
         }
-        return createEmptyResponse();
+        return createEmptyResponse(isbn);
     }
 
     private String preview(String s) {
