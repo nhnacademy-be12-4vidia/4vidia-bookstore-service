@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Like;
@@ -63,6 +64,7 @@ class LikeControllerTest extends SupportControllerTest {
                 .priceStandard(10000)
                 .priceSales(9000)
                 .packagingAvailable(true)
+                .stockStatus(StockStatus.IN_STOCK)
                 .build();
         this.testBookId = bookRepository.save(book).getId();
 
@@ -132,7 +134,11 @@ class LikeControllerTest extends SupportControllerTest {
     @DisplayName("[좋아요 등록]")
     void addLike() throws Exception {
         // 새로운 책 생성
-        Book newBook = bookRepository.save(Book.builder().title("새책").packagingAvailable(true).build());
+        Book newBook = bookRepository.save(Book.builder()
+                .title("새책")
+                .packagingAvailable(true)
+                .stockStatus(StockStatus.IN_STOCK)
+                .build());
 
         mockMvc.perform(post("/users/me/likes/{book-id}", newBook.getId())
                         .header("X-User-Id", testUserId))

@@ -49,6 +49,8 @@ class AuthControllerTest extends SupportControllerTest {
     @MockitoBean private DormantAuthService dormantAuthService;
 
     private final String TEST_EMAIL = "auth_test@test.com";
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeEach
     void initData() { }
@@ -307,4 +309,6 @@ class AuthControllerTest extends SupportControllerTest {
                         )
                 ));
     }
+
+
 }
