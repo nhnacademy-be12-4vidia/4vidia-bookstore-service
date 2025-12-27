@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.cart.repository.redis;
 
 import com.nhnacademy._vidiabookstoreservice.cart.domain.CartOwner;
-import com.nhnacademy._vidiabookstoreservice.cart.domain.enums.CartOwnerType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -16,9 +15,9 @@ import java.util.Map;
  * - Redis는 작업 공간
  * - TTL 만료 이벤트는 외부 Listener에서 처리
  */
-@Slf4j
-@RequiredArgsConstructor
 @Repository
+@RequiredArgsConstructor
+@Slf4j
 public class RedisCartRepository {
 
     private final StringRedisTemplate cartRedisTemplate;
@@ -27,97 +26,105 @@ public class RedisCartRepository {
     private static final String GUEST_CART_PREFIX = "cart:guest:";
     private static final String EXPIRE_PREFIX = "cart:expire:user:";
 
-    // 회원 장바구니 수명 (이벤트 발생용)
     private static final Duration USER_CART_TTL = Duration.ofHours(3);
-    // 비회원 장바구니 수명 (메모리 관리용 - DB 저장 안 함)
     private static final Duration GUEST_CART_TTL = Duration.ofDays(3);
 
     private String cartKey(CartOwner owner) {
-        return (owner.type() == CartOwnerType.USER
-                ? USER_CART_PREFIX
-                : GUEST_CART_PREFIX) + owner.id();
+        return (owner.isUser() ? USER_CART_PREFIX : GUEST_CART_PREFIX) + owner.id();
     }
 
+    // 만료 이벤트 키
     private String expireKey(Long userId) {
         return EXPIRE_PREFIX + userId;
     }
 
+    // 실제 데이터 키
+    public boolean existsDataKey(CartOwner owner) {
+        return cartRedisTemplate.hasKey(cartKey(owner));
+    }
+
     /**
-     * 장바구니 수명 갱신 (핵심 수정 부분)
+     * DataKey가 있을 때만 TTL 재설정
      */
-    private void refreshTTL(CartOwner owner) {
+    public void refreshTtlIfDataKeyExists(CartOwner owner) {
         String dataKey = cartKey(owner);
+        if (!cartRedisTemplate.hasKey(cartKey(owner))) {
+            return;
+        }
 
         if (owner.isUser()) {
-            // [회원] 2-Key 방식 사용
             cartRedisTemplate.opsForValue().set(expireKey(owner.id()), "1", USER_CART_TTL);
-
             cartRedisTemplate.expire(dataKey, USER_CART_TTL.plusHours(3));
         } else {
             cartRedisTemplate.expire(dataKey, GUEST_CART_TTL);
         }
     }
 
-    public boolean existsKey(CartOwner owner) {
-        return cartRedisTemplate.hasKey(cartKey(owner));
-    }
-
-
     public boolean existsExpireKey(Long userId) {
         String dataKey = USER_CART_PREFIX + userId;
-        String expireKey = EXPIRE_PREFIX + userId;
+        String expKey = EXPIRE_PREFIX + userId;
 
         if (!cartRedisTemplate.hasKey(dataKey)) {
-            cartRedisTemplate.delete(expireKey);
+            cartRedisTemplate.delete(expKey);
             return false;
         }
-
-        return cartRedisTemplate.hasKey(expireKey);
+        return cartRedisTemplate.hasKey(expKey);
     }
-
 
     public Map<Long, Integer> getCartItems(CartOwner owner) {
         Map<Object, Object> entries = cartRedisTemplate.opsForHash().entries(cartKey(owner));
-
         Map<Long, Integer> result = new HashMap<>();
-        entries.forEach((k, v) ->
-                result.put(Long.valueOf(k.toString()), Integer.valueOf(v.toString()))
-        );
+        entries.forEach((k, v) -> result.put(Long.valueOf(k.toString()), Integer.valueOf(v.toString())));
         return result;
     }
 
+    public void putAllNoTtl(CartOwner owner, Map<Long, Integer> items) {
+        if (items == null || items.isEmpty()) return;
+
+        Map<String, String> toPut = new HashMap<>();
+        items.forEach((k, v)
+                -> toPut.put(String.valueOf(k), String.valueOf(v)));
+
+        cartRedisTemplate.opsForHash().putAll(cartKey(owner), toPut);
+    }
+
     public void setItemQuantity(CartOwner owner, Long bookId, int quantity) {
-        cartRedisTemplate.opsForHash().put(
-                cartKey(owner),
-                String.valueOf(bookId),
-                String.valueOf(quantity)
-        );
-        refreshTTL(owner);
+        cartRedisTemplate.opsForHash().put(cartKey(owner), String.valueOf(bookId), String.valueOf(quantity));
+        refreshTtlIfDataKeyExists(owner);
     }
 
     public void incrementItemQuantity(CartOwner owner, Long bookId, int delta) {
-        Long newVal = cartRedisTemplate.opsForHash().increment(
-                cartKey(owner),
-                String.valueOf(bookId),
-                delta
-        );
+        Long newVal = cartRedisTemplate.opsForHash()
+                .increment(cartKey(owner), String.valueOf(bookId), delta);
 
         if (newVal != null && newVal <= 0) {
             cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
         }
-        refreshTTL(owner);
+        refreshTtlIfDataKeyExists(owner);
     }
 
     public void removeItem(CartOwner owner, Long bookId) {
         cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
-        refreshTTL(owner);
+        refreshTtlIfDataKeyExists(owner);
+    }
+
+    /**
+     * TTL 갱신 없이 삭제(조회 중 정리용)
+     */
+    public void removeNoTtl(CartOwner owner, Long bookId) {
+        cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
     }
 
     public void clearCart(CartOwner owner) {
         cartRedisTemplate.delete(cartKey(owner));
-
         if (owner.isUser()) {
             cartRedisTemplate.delete(expireKey(owner.id()));
         }
     }
+
+    public boolean isEmpty(CartOwner owner) {
+        Long size = cartRedisTemplate.opsForHash().size(cartKey(owner));
+        return size == null || size == 0;
+    }
+
 }

@@ -35,14 +35,16 @@ public class Cart {
                 .findFirst()
                 .orElse(null);
 
-        if(existed != null){
+        if (existed != null) {
             existed.increase(quantity);
-        }else{
-            cartBooks.add(CartBook.builder().
-                    cart(this).
-                    book(book).
-                    quantity(quantity).
-                    build());
+        } else {
+            CartBook cartBook = CartBook.builder()
+                    .book(book)
+                    .quantity(quantity)
+                    .build();
+            cartBook.changeCart(this);
+            cartBooks.add(cartBook);
         }
     }
+
 }

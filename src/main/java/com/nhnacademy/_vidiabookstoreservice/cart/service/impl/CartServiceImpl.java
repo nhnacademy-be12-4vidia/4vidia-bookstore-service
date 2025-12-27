@@ -11,7 +11,7 @@ import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequ
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.BookSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartBookResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
-import com.nhnacademy._vidiabookstoreservice.cart.exception.notfound.CartNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.cart.exception.CartBookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.RedisCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
@@ -21,9 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -34,112 +32,115 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class CartServiceImpl implements CartService {
+
     private final CartRepository cartRepository;
     private final BookRepository bookRepository;
     private final RedisCartRepository redisCartRepository;
     private final UserRepository userRepository;
 
+    // ==== 조회 ==== //
     /**
      * 장바구니 조회 (모든 아이템)
-     * @param owner : CartOwner
-     * @return CartResponse (List<CartItemResponse>, totalPrice)
-     *                      CartItemResponse : bookId, title, price, quantity, lineTotal
-     * Redis에서 조회
      */
     @Override
     @Transactional(readOnly = true)
-    public CartResponse getCart(CartOwner owner){
-        Map<Long, Integer> redisItems = redisCartRepository.getCartItems(owner); // 레디스에서 조회
+    public CartResponse getCart(CartOwner owner) {
+        ensureLoaded(owner);
+
+        Map<Long, Integer> redisItems = redisCartRepository.getCartItems(owner);
 
         List<CartBookResponse> items = redisItems.entrySet().stream()
-                .map(entry -> {
-                    Long bookId = entry.getKey();
-                    int quantity = entry.getValue();
-
-                    Book book = bookRepository.findById(bookId)
-                            .orElseThrow(() -> new BookNotFoundException(bookId));
-
-                    BookSummaryResponse bookDto = BookSummaryResponse.from(book);
-                    return CartBookResponse.of(bookDto, quantity);
-                })
+                .map(entry -> toCartBookResponseOrCleanup(owner, entry.getKey(), entry.getValue()))
+                .filter(Objects::nonNull)
                 .toList();
 
-        if(owner.isUser()){
-            return new CartResponse(owner.id(),items);
-        }
-        return new CartResponse(null,items);
+        redisCartRepository.refreshTtlIfDataKeyExists(owner);
+
+        return new CartResponse(owner.isUser() ? owner.id() : null, items);
     }
 
-
     /**
-     * 장바구니 도서 추가
-     * Redis만 추가
+     * 존재하지 않는 책이 포함되어 있으면 제거 후 조회
+     */
+    private CartBookResponse toCartBookResponseOrCleanup(CartOwner owner, Long bookId, int quantity) {
+        return bookRepository.findById(bookId)
+                .map(book -> CartBookResponse.of(BookSummaryResponse.from(book), quantity))
+                .orElseGet(() -> {
+                    redisCartRepository.removeNoTtl(owner, bookId);
+                    if (owner.isUser()) { // 회원이면 db에서도 지워주기
+                        removeFromDbCart(owner.id(), bookId);
+                    }
+                    return null;
+                });
+    }
+
+    /* ==== 쓰기 ==== */
+    /**
+     * 장바구니 도서 추가 (Redis에만 추가)
      * @param owner
      * @param addItemRequest : (bookId, quantity)
      */
     @Override
     public void addItem(CartOwner owner, AddCartItemRequest addItemRequest) {
-        if(!bookRepository.existsById(addItemRequest.bookId())){
-            throw new BookNotFoundException(addItemRequest.bookId());
-        }
-
-        // Redis 기준 수량 증가
-       redisCartRepository.incrementItemQuantity(owner,
-                addItemRequest.bookId(),
-                addItemRequest.quantity());
-
-    }
-
-    /**
-     * 장바구니 도서 수량 수정
-     * Redis만 수정
-     * @param owner
-     * @param updateRequest : (bookId, quantity)
-     */
-    @Override
-    public void updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest) {
-        if(!bookRepository.existsById(bookId)){
+        Long bookId = addItemRequest.bookId();
+        if (!bookRepository.existsById(bookId)) {
             throw new BookNotFoundException(bookId);
         }
 
+        ensureLoaded(owner);
+        redisCartRepository.incrementItemQuantity(owner, bookId, addItemRequest.quantity());
+    }
+
+    /**
+     * 장바구니 도서 수량 수정 (Redis만 수정)
+     * @param owner
+     * @param bookId
+     * @param updateRequest : quantity
+     */
+    @Override
+    public void updateItem(CartOwner owner, Long bookId, UpdateCartItemRequest updateRequest) {
+        ensureLoaded(owner);
+
         Map<Long, Integer> items = redisCartRepository.getCartItems(owner);
         if (!items.containsKey(bookId)) {
-            throw new IllegalArgumentException("장바구니에 담겨있지 않은 도서입니다.");
+            throw new CartBookNotFoundException(owner.id(), bookId);
         }
 
-        // Redis
         redisCartRepository.setItemQuantity(owner, bookId, updateRequest.quantity());
     }
 
     /**
      * 장바구니 도서 삭제
-     * Redis만 삭제
+     * 1. redis에서만 삭제
+     * 2. 회원인데, redis가 비어있으면 db에서도 삭제
      * @param owner
-     * @param bookId;
+     * @param bookId
      */
     @Override
-    public void removeItem(CartOwner owner, Long bookId){
-        if(!bookRepository.existsById(bookId)){
-            throw new BookNotFoundException(bookId);
-        }
+    public void removeItem(CartOwner owner, Long bookId) {
+        ensureLoaded(owner);
+        redisCartRepository.removeItem(owner, bookId);
 
-        redisCartRepository.removeItem(owner,bookId);
+        if (owner.isUser() && redisCartRepository.isEmpty(owner)) {
+            cartRepository.findByUserId(owner.id())
+                    .ifPresent(cart -> cart.getCartBooks().clear());
+        }
     }
 
+    /**
+     * 주문한 도서 삭제 -> removeItem() 호출
+     * @param userId
+     * @param orderBooks
+     */
     @Override
-    public void removeItemByOrder(Long userId, List<Long> orderBooks){
-        CartOwner owner;
-        if(userRepository.existsById(userId)){
-            owner = CartOwner.user(userId);
-        }else{
-            owner = CartOwner.guest(userId);
-        }
+    public void removeItemByOrder(Long userId, List<Long> orderBooks) {
+        CartOwner owner = userRepository.existsById(userId) ? CartOwner.user(userId) : CartOwner.guest(userId);
         orderBooks.forEach(bookId -> removeItem(owner, bookId));
     }
 
     /**
-     * 장바구니 비우기
-     * @param owner;
+     * 장바구니 비우기 ( 비회원/회원 머지 후 비회원 장바구니 비우기 )
+     * @param owner
      */
     @Override
     public void clear(CartOwner owner) {
@@ -147,72 +148,95 @@ public class CartServiceImpl implements CartService {
     }
 
     /**
-     * 장바구니 삭제 : 회원에게 직접 제공 x, 회원 탈퇴 시 처리
-     * Redis + MySQL 둘 다 삭제 (dirty에서도)
-     * @param userId;
+     *  장바구니 삭제 ( 회원탈퇴 후 호출)
+     * @param userId
      */
     @Override
-    public void deleteCart(Long userId){
+    public void deleteCart(Long userId) {
         CartOwner owner = CartOwner.user(userId);
         redisCartRepository.clearCart(owner);
 
-        if(cartRepository.existsByUserId(userId)){
-            Cart cart = findCart(userId);
-            cartRepository.delete(cart);
+        cartRepository.findByUserId(userId).ifPresent(cartRepository::delete);
+    }
+
+
+    /**
+     * 비회원 장바구니 아이템 수량 ( 팝업에 띄울려고 )
+     * @param guestId
+     * @return
+     */
+    @Override
+    public int countGuestCartItems(Long guestId) {
+        return redisCartRepository.getCartItems(CartOwner.guest(guestId)).size();
+    }
+
+    /* ==== 로그인/로그아웃/머지 ==== */
+
+    /**
+     * 로그인 시 mysql -> redis
+     * 만약 redis에 데이터가 있으면 return
+     * @param userId
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public void loginSyncCart(Long userId) {
+        CartOwner owner = CartOwner.user(userId);
+
+        // 로그아웃 하지 않은 회원 + 스케줄러 처리 안됐을때
+        if (!redisCartRepository.getCartItems(owner).isEmpty()) {
+            return;
+        }
+
+        Map<Long, Integer> restored = buildRestoreMapAndCleanupDb(userId);
+
+        if (!restored.isEmpty()) {
+            redisCartRepository.putAllNoTtl(owner, restored);
+            redisCartRepository.refreshTtlIfDataKeyExists(owner);
         }
     }
 
+    /**
+     * 로그아웃 시 redis -> mysql
+     * @param userId
+     */
     @Override
-    public int countGuestCartItems(Long guestId) {
-        CartOwner guest = CartOwner.guest(guestId);
-        Map<Long, Integer> items = redisCartRepository.getCartItems(guest);
+    public void logoutSyncCart(Long userId) {
+        CartOwner owner = CartOwner.user(userId);
 
-        return items.size();
+        if (redisCartRepository.getCartItems(owner).isEmpty()) {
+            redisCartRepository.clearCart(owner);
+            return;
+        }
+
+        performFlush(userId);
+        redisCartRepository.clearCart(owner);
     }
-
-
-    /* =============== user 장바구니 찾기 (MySQL) =============== */
 
     /**
-      * 장바구니 생성 메서드
-      * @param userId (회원 : userId- > 카트 조회 -> 없으면 생성)
-     * @return Cart
-      */
-    @Transactional(readOnly = true)
-    protected Cart findCart(Long userId){ // 장바구니 없으면 에러
-        return cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new CartNotFoundException(userId));
-    }
-
-    private Cart findOrCreateCart(Long userId){ // 장바구니 없으면 생성
-        return cartRepository.findByUserId(userId)
-                .orElseGet(() -> cartRepository.save(new Cart(userId)));
-    }
-
+     * 비회원 장바구니, 회원 장바구니 머지
+     * @param guestId
+     * @param userId
+     */
     @Override
-    public void mergeGuestCartToUser(Long guestId, Long userId){
+    public void mergeGuestCartToUser(Long guestId, Long userId) {
         CartOwner guest = CartOwner.guest(guestId);
         CartOwner user = CartOwner.user(userId);
 
-
         Map<Long, Integer> guestItems = redisCartRepository.getCartItems(guest);
-        if(guestItems.isEmpty()){
+        if (guestItems.isEmpty()) {
             redisCartRepository.clearCart(guest);
             return;
         }
 
-        // 회원 Redis 장바구니에 합치기
-        guestItems.forEach((bookId, quantity) -> {
-            redisCartRepository.setItemQuantity(user, bookId, quantity);
-        });
-
-        // guest redis 삭제
+        guestItems.forEach((bookId, quantity) -> redisCartRepository.setItemQuantity(user, bookId, quantity));
         redisCartRepository.clearCart(guest);
     }
 
+    /* ==== 스케줄러 flush ==== */
 
     /**
-     * 스케줄러로 redis -> mysql 처리 시
+     * 장바구니 동기화 스케줄러가 호출 ( DB 최신화 시킨 후 redis에서 삭제 )
+     * @param userId
      */
     @Override
     public void flushCartFromRedisToMySql(Long userId) {
@@ -220,86 +244,100 @@ public class CartServiceImpl implements CartService {
             log.info("[장바구니] 유저(userId={})가 다시 활동 중이므로 flush를 중단", userId);
             return;
         }
-
         performFlush(userId);
-    }
-
-    @Override
-    public void clearRedisCartAfterFlush(Long userId) {
         redisCartRepository.clearCart(CartOwner.user(userId));
     }
 
-    @Override
-    public void logoutSyncCart(Long userId) {
-        CartOwner owner = CartOwner.user(userId);
-
-        if (redisCartRepository.getCartItems(owner).isEmpty()) {
-            return;
-        }
-
-        performFlush(userId);
-
-        redisCartRepository.clearCart(owner);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public void loginSyncCart(Long userId) {
-        CartOwner owner = CartOwner.user(userId);
-
-        Map<Long, Integer> redisItems = redisCartRepository.getCartItems(owner);
-
-        // 🔥 Redis에 실제 아이템이 있으면 DB 복원 안 함
-        if (!redisItems.isEmpty()) {
-            return;
-        }
-
-        cartRepository.findByUserId(userId).ifPresent(cart -> {
-            cart.getCartBooks().forEach(cartBook -> {
-                Long bookId = cartBook.getBook().getId();
-                int quantity = cartBook.getQuantity();
-
-                redisCartRepository.setItemQuantity(owner, bookId, quantity);
-            });
-        });
-    }
-
     /**
-     * DB 저장 로직 분리
+     *  Redis -> DB 반영
+     * - Redis empty면 DB를 비우지 않는다 (TTL/캐시 손실 방지)
      */
     private void performFlush(Long userId) {
         CartOwner owner = CartOwner.user(userId);
         Map<Long, Integer> items = redisCartRepository.getCartItems(owner);
-        Cart cart = findOrCreateCart(userId);
 
-        // Redis 장바구니가 비어 있으면 -> MySQL (cart_book) 비우기
         if (items.isEmpty()) {
-            cart.getCartBooks().clear();
+            log.warn("[장바구니] 레디스가 비어있음 userId={}", userId);
             return;
         }
 
+        Cart cart = findOrCreateCart(userId);
+
         List<Long> bookIds = new ArrayList<>(items.keySet());
         Map<Long, Book> bookMap = bookRepository.findAllById(bookIds).stream()
-                .collect(Collectors.toMap(Book::getId, book -> book));
+                .collect(Collectors.toMap(Book::getId, b -> b));
 
         Map<Long, CartBook> existingMap = cart.getCartBooks().stream()
-                .collect(Collectors.toMap(
-                        cb -> cb.getBook().getId(),
-                        cb -> cb
-                ));
+                .collect(Collectors.toMap(cb -> cb.getBook().getId(), cb -> cb));
 
-        items.forEach((bookId, quantity) -> {
+        items.forEach((bookId, qty) -> {
             CartBook existing = existingMap.remove(bookId);
             if (existing != null) {
-                existing.changeQuantity(quantity);
+                existing.changeQuantity(qty);
+                return;
+            }
+
+            Book book = bookMap.get(bookId);
+            if (book != null) {
+                cart.addItem(book, qty);
             } else {
-                Book book = bookMap.get(bookId);
-                if (book != null) {
-                    cart.addItem(book, quantity);
-                }
+                // Redis에 잘못 남은 bookId 정리(TTL 갱신 X)
+                redisCartRepository.removeNoTtl(owner, bookId);
             }
         });
 
+        // Redis에 없는 기존 항목 제거
         existingMap.values().forEach(cb -> cart.getCartBooks().remove(cb));
+    }
+
+    /**
+     *  Redis TTL로 cart key가 날아갔으면 DB에서 복구 (조회, 추가, 수정, 삭제 시 호출)
+     */
+    private void ensureLoaded(CartOwner owner) {
+        if (!owner.isUser()) return;
+
+        // 레디스에 이미 존재하면
+        if (redisCartRepository.existsDataKey(owner)) {
+            redisCartRepository.refreshTtlIfDataKeyExists(owner);
+            return;
+        }
+
+        Map<Long, Integer> restored = buildRestoreMapAndCleanupDb(owner.id());
+        if (!restored.isEmpty()) {
+            redisCartRepository.putAllNoTtl(owner, restored);
+        }
+    }
+
+    /**
+     * DB cart에서 유효한 책만 restore map으로 만들고(삭제된 책은 DB에서 제거)
+     */
+    private Map<Long, Integer> buildRestoreMapAndCleanupDb(Long userId) {
+        Map<Long, Integer> restored = new HashMap<>();
+
+        try{
+            cartRepository.findByUserId(userId).ifPresent(cart -> {
+                cart.getCartBooks().removeIf(cb -> {
+                    Long bookId = cb.getBook().getId();
+                    if (!bookRepository.existsById(bookId)) return true;
+                    restored.put(bookId, cb.getQuantity());
+                    return false;
+                });
+            });
+        }catch (Exception e){
+            log.error("[장바구니 복구 실패] userId={}", userId, e);
+        }
+
+        return restored;
+    }
+
+    private Cart findOrCreateCart(Long userId) {
+        return cartRepository.findByUserId(userId)
+                .orElseGet(() -> cartRepository.save(new Cart(userId)));
+    }
+
+    private void removeFromDbCart(Long userId, Long bookId) {
+        cartRepository.findByUserId(userId).ifPresent(cart ->
+                cart.getCartBooks().removeIf(cb -> cb.getBook().getId().equals(bookId))
+        );
     }
 }
