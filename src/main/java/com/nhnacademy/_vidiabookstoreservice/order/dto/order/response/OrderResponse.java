@@ -42,7 +42,7 @@ public record OrderResponse(
             String bookImageUrl,
             Integer quantity,
             Integer salePrice,
-            ConfirmStatus confirmStatus, //TODO 이거 OrderItemViewStatus 사용하면,, 또 꼬이겠죠
+            ConfirmStatus confirmStatus,
             List<PackagingResponse> packagingResponses,
             int totalPackagingPrice
     ) {
