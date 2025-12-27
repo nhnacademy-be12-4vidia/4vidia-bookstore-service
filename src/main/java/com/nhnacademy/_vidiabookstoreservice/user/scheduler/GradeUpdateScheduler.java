@@ -24,7 +24,7 @@ public class GradeUpdateScheduler {
 
     // 매월 1일 00:00에 등급 재산정
     @Scheduled(cron = "0 0 0 1 * *", zone = "Asia/Seoul")
-    //테스트용
+//    //테스트용
 //    @Scheduled(initialDelay = 10_000, fixedDelay = Long.MAX_VALUE)
 
     public void updateUserGrade(){

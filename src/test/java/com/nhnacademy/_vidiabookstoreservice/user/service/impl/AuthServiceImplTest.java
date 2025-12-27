@@ -279,7 +279,7 @@ class AuthServiceImplTest {
         User user2 = User.builder().name("u2").build();
         ReflectionTestUtils.setField(user2, "status", UserStatus.ACTIVE);
 
-        given(userRepository.findActiveUsersNotLoggedInSince(eq(UserStatus.ACTIVE), any(LocalDateTime.class)))
+        given(userRepository.findActiveUsersToDormant(eq(UserStatus.ACTIVE), any(LocalDateTime.class)))
                 .willReturn(List.of(user1, user2));
 
         // when

@@ -135,7 +135,7 @@ class UserRepositoryTest {
         LocalDateTime threshold = LocalDateTime.now().minusMonths(3);
 
         // 조회 실행
-        List<User> dormantCandidates = userRepository.findActiveUsersNotLoggedInSince(UserStatus.ACTIVE, threshold);
+        List<User> dormantCandidates = userRepository.findActiveUsersToDormant(UserStatus.ACTIVE, threshold);
 
         assertThat(dormantCandidates)
                 .extracting(User::getEmail)
@@ -163,7 +163,7 @@ class UserRepositoryTest {
 
         LocalDateTime threshold = LocalDateTime.now().minusMonths(3);
 
-        List<User> result = userRepository.findActiveUsersNotLoggedInSince(UserStatus.ACTIVE, threshold);
+        List<User> result = userRepository.findActiveUsersToDormant(UserStatus.ACTIVE, threshold);
 
         // 현재 user (마지막 로그인 null)와 neverLoggedInUser 둘다 조회되어야 함(setup의 user도 로그인 기록 없음)
         assertThat(result).extracting("email")
