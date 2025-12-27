@@ -1,0 +1,158 @@
+// 장바구니 R/C/U/D 기능
+
+// --------------------------------------------------------------
+// 1. 조회 (GET)
+==== 장바구니 조회 - 회원
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-get-user/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-get-user/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-get-user/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/cart-get-user/response-fields.adoc[]
+
+==== 장바구니 조회 - 비회원
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-get-guest/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-get-guest/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-get-guest/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/cart-get-guest/response-fields.adoc[]
+// --------------------------------------------------------------
+// 2. 생성 (POST)
+==== 장바구니 아이템 추가
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-item-add-post/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-item-add-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/cart-item-add-post/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-item-add-post/http-response.adoc[]
+// --------------------------------------------------------------
+// 3. 수정 (PUT/PATCH)
+==== 장바구니 아이템 수량 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-item-update-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/cart-item-update-put/path-parameters.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/cart-item-update-put/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-item-update-put/http-response.adoc[]
+// --------------------------------------------------------------
+// 4. 삭제 (DELETE)
+==== 장바구니 전체 삭제 - 회원
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-delete-delete/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-delete-delete/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-delete-delete/http-response.adoc[]
+
+==== 장바구니 특정 아이템 삭제
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-item-delete-delete/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/cart-item-delete-delete/path-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-item-delete-delete/http-response.adoc[]
+
+==== 장바구니 다중 아이템 삭제
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-items-select-delete-delete/http-request.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/cart-items-select-delete-delete/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-items-select-delete-delete/http-response.adoc[]
+// --------------------------------------------------------------
+
+
+
+
+
+==== 비회원 장바구니 상태 확인
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-guest-status-get/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-guest-status-get/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-guest-status-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/cart-guest-status-get/response-fields.adoc[]
+
+==== 비회원 장바구니 병합
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-merge-post/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-merge-post/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-merge-post/http-response.adoc[]
+
+==== 비회원 장바구니 비우기
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-guest-clear-delete/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-guest-clear-delete/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-guest-clear-delete/http-response.adoc[]
+
+
+
+
+
+
+==== 로그아웃 시 동기화
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-logout-sync-post/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-logout-sync-post/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-logout-sync-post/http-response.adoc[]
+
+==== 로그인 시 동기화
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/cart-login-sync-post/http-request.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/cart-login-sync-post/request-headers.adoc[]
+
+.응답 (Response)
+include::{snippets}/cart-login-sync-post/http-response.adoc[]
