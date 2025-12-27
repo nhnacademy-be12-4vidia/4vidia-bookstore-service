@@ -103,6 +103,11 @@ public class BookServiceImpl implements BookService {
 
         saveAuthors(savedBook, request.getAuthorList());
 
+        if (StringUtils.hasText(request.getTagList())) {
+            List<Tag> targetTagList = getTargetTagList(request.getTagList());
+            savedBook.syncBookTags(targetTagList);
+        }
+
         // 캐시 무효화
         adminBookService.evictIsbnCaches(request.getIsbn());
 
@@ -346,6 +351,8 @@ public class BookServiceImpl implements BookService {
                 Author author = authorService.getOrCreateAuthor(ar.name());
                 targetAuthorList.add(new AuthorSyncData(author, ar.role()));
             }
+        } else {
+            throw new BookAuthorRequiredException();
         }
 
         book.syncBookAuthors(targetAuthorList);
@@ -353,8 +360,6 @@ public class BookServiceImpl implements BookService {
         if (StringUtils.hasText(request.getTagList())) {
             List<Tag> targetTagList = getTargetTagList(request.getTagList());
             book.syncBookTags(targetTagList);
-        } else {
-            throw new BookAuthorRequiredException();
         }
 
         if (thumbnail != null && !thumbnail.isEmpty()) {

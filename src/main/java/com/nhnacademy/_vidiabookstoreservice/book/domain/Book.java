@@ -65,7 +65,7 @@ public class Book extends BaseEntity {
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookAuthor> bookAuthorList = new ArrayList<>();
 
     @Column(name = "published_date")
@@ -245,7 +245,6 @@ public class Book extends BaseEntity {
 
     private void removeBookTag(BookTag bookTag) {
         this.bookTagList.remove(bookTag);
-        bookTag.setBook(null);
     }
 
     private String createBookAuthorCompositeKey(Author author, String role) {
@@ -277,6 +276,5 @@ public class Book extends BaseEntity {
 
     private void removeBookAuthor(BookAuthor bookAuthor) {
         this.bookAuthorList.remove(bookAuthor);
-        bookAuthor.setBook(null);
     }
 }
