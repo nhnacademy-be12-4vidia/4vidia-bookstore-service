@@ -24,8 +24,8 @@ public class BestSellerScheduler {
     /**
      * 1시간마다 랭킹 갱신
      */
-    @Scheduled(cron = "0 * * * * *")
-//    @Scheduled(cron = "0 0 * * * *")
+//    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void updateBestsellerRanking() {
         log.info("========== [Scheduler] 🥇 베스트셀러 랭킹 집계 시작 ==========");
 
@@ -105,8 +105,8 @@ public class BestSellerScheduler {
     /**
      * 매일 자정 실행
      */
-    @Scheduled(cron = "0 0/10 * * * *")
-//    @Scheduled(cron = "0 0 0 * * *")
+//    @Scheduled(cron = "0 0/10 * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void dailyReset() {
         log.info("========== [Scheduler] 데이터 누적 및 초기화 수행 ==========");
 
