@@ -45,10 +45,6 @@ include::service/point/point-api.adoc[]
 == 반품(Refund) API
 include::service/refund/refund-api.adoc[]
 
-// 8. Global 서비스
-== 글로벌(Global) API
-include::service/global/global-api.adoc[]
-
 
 // 9.
 // == 참고
