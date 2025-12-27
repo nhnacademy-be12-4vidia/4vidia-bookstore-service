@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class RabbitMqInitializer {
-    //RabbitMQ 설정 확인용
 
     private final RabbitAdmin rabbitAdmin;
 

@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutListRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.DeliveryDateResponse;
@@ -8,144 +9,127 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderBookR
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCheckoutResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.PackagingOptionResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderCheckoutService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// [핵심 1] @WebMvcTest 제거!
+// 부모(SupportControllerTest)가 이미 @SpringBootTest(서버 전체 로딩)를 선언했으므로,
+// 자식도 그 환경을 그대로 따라가야 충돌이 안 납니다.
 class OrderCheckoutControllerTest extends SupportControllerTest {
 
+    // [핵심 2] 서비스 Mocking
+    // @SpringBootTest 환경이지만, 이 서비스만 가짜로 교체해서 컨트롤러 로직만 집중 테스트합니다.
     @MockitoBean
     private OrderCheckoutService orderCheckoutService;
 
-    @BeforeEach
-    void initData() { }
-
     @Test
-    @DisplayName("[주문 화면에 보여줄 값 조회]")
+    @DisplayName("[주문 화면 조회] 주문에 필요한 정보들을 반환한다")
     void getOrderCheckout() throws Exception {
-        // todo: 테스트 데이터 수정 (key값, response 데이터)
+        // Given
         Long userId = 1L;
         String key = "redis-key";
 
         OrderCheckoutResponse mockResponse = new OrderCheckoutResponse(
-                "주문 이름 예시",
+                "노인과 바다 외 1권",
                 20000,
                 List.of(new OrderBookResponse(
-                        1L,
-                        "책 제목",
-                        "저자",
-                        "이미지URL",
-                        "KDC",
-                        2,
-                        10000
+                        1L, "노인과 바다", "헤밍웨이", "http://image.url", "800", 2, 10000
                 )),
-                List.of(new DeliveryDateResponse(
-                        "?",
-                        "오늘 도착"
-                )),
-                List.of(new PackagingOptionResponse(
-                        1L,
-                        "선물 포장",
-                        1000
-                ))
+                List.of(new DeliveryDateResponse(LocalDate.now().plusDays(1).toString(), "내일 도착")),
+                List.of(new PackagingOptionResponse(1L, "선물 포장", 1000))
         );
 
-        given(orderCheckoutService.getOrderCheckoutResponse(anyLong(), anyString()))
-                .willReturn(mockResponse);
+        // [핵심 3] UserContext Static Method Mocking
+        // Controller 내부에서 UserContext.get()을 호출하므로, 이를 가로채서 가짜 값을 줍니다.
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContextInstance = mock(UserContext.class);
+            given(mockContextInstance.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContextInstance);
 
-        mockMvc.perform(get("/orders")
-                        .header("X-User-Id", userId)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .param("key", key)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("order-checkout-get",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
+            given(orderCheckoutService.getOrderCheckoutResponse(eq(userId), eq(key)))
+                    .willReturn(mockResponse);
 
-                        // todo: 데이터 설명 수정 필요
-                        queryParameters(
-                                parameterWithName("key").description("Redis에서 꺼낼 키값")
-                        ),
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("사용자 식별 ID")
-                        ),
-                        responseFields(
-                                fieldWithPath("orderName").description("주문 이름"),
-                                fieldWithPath("finalAmount").description("최종 가격"),
-
-                                fieldWithPath("bookItems").description("도서 아이템 리스트"),
-                                fieldWithPath("bookItems[].bookId").description("도서 PK"),
-                                fieldWithPath("bookItems[].bookTitle").description("제목"),
-                                fieldWithPath("bookItems[].bookAuthor").description("저자"),
-                                fieldWithPath("bookItems[].bookImageUrl").description("이미지 url"),
-                                fieldWithPath("bookItems[].categoryKdc").description("카테코리 kdc 코드"),
-                                fieldWithPath("bookItems[].quantity").description("수량"),
-                                fieldWithPath("bookItems[].salePrice").description("할인가"),
-
-                                fieldWithPath("deliveryDateResponses").description("배송날짜 리스트"),
-                                fieldWithPath("deliveryDateResponses[].value").description("값?"),
-                                fieldWithPath("deliveryDateResponses[].displayDate").description("날짜?"),
-
-                                fieldWithPath("packagingOptions").description("포장옵션 리스트"),
-                                fieldWithPath("packagingOptions[].packagingOptionId").description("포장옵션 PK"),
-                                fieldWithPath("packagingOptions[].name").description("포장옵션 이름"),
-                                fieldWithPath("packagingOptions[].price").description("포장옵션 가격")
-                        )
-                ));
+            // When & Then
+            // mockMvc는 부모 클래스(SupportControllerTest)에 있는 것을 그대로 씁니다.
+            mockMvc.perform(get("/orders")
+                            .param("key", key)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(document("order-checkout-get", // 문서 이름
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            queryParameters(
+                                    parameterWithName("key").description("장바구니/상세페이지에서 생성된 Redis Key")
+                            ),
+                            // responseFields 생략 가능하지만, 문서화를 위해 작성하는 것을 추천 (이전 코드 참고)
+                            responseFields(
+                                    fieldWithPath("orderName").description("주문명"),
+                                    fieldWithPath("finalAmount").description("최종 가격"),
+                                    fieldWithPath("bookItems[].bookId").description("도서 ID"),
+                                    fieldWithPath("bookItems[].bookTitle").description("도서 제목"),
+                                    fieldWithPath("bookItems[].bookAuthor").description("저자"),
+                                    fieldWithPath("bookItems[].bookImageUrl").description("이미지 URL"),
+                                    fieldWithPath("bookItems[].categoryKdc").description("KDC 코드"),
+                                    fieldWithPath("bookItems[].quantity").description("수량"),
+                                    fieldWithPath("bookItems[].salePrice").description("판매가"),
+                                    fieldWithPath("deliveryDateResponses[].value").description("배송일 값"),
+                                    fieldWithPath("deliveryDateResponses[].displayDate").description("배송일 표기"),
+                                    fieldWithPath("packagingOptions[].packagingOptionId").description("포장 ID"),
+                                    fieldWithPath("packagingOptions[].name").description("포장 이름"),
+                                    fieldWithPath("packagingOptions[].price").description("포장 가격")
+                            )
+                    ));
+        }
     }
 
     @Test
-    @DisplayName("[주문 전 선택된 아이템 Redis에 저장]")
+    @DisplayName("[주문 세션 생성] 선택된 아이템을 임시 저장하고 Key를 반환한다")
     void createCheckoutSession() throws Exception {
-        // todo: 테스트 데이터 수정 (key값, request 데이터)
-        String key = "redis-key";
-
+        // Given
+        String generatedKey = "new-redis-key-123";
         OrderCheckoutListRequest request = new OrderCheckoutListRequest(
-                List.of(new OrderCheckoutRequest(1L, 2))
+                List.of(new OrderCheckoutRequest(101L, 2))
         );
 
         given(orderCheckoutService.initiateCheckout(anyList()))
-                .willReturn(key);
+                .willReturn(generatedKey);
 
+        // When & Then
         mockMvc.perform(post("/orders/checkout-temp")
-                        .param("key", key)
-                        .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
+                .andExpect(content().string(generatedKey))
                 .andDo(document("order-checkout-post",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
-                        // todo: 데이터 설명 수정 필요
                         requestFields(
-                                fieldWithPath("items").description("아이템 리스트"),
-                                fieldWithPath("items[].bookId").description("도서 PK"),
+                                fieldWithPath("items[].bookId").description("도서 ID"),
                                 fieldWithPath("items[].quantity").description("수량")
                         )
                 ));
-
     }
 }

@@ -7,6 +7,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCr
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentCancelException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -211,20 +213,40 @@ class TossPaymentServiceImplTest {
     }
 
     @Test
-    @DisplayName("결제 취소 - 실패: 토스 에러 응답")
+    @DisplayName("결제 취소 실패: 응답에 paymentKey가 없으면 PaymentCancelException 예외 발생")
     void cancelPayment_Fail_TossError() throws Exception {
-        ReflectionTestUtils.setField(tossPaymentService, "API_SECRET_KEY", "secret");
+        String paymentKey = "test_payment_key";
+        String reason = "단순 변심";
+        long amount = 10000L;
 
-        Map<String, Object> mockData = Map.of(
-                "code", "NOT_CANCELABLE_AMOUNT",
-                "message", "취소할 수 없는 금액입니다."
-        );
+        Map<String, Object> errorResponseMap = new HashMap<>();
+        errorResponseMap.put("code", "INVALID_REQUEST");
+        errorResponseMap.put("message", "잘못된 요청입니다.");
 
-        doReturn(mockData).when(tossPaymentService).sendRequest(any(), any(), any());
+        doReturn(errorResponseMap)
+                .when(tossPaymentService)
+                .sendRequest(any(), any(), anyString());
 
-        assertThatThrownBy(() -> tossPaymentService.cancelPayment("key", "reason", 20000))
-                .isInstanceOf(PaymentConfirmException.class)
-                .hasMessageContaining("NOT_CANCELABLE_AMOUNT");
+        assertThatThrownBy(() -> tossPaymentService.cancelPayment(paymentKey, reason, amount))
+                .isInstanceOf(PaymentCancelException.class)
+                .hasMessageContaining("INVALID_REQUEST");
+    }
+
+    @Test
+    @DisplayName("통신 오류: IOException 발생 시 RuntimeException으로 감싸서 던진다")
+    void cancelPayment_Fail_NetworkError() throws Exception {
+        String paymentKey = "test_payment_key";
+        String reason = "테스트";
+        long amount = 1000L;
+
+        doThrow(new IOException("Network Error"))
+                .when(tossPaymentService)
+                .sendRequest(any(), any(), anyString());
+
+        assertThatThrownBy(() -> tossPaymentService.cancelPayment(paymentKey, reason, amount))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("토스 결제 취소 요청 중 통신 오류 발생")
+                .hasCauseInstanceOf(IOException.class);
     }
 
 }

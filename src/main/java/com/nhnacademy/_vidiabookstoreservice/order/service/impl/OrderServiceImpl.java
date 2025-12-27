@@ -352,7 +352,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.getOrderStatus() == OrderStatus.PENDING) {
 
-            PaymentConfirmRequest confirmRequest = null;
+            PaymentConfirmRequest confirmRequest;
 
             try {
                 PaymentCancelResponse paymentKey = paymentService.getPaymentKey(order.getOrderId());
@@ -374,8 +374,8 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() == OrderStatus.PAID) {
             Payment payment = paymentService.getPaymentEntity(orderId);
 
-            TossPaymentResponse tossPaymentResponse = null;
-            PaymentCreateRequest paymentCreateRequest = null;
+            TossPaymentResponse tossPaymentResponse;
+            PaymentCreateRequest paymentCreateRequest;
             try {
                 tossPaymentResponse = paymentService.cancelPayment(payment.getPaymentKey(), message,  payment.getAmount());
 
@@ -415,7 +415,16 @@ public class OrderServiceImpl implements OrderService {
     public void changeOrderStatus_ByUser(Long orderId, ConfirmStatus confirmStatus) {
         Order order = getOrder(orderId);
 
+        List<Long> orderItemIds = order.getOrderItems().stream().map(OrderItem::getOrderItemId).toList();
+
+        List<RefundItem> refundItems = refundItemRepository.findAlLByOrderItem_OrderItemIdInAndRefundItemStatus(orderItemIds, RefundItemStatus.APPROVED);
+
+        List<Long> refundIds = refundItems.stream().map(RefundItem::getRefundItemId).toList();
+
         for (OrderItem orderItem : order.getOrderItems()) {
+            if (refundIds.contains(orderItem.getOrderItemId())) {
+                continue;
+            }
             orderItemService.changeStatusOrderItem_byUser(orderItem.getOrderItemId(), confirmStatus);
         }
 
