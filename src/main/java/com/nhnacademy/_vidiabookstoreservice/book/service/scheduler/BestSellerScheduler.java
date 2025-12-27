@@ -24,7 +24,8 @@ public class BestSellerScheduler {
     /**
      * 1시간마다 랭킹 갱신
      */
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 * * * * *")
+//    @Scheduled(cron = "0 0 * * * *")
     public void updateBestsellerRanking() {
         log.info("========== [Scheduler] 🥇 베스트셀러 랭킹 집계 시작 ==========");
 
@@ -84,6 +85,7 @@ public class BestSellerScheduler {
             listOps.rightPushAll(tempKey, finalRankingList);
             bestsellerRedisTemplate.expire(tempKey, 60, java.util.concurrent.TimeUnit.SECONDS);
             bestsellerRedisTemplate.rename(tempKey, KEY_BESTSELLER_VIEW_CACHE);
+            bestsellerRedisTemplate.persist(KEY_BESTSELLER_VIEW_CACHE); // Rename 직후에 반드시 'persist'를 호출해서 만료 시간을 없애줘야 함
 
             log.info(">> 최종 랭킹 반영 완료 (총 {}권)", finalRankingList.size());
 
@@ -103,20 +105,27 @@ public class BestSellerScheduler {
     /**
      * 매일 자정 실행
      */
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0/10 * * * *")
+//    @Scheduled(cron = "0 0 0 * * *")
     public void dailyReset() {
-        log.info("========== [Scheduler] 일일 데이터 초기화 (오늘 -> 어제) ==========");
+        log.info("========== [Scheduler] 데이터 누적 및 초기화 수행 ==========");
 
+        // 오늘(또는 최근 10분) 판매 데이터가 있는 경우에만 처리
         if (Boolean.TRUE.equals(bestsellerRedisTemplate.hasKey(KEY_DAILY_SALES_STATS))) {
-            // Rename(덮어쓰기) 사용
-            // 오늘 쌓인 데이터를 백업 키로 이름만 바꿈 (기존 백업 데이터는 사라짐 -> 누적 방지)
-            bestsellerRedisTemplate.rename(KEY_DAILY_SALES_STATS, KEY_YESTERDAY_BACKUP);
-            bestsellerRedisTemplate.expire(KEY_YESTERDAY_BACKUP, 3, java.util.concurrent.TimeUnit.DAYS); // 백업 데이터 유효 기간 설정 (데이터가 없을 때를 대비해 2~3일 정도 유지)
+            ZSetOperations<String, String> zSetOps = bestsellerRedisTemplate.opsForZSet();
 
-            log.info(">> 오늘 판매 데이터를 백업 키({})로 이관 완료. (누적 X, 단순 교체)", KEY_YESTERDAY_BACKUP);
+            // 기존 백업 데이터 + 오늘 판매 데이터 = 합쳐서 백업에 저장 (점수 합산)
+            zSetOps.unionAndStore(KEY_YESTERDAY_BACKUP, KEY_DAILY_SALES_STATS, KEY_YESTERDAY_BACKUP);
+
+            // 합산이 끝났으니 오늘 실시간 데이터는 삭제하여 0부터 다시 시작
+            bestsellerRedisTemplate.delete(KEY_DAILY_SALES_STATS);
+
+            // 백업 데이터 유효 기간 갱신 (7일)
+            bestsellerRedisTemplate.expire(KEY_YESTERDAY_BACKUP, 7, java.util.concurrent.TimeUnit.DAYS);
+
+            log.info(">> 오늘 판매 데이터를 백업 키({})에 '누적(Union)' 완료.", KEY_YESTERDAY_BACKUP);
         } else {
-            // 오늘 하나도 안 팔렸다면? -> 기존 백업(어제 데이터)을 지우지 않고 내일도 재사용 (빈 화면 방지)
-            log.info(">> 오늘 판매 데이터 없음. 기존 백업 데이터({})를 유지합니다.", KEY_YESTERDAY_BACKUP);
+            log.info(">> 오늘 판매 데이터 없음. 기존 백업 데이터 유지.");
         }
 
         log.info("=============================================================");
