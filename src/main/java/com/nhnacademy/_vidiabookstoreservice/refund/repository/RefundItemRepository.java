@@ -4,6 +4,8 @@ import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,4 +44,6 @@ public interface RefundItemRepository extends JpaRepository<RefundItem, Long> {
             Long refundId,
             RefundItemStatus refundStatus
     );
+
+    List<RefundItem> findAlLByOrderItem_OrderItemIdInAndRefundItemStatus(Collection<Long> orderItemOrderItemIds, RefundItemStatus refundItemStatus);
 }

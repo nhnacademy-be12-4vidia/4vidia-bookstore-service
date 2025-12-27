@@ -32,7 +32,6 @@ public class OrderItemServiceImpl implements OrderItemService {
                 () -> new OrderItemNotFoundException(orderItemId));
 
         if (findOrderItem.getConfirmStatus().equals(ConfirmStatus.UNCONFIRMED)) {
-            //미확정인것만 확정 상태로 변경, 반품 완료, 반품 신청 중인 것도 제외
             findOrderItem.setConfirmStatus(confirmStatus);
         }
     }
