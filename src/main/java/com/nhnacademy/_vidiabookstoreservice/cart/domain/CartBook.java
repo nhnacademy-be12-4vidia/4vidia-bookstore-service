@@ -33,14 +33,27 @@ public class CartBook {
 
     @Builder
     public CartBook(Cart cart, Book book, Integer quantity){
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
+        }
+
         this.cart = cart;
         this.book = book;
         this.quantity = quantity;
     }
 
-    public void increase(Integer quantity){
+    public void changeCart(Cart cart) {
+        this.cart = cart;
+    }
+
+
+    public void increase(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("증가 수량은 1 이상이어야 합니다.");
+        }
         this.quantity += quantity;
     }
+
 
     public void changeQuantity(int quantity) {
         if (quantity <= 0) {
@@ -50,4 +63,3 @@ public class CartBook {
     }
 
 }
-

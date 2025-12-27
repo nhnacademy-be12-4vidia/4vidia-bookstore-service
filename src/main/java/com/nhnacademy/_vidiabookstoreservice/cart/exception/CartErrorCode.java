@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @AllArgsConstructor
 public enum CartErrorCode implements ErrorCodeProvider {
-    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "T001", "장바구니를 찾을 수 없습니다.")
+    CART_BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "T001", "장바구니 아이템을 찾을 수 없습니다.")
     ;
 
     private final HttpStatus status;
