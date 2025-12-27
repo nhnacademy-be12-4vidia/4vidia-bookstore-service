@@ -35,7 +35,7 @@ include::{snippets}/user-likes-page-get/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/user-like-post/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/user-like-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-like-post/request-headers.adoc[]
@@ -51,13 +51,15 @@ include::{snippets}/user-like-post/http-response.adoc[]
 
 .요청 (Request)
 include::{snippets}/user-like-delete/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/user-like-delete/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-like-delete/request-headers.adoc[]
 
 .응답 (Response)
 include::{snippets}/user-like-delete/http-response.adoc[]
+
+
 
 ==== 회원 좋아요 전체 삭제
 :table-number: 0

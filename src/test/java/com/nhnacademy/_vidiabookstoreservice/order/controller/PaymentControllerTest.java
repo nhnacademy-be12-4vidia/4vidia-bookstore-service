@@ -67,7 +67,7 @@ class PaymentControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[결제 확정&저장]")
+    @DisplayName("[결제 확정&저장 - 회원]")
     void savePaymentDetail() throws Exception {
         Long orderId = 100L;
 
@@ -111,6 +111,58 @@ class PaymentControllerTest extends SupportControllerTest {
                         responseFields(
                                 fieldWithPath("orderId").description("주문 ID"),
                                 fieldWithPath("payStatus").description("결제 키"),
+                                fieldWithPath("amount").description("결제 금액")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[결제 확정&저장 - 비회원]")
+    void savePaymentDetail_guest() throws Exception {
+        Long orderId = 100L;
+        Long guestId = 999L; // 가상의 Guest ID
+
+        PaymentConfirmRequest request = new PaymentConfirmRequest(
+                "payment_key",
+                orderId.toString(),
+                15000
+        );
+
+        PaymentResponse response = new PaymentResponse(
+                orderId,
+                "DONE",
+                15000
+        );
+
+        // Guest ID가 전달되었을 때 정상 호출되는지 Mocking
+        given(orderService.payAndCompleteOrder(eq(orderId), any(PaymentConfirmRequest.class), eq(guestId)))
+                .willReturn(response);
+
+        mockMvc.perform(post("/payments")
+                        .param("id", orderId.toString())
+                        .header("X-Guest-Id", guestId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("order-payment-confirm-guest-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName("X-Guest-Id").description("비회원 식별 ID").optional()
+                        ),
+                        queryParameters(
+                                parameterWithName("id").description("주문 ID (PK)")
+                        ),
+                        requestFields(
+                                fieldWithPath("paymentKey").description("결제 키"),
+                                fieldWithPath("orderId").description("주문 번호 (Toss 요청용 ID)"),
+                                fieldWithPath("amount").description("결제 금액")
+                        ),
+                        responseFields(
+                                fieldWithPath("orderId").description("주문 ID"),
+                                fieldWithPath("payStatus").description("결제 상태"),
                                 fieldWithPath("amount").description("결제 금액")
                         )
                 ));

@@ -7,10 +7,10 @@
 
 .요청 (Request)
 include::{snippets}/user-me-orders-page-get/http-request.adoc[]
-.Query Parameters
-include::{snippets}/user-me-orders-page-get/query-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-me-orders-page-get/request-headers.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/user-me-orders-page-get/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/user-me-orders-page-get/http-response.adoc[]

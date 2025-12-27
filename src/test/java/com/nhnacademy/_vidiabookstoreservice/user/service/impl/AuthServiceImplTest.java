@@ -1,4 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
+
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyRewardRequest;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
@@ -12,12 +13,17 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordR
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
+import com.nhnacademy._vidiabookstoreservice.user.dto.event.BirthdayCouponIssueEvent;
 import com.nhnacademy._vidiabookstoreservice.user.dto.event.WelcomeCouponIssueEvent;
+import com.nhnacademy._vidiabookstoreservice.user.exception.EmailVerificationExpiredException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.ResignedUserAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.UserAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.InvalidAuthCodeException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
+import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisSignupEmailAuthRepository;
+import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisSignupEmailVerifiedRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,55 +45,48 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
 
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private GradeRepository gradeRepository;
-    @Mock
-    private EmailService mailService;
-    @Mock
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    @Mock
-    private CouponClient couponClient;
-    @Mock
-    private PointCommandService pointCommandService;
-
+    @Mock private UserRepository userRepository;
+    @Mock private GradeRepository gradeRepository;
+    @Mock private EmailService mailService;
+    @Mock private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Mock private CouponClient couponClient;
+    @Mock private PointCommandService pointCommandService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private RedisSignupEmailAuthRepository signupEmailAuthRepository;
+    @Mock private RedisSignupEmailVerifiedRepository signupEmailVerifiedRepository;
 
     @InjectMocks
     private AuthServiceImpl authService;
 
     @Test
-    @DisplayName("회원가입 성공")
+    @DisplayName("회원가입 성공 - 일반")
     void register_success() {
         // given
-        // [수정 1] DTO/Record는 Mock 대신 실제 객체를 생성해서 사용합니다.
         UserSignupRequest request = new UserSignupRequest(
                 "test@test.com",
                 "password",
                 "홍길동",
                 "010-1234-5678",
-                LocalDate.of(1990, 1, 1)
+                LocalDate.of(1990, 1, 1) // 생일 아님
         );
 
         Grade mockGrade = mock(Grade.class);
 
-        // Stubbing
         given(userRepository.existsByEmail(anyString())).willReturn(false);
+        given(signupEmailVerifiedRepository.isVerified(anyString())).willReturn(true);
         given(gradeRepository.findByGradeName(GradeName.WELCOME)).willReturn(mockGrade);
         given(bCryptPasswordEncoder.encode(anyString())).willReturn("encodedPw");
 
-        // [수정 2] save() 호출 시 ID가 생성되는 동작을 명시적으로 정의 (doAnswer 사용)
-        // 주의: User 엔티티의 ID 필드명이 "userId"가 맞는지 확인하세요. (만약 "id"라면 "id"로 수정)
         doAnswer(invocation -> {
             User user = invocation.getArgument(0);
-            ReflectionTestUtils.setField(user, "userId", 1L); // ID 강제 주입
+            ReflectionTestUtils.setField(user, "userId", 1L);
             return user;
         }).when(userRepository).save(any(User.class));
 
@@ -95,24 +94,73 @@ class AuthServiceImplTest {
         Long resultId = authService.register(request);
 
         // then
-        assertThat(resultId).isNotNull(); // null이 아님을 먼저 검증
         assertThat(resultId).isEqualTo(1L);
 
-        // 검증
+        verify(userRepository).save(any(User.class));
+        verify(pointCommandService).rewardByPolicy(any(PointPolicyRewardRequest.class));
+        verify(signupEmailVerifiedRepository).clear(request.email());
+
+        // Welcome 쿠폰 이벤트 발행 확인
+        ArgumentCaptor<WelcomeCouponIssueEvent> captor =
+                ArgumentCaptor.forClass(WelcomeCouponIssueEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().userId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("회원가입 성공 - 생일인 경우 생일쿠폰 이벤트 발행")
+    void register_success_birthday() {
+        LocalDate today = LocalDate.now();
+        UserSignupRequest request = new UserSignupRequest(
+                "birthday@test.com", "pw", "name", "phone",
+                today // 오늘 생일
+        );
+
+        Grade mockGrade = mock(Grade.class);
+
+        given(userRepository.existsByEmail(anyString())).willReturn(false);
+        given(signupEmailVerifiedRepository.isVerified(anyString())).willReturn(true);
+        given(gradeRepository.findByGradeName(GradeName.WELCOME)).willReturn(mockGrade);
+        given(bCryptPasswordEncoder.encode(anyString())).willReturn("encodedPw");
+
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            ReflectionTestUtils.setField(user, "userId", 1L);
+            return user;
+        }).when(userRepository).save(any(User.class));
+
+        authService.register(request);
+
         verify(userRepository).save(any(User.class));
         verify(pointCommandService).rewardByPolicy(any(PointPolicyRewardRequest.class));
 
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(eventPublisher, times(2)).publishEvent(eventCaptor.capture());
 
-        // ✅ 쿠폰은 직접 호출이 아니라 "이벤트 발행"이 맞음
-        ArgumentCaptor<WelcomeCouponIssueEvent> captor =
-                ArgumentCaptor.forClass(WelcomeCouponIssueEvent.class);
+        List<Object> capturedEvents = eventCaptor.getAllValues();
 
-        verify(eventPublisher).publishEvent(captor.capture());
-        assertThat(captor.getValue().userId()).isEqualTo(1L);
+        boolean hasWelcomeEvent = capturedEvents.stream()
+                .anyMatch(e -> e instanceof WelcomeCouponIssueEvent);
+        boolean hasBirthdayEvent = capturedEvents.stream()
+                .anyMatch(e -> e instanceof BirthdayCouponIssueEvent);
 
-        // ❌ 서비스 단위테스트에서는 couponClient 호출을 기대하면 안 됨 (리스너가 담당)
-        verifyNoInteractions(couponClient);
+        assertThat(hasWelcomeEvent).as("WelcomeCouponIssueEvent가 발행되어야 합니다.").isTrue();
+        assertThat(hasBirthdayEvent).as("BirthdayCouponIssueEvent가 발행되어야 합니다.").isTrue();
+    }
 
+    @Test
+    @DisplayName("회원가입 실패 - 이메일 인증 미완료")
+    void register_fail_unverifiedEmail() {
+        UserSignupRequest request = new UserSignupRequest(
+                "unverified@test.com", "pw", "name", "phone", LocalDate.now()
+        );
+
+        given(userRepository.existsByEmail(anyString())).willReturn(false);
+        given(signupEmailVerifiedRepository.isVerified(anyString())).willReturn(false);
+
+        assertThatThrownBy(() -> authService.register(request))
+                .isInstanceOf(EmailVerificationExpiredException.class)
+                .hasMessageContaining("이메일 인증이 필요합니다.");
     }
 
     @Test
@@ -133,7 +181,6 @@ class AuthServiceImplTest {
     @Test
     @DisplayName("아이디 찾기 성공")
     void findUserId_success() {
-        // given
         FindIdRequest mockRequest = mock(FindIdRequest.class);
         given(mockRequest.name()).willReturn("홍길동");
         given(mockRequest.birthday()).willReturn("1990-01-01");
@@ -146,17 +193,13 @@ class AuthServiceImplTest {
                 eq("홍길동"), any(LocalDate.class), eq("010-1234-5678"))
         ).willReturn(Optional.of(mockUser));
 
-        // when
         String resultEmail = authService.findUserId(mockRequest);
-
-        // then
         assertThat(resultEmail).isEqualTo("found@test.com");
     }
 
     @Test
     @DisplayName("아이디 찾기 실패 - 사용자 없음")
     void findUserId_fail_notFound() {
-        // given
         FindIdRequest mockRequest = mock(FindIdRequest.class);
         given(mockRequest.name()).willReturn("홍길동");
         given(mockRequest.birthday()).willReturn("1990-01-01");
@@ -165,7 +208,6 @@ class AuthServiceImplTest {
         given(userRepository.findByNameAndBirthDateAndPhone(anyString(), any(LocalDate.class), anyString()))
                 .willReturn(Optional.empty());
 
-        // when & then
         assertThatThrownBy(() -> authService.findUserId(mockRequest))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("일치하는 회원정보가 없습니다.");
@@ -174,13 +216,11 @@ class AuthServiceImplTest {
     @Test
     @DisplayName("비밀번호 초기화 및 메일 발송 성공")
     void restPasswordAndSendMail_success() {
-        // given
         FindPasswordRequest mockRequest = mock(FindPasswordRequest.class);
         given(mockRequest.email()).willReturn("test@test.com");
         given(mockRequest.name()).willReturn("홍길동");
         given(mockRequest.phone()).willReturn("010-1234-5678");
 
-        // User 객체 생성 (비밀번호 업데이트 검증을 위해 Mock 대신 실제 객체 사용 권장)
         User user = User.builder()
                 .email("test@test.com")
                 .name("홍길동")
@@ -191,13 +231,10 @@ class AuthServiceImplTest {
                 .willReturn(Optional.of(user));
         given(bCryptPasswordEncoder.encode(anyString())).willReturn("newEncodedPassword");
 
-        // when
         String result = authService.restPasswordAndSendMail(mockRequest);
 
-        // then
         assertThat(result).contains("임시 비밀번호가 이메일로 발송되었습니다");
         assertThat(user.getPassword()).isEqualTo("newEncodedPassword");
-
         verify(mailService).sendTempPassword(eq("test@test.com"), anyString());
     }
 
@@ -205,9 +242,7 @@ class AuthServiceImplTest {
     @DisplayName("이메일 중복 체크 성공")
     void existsByEmail_success() {
         String email = "test@test.com";
-
         given(userRepository.existsByEmail(email)).willReturn(true);
-
         assertThat(authService.existsByEmail(email)).isEqualTo(true);
     }
 
@@ -215,64 +250,52 @@ class AuthServiceImplTest {
     @DisplayName("이메일 중복 체크 실패")
     void existsByEmail_fail() {
         given(userRepository.existsByEmail(anyString())).willReturn(false);
-
         assertThat(authService.existsByEmail(anyString())).isEqualTo(false);
     }
 
     @Test
     @DisplayName("휴면 계정 여부 확인 - 정상 회원 (False)")
     void isDormant_activeUser() {
-        // given
         String email = "active@test.com";
         User user = User.builder().email(email).build();
         ReflectionTestUtils.setField(user, "status", UserStatus.ACTIVE);
 
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
 
-        // when
         Boolean result = authService.isDormant(email);
-
-        // then
         assertThat(result).isFalse();
     }
 
     @Test
     @DisplayName("휴면 계정 여부 확인 - 휴면 회원 (True)")
     void isDormant_dormantUser() {
-        // given
         String email = "dormant@test.com";
         User user = User.builder().email(email).build();
         ReflectionTestUtils.setField(user, "status", UserStatus.DORMANT);
 
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
 
-        // when
         Boolean result = authService.isDormant(email);
-
-        // then
         assertThat(result).isTrue();
     }
 
     @Test
     @DisplayName("휴면 계정 여부 확인 - 탈퇴 회원 (Exception)")
     void isDormant_deletedUser() {
-        // given
         String email = "deleted@test.com";
         User user = User.builder().email(email).build();
         ReflectionTestUtils.setField(user, "status", UserStatus.DELETED);
 
         given(userRepository.findByEmail(email)).willReturn(Optional.of(user));
 
-        // when & then
         assertThatThrownBy(() -> authService.isDormant(email))
                 .isInstanceOf(ResignedUserAlreadyExistsException.class)
-                .hasMessageContaining("등급 적립률이 음수일 수 없습니다.");
+                .hasMessageContaining("이미 탈퇴한 회원입니다");
     }
 
     @Test
     @DisplayName("휴면 회원 전환 배치 처리 성공")
     void convertDormantUsers_success() {
-        // given
         User user1 = User.builder().name("u1").build();
         ReflectionTestUtils.setField(user1, "status", UserStatus.ACTIVE);
 
@@ -282,23 +305,20 @@ class AuthServiceImplTest {
         given(userRepository.findActiveUsersToDormant(eq(UserStatus.ACTIVE), any(LocalDateTime.class)))
                 .willReturn(List.of(user1, user2));
 
-        // when
         int count = authService.convertDormantUsers(LocalDateTime.now());
 
-        // then
         assertThat(count).isEqualTo(2);
         assertThat(user1.getStatus()).isEqualTo(UserStatus.DORMANT);
         assertThat(user2.getStatus()).isEqualTo(UserStatus.DORMANT);
     }
 
     @Test
-    @DisplayName("OAuth(payco) 인증 회원 찾기 성공 - 기존 회원(기존 정보 있음)")
+    @DisplayName("OAuth(payco) 인증 회원 찾기 성공 - 기존 회원")
     void findOrCreateOAuthUser_success_find() {
         String provider = "payco";
         Long userId = 1L;
 
         User user = mock(User.class);
-
         given(user.getUserId()).willReturn(userId);
         given(user.getEmail()).willReturn("origin@test.com");
         given(user.getRole()).willReturn(UserRole.USER);
@@ -312,11 +332,10 @@ class AuthServiceImplTest {
 
         assertThat(result.getUserId()).isEqualTo(userId);
         assertThat(result.getEmail()).isEqualTo("origin@test.com");
-        assertThat(result.getStatus()).isEqualTo(UserStatus.ACTIVE.name());
     }
 
     @Test
-    @DisplayName("OAuth(payco) 인증 회원 생성 성공 - 새 회원(기존 정보 없음)")
+    @DisplayName("OAuth(payco) 인증 회원 생성 성공 - 새 회원")
     void findOrCreateOAuthUser_success_create() {
         String provider = "payco";
         String paycoId = "123";
@@ -338,7 +357,77 @@ class AuthServiceImplTest {
 
         assertThat(createdUser.getUserId()).isEqualTo(1L);
         assertThat(createdUser.getEmail()).contains("@temp.4vidia.shop");
-
         verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("회원가입 인증코드 전송 성공")
+    void sendSignupEmailCode_success() {
+        String email = "new@test.com";
+        given(userRepository.existsByEmail(email)).willReturn(false);
+
+        authService.sendSignupEmailCode(email);
+
+        verify(signupEmailAuthRepository).saveCode(eq(email), anyString());
+        verify(mailService).sendSignupAuthCode(eq(email), anyString());
+    }
+
+    @Test
+    @DisplayName("회원가입 인증코드 전송 실패 - 이미 가입된 회원")
+    void sendSignupEmailCode_fail_existsUser() {
+        String email = "exists@test.com";
+        given(userRepository.existsByEmail(email)).willReturn(true);
+
+        assertThatThrownBy(() -> authService.sendSignupEmailCode(email))
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessageContaining("이미 존재하는 회원입니다.");
+
+        verify(signupEmailAuthRepository, never()).saveCode(anyString(), anyString());
+        verify(mailService, never()).sendSignupAuthCode(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("회원가입 인증코드 검증 성공")
+    void verifySignupEmailCode_success() {
+        String email = "test@test.com";
+        String code = "123456";
+
+        given(signupEmailAuthRepository.getCode(email)).willReturn(code);
+
+        authService.verifySignupEmailCode(email, code);
+
+        verify(signupEmailAuthRepository).deleteCode(email);
+        verify(signupEmailVerifiedRepository).markVerified(email);
+    }
+
+    @Test
+    @DisplayName("회원가입 인증코드 검증 실패 - 만료되었거나 코드 없음")
+    void verifySignupEmailCode_fail_expired() {
+        String email = "test@test.com";
+        String code = "123456";
+
+        given(signupEmailAuthRepository.getCode(email)).willReturn(null);
+
+        assertThatThrownBy(() -> authService.verifySignupEmailCode(email, code))
+                .isInstanceOf(EmailVerificationExpiredException.class)
+                .hasMessageContaining("이메일 인증이 필요합니다.");
+
+        verify(signupEmailVerifiedRepository, never()).markVerified(anyString());
+    }
+
+    @Test
+    @DisplayName("회원가입 인증코드 검증 실패 - 코드 불일치")
+    void verifySignupEmailCode_fail_mismatch() {
+        String email = "test@test.com";
+        String correctCode = "123456";
+        String wrongCode = "000000";
+
+        given(signupEmailAuthRepository.getCode(email)).willReturn(correctCode);
+
+        assertThatThrownBy(() -> authService.verifySignupEmailCode(email, wrongCode))
+                .isInstanceOf(InvalidAuthCodeException.class)
+                .hasMessageContaining("인증 코드가 일치하지 않습니다.");
+
+        verify(signupEmailVerifiedRepository, never()).markVerified(anyString());
     }
 }

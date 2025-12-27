@@ -23,7 +23,7 @@ include::{snippets}/user-grade-get/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/user-grade-put/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/user-grade-put/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-grade-put/request-headers.adoc[]
