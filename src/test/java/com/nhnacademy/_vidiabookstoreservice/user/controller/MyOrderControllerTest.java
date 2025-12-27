@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
+import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
@@ -81,6 +82,7 @@ class MyOrderControllerTest extends SupportControllerTest {
                         .priceStandard(1000)
                         .priceSales(900)
                         .packagingAvailable(true)
+                        .stockStatus(StockStatus.IN_STOCK)
                         .build()
         ); // Flush
 
