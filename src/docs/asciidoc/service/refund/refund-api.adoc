@@ -1,5 +1,4 @@
 // Refund 도메인별 기능 통합 파일
 
-// TODO: 기능 구현 후 주석 해제 및 파일명 변경
-=== 반품 관리
-// include::refund.adoc[]
+=== `반품 관리`
+include::refund-refund.adoc[]

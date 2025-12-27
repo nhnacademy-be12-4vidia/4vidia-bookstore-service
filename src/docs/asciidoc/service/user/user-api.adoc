@@ -1,7 +1,7 @@
 // User 도메인 통합 파일
 
 
-=== `인증/로그인(Auth)` 관리
+=== `인증/로그인(Auth) 관리`
 include::auth.adoc[]
 
 === `회원(User) 관리`
