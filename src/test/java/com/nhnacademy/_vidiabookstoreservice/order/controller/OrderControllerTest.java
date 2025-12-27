@@ -237,6 +237,28 @@ class OrderControllerTest extends SupportControllerTest {
     }
 
     @Test
+    @DisplayName("[주문 결제 금액 조회]")
+    void getOrderPayPrice() throws Exception {
+        // 예상 결제 금액 계산: 도서가격(15000) + 포장비(1000) + 배송비(3000) - 쿠폰(0) - 포인트(0) = 19000
+        int expectedAmount = 19000;
+
+        mockMvc.perform(get("/orders/{order-id}/amount", testOrderId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.payPrice").value(expectedAmount)) // 금액 검증
+                .andDo(document("order-amount-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("order-id").description("조회할 주문 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("payPrice").description("최종 결제 금액")
+                        )
+                ));
+    }
+
+    @Test
     @DisplayName("[주문내역 상세보기]")
     void getOrder_user() throws Exception {
 

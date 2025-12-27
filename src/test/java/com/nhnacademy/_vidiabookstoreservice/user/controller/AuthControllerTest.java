@@ -4,9 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.*;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeByEmailRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeRequest;
@@ -310,5 +308,47 @@ class AuthControllerTest extends SupportControllerTest {
                 ));
     }
 
+    @Test
+    @DisplayName("[회원가입 이메일 인증코드 전송]")
+    void sendSignupEmailCode() throws Exception {
+        EmailSendCodeRequest request = new EmailSendCodeRequest(TEST_EMAIL);
+
+        willDoNothing().given(authService).sendSignupEmailCode(anyString());
+
+        mockMvc.perform(post("/auth/email/send-code")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andDo(document("auth-email-send-code-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestFields(
+                                fieldWithPath("email").description("인증 코드를 받을 이메일")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[회원가입 이메일 인증코드 검증]")
+    void verifySignupEmailCode() throws Exception {
+        EmailVerifyCodeRequest request = new EmailVerifyCodeRequest(TEST_EMAIL, "123456");
+
+        willDoNothing().given(authService).verifySignupEmailCode(anyString(), anyString());
+
+        mockMvc.perform(post("/auth/email/verify-code")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andDo(document("auth-email-verify-code-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestFields(
+                                fieldWithPath("email").description("인증할 이메일"),
+                                fieldWithPath("code").description("수신된 6자리 인증 코드")
+                        )
+                ));
+    }
 
 }

@@ -7,16 +7,16 @@
 
 .요청 (Request)
 include::{snippets}/book-review-get/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/book-review-get/path-parameters.adoc[]
-.Query Parameters
-include::{snippets}/book-review-get/query-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/book-review-get/request-headers.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/book-review-get/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/book-review-get/http-response.adoc[]
-.응답 필드 (Response fields)
+.응답 필드 (Response Fields)
 include::{snippets}/book-review-get/response-fields.adoc[]
 // --------------------------------------------------------------
 // 2. 생성 (POST)
@@ -25,11 +25,11 @@ include::{snippets}/book-review-get/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/book-review-post/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/book-review-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/book-review-post/request-headers.adoc[]
-.요청 필드 (Request fields)
+.요청 필드 (Request Fields)
 include::{snippets}/book-review-post/request-fields.adoc[]
 
 .응답 (Response)

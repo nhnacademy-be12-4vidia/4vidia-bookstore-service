@@ -19,7 +19,7 @@ include::{snippets}/order-packaging-option-list-get/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/order-packaging-option-post/http-request.adoc[]
-.요청 필드 (Request fields)
+.요청 필드 (Request Fields)
 include::{snippets}/order-packaging-option-post/request-fields.adoc[]
 
 .응답 (Response)
