@@ -74,10 +74,8 @@ public class OrderController {
      * @return 200 OK
      */
     @PutMapping("/{order-id}/cancel")
-    public ResponseEntity<Void> cancelOrder(@PathVariable(value = "order-id") long orderId) {
+    public void cancelOrder(@PathVariable(value = "order-id") long orderId) {
         orderService.cancelOrder(orderId, "배송 전 취소");
-
-        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -85,10 +83,9 @@ public class OrderController {
      * @param orderId : 주문아이디
      */
     @PutMapping("/{order-id}/confirm-order")
-    public ResponseEntity<Void> changeConfirmOrder(@PathVariable("order-id") Long orderId) {
+    public void changeConfirmOrder(@PathVariable("order-id") Long orderId) {
         orderService.changeOrderStatus_ByUser(orderId, ConfirmStatus.CONFIRMED);
 
-        return ResponseEntity.noContent().build();
     }
 
 }

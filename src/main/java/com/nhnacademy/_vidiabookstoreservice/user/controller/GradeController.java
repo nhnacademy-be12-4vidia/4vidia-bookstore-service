@@ -27,11 +27,10 @@ public class GradeController {
      * 등급 변경
      */
     @PutMapping("/{grade-id}")
-    public ResponseEntity<String> updateGrade(@PathVariable("grade-id") Long gradeId) {
+    public void updateGrade(@PathVariable("grade-id") Long gradeId) {
         Long userId = UserContext.get().getUserId();
 
         gradeService.updateGrade(userId, gradeId);
-        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
 }

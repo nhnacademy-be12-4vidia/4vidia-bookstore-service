@@ -41,10 +41,9 @@ public class AdminReviewController {
      * 관리자 리뷰 삭제
      */
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
+    public void deleteReview(@PathVariable Long reviewId) {
         adminReviewService.deleteReview(reviewId);
         // 204 No Content 가 일반적인 삭제 응답
-        return ResponseEntity.noContent().build();
     }
 
 

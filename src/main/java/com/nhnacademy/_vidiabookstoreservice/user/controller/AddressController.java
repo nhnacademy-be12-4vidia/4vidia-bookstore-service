@@ -74,10 +74,9 @@ public class AddressController {
      * 기존 "/change-default/{addressId}"
      */
     @PutMapping("/{address-id}/default")
-    public ResponseEntity<Void> updateDefaultAddress(@PathVariable("address-id") Long addressId) {
+    public void updateDefaultAddress(@PathVariable("address-id") Long addressId) {
         Long userId = UserContext.get().getUserId();
         addressService.updateDefaultAddress(userId, addressId);
-        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     /**
