@@ -93,26 +93,26 @@ class BookControllerTest extends SupportControllerTest {
                                 parameterWithName("size").description("페이지 크기").optional(),
                                 parameterWithName("sort").description("정렬 조건").optional()
                         ),
-                        responseFields(
-                                fieldWithPath("page.totalElements").description("전체 검색 결과 수"),
-                                fieldWithPath("page.totalPages").description("전체 페이지 수"),
-                                fieldWithPath("page.page").description("현재 페이지 번호"),
-                                fieldWithPath("page.size").description("페이지 크기"),
-                                fieldWithPath("page.last").description("마지막 페이지 여부"),
-                                fieldWithPath("page.content").description("도서 목록"),
+                        responseFields(withHeader(
+                                fieldWithPath("data.page.totalElements").description("전체 검색 결과 수"),
+                                fieldWithPath("data.page.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("data.page.page").description("현재 페이지 번호"),
+                                fieldWithPath("data.page.size").description("페이지 크기"),
+                                fieldWithPath("data.page.last").description("마지막 페이지 여부"),
+                                fieldWithPath("data.page.content").description("도서 목록"),
 
-                                fieldWithPath("page.content[].id").description("도서 ID"),
-                                fieldWithPath("page.content[].title").description("제목"),
-                                fieldWithPath("page.content[].isbn").description("ISBN"),
-                                fieldWithPath("page.content[].priceStandard").description("정가"),
-                                fieldWithPath("page.content[].priceSales").description("판매가"),
-                                fieldWithPath("page.content[].authorNames").description("작가 목록"),
-                                fieldWithPath("page.content[].publisherName").description("출판사"),
-                                fieldWithPath("page.content[].imageUrl").description("이미지 URL"),
-                                fieldWithPath("page.content[].liked").description("좋아요 여부").optional(),
+                                fieldWithPath("data.page.content[].id").description("도서 ID"),
+                                fieldWithPath("data.page.content[].title").description("제목"),
+                                fieldWithPath("data.page.content[].isbn").description("ISBN"),
+                                fieldWithPath("data.page.content[].priceStandard").description("정가"),
+                                fieldWithPath("data.page.content[].priceSales").description("판매가"),
+                                fieldWithPath("data.page.content[].authorNames").description("작가 목록"),
+                                fieldWithPath("data.page.content[].publisherName").description("출판사"),
+                                fieldWithPath("data.page.content[].imageUrl").description("이미지 URL"),
+                                fieldWithPath("data.page.content[].liked").description("좋아요 여부").optional(),
 
-                                fieldWithPath("aiCacheResponseList").description("AI 추천 캐시 목록 (있으면)")
-                        )
+                                fieldWithPath("data.aiCacheResponseList").description("AI 추천 캐시 목록 (있으면)")
+                        ))
                 ));
     }
 
@@ -135,7 +135,7 @@ class BookControllerTest extends SupportControllerTest {
                         .param("keyword", "추천해줘")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.aiAnswer").value("AI 답변입니다."))
+                .andExpect(jsonPath("$.data.aiAnswer").value("AI 답변입니다."))
                 .andDo(document("book-search-ai-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -143,16 +143,16 @@ class BookControllerTest extends SupportControllerTest {
                         queryParameters(
                                 parameterWithName("keyword").description("질문 내용")
                         ),
-                        responseFields(
-                                fieldWithPath("aiAnswer").description("AI 답변"),
-                                fieldWithPath("results").description("검색 결과 페이징 정보"),
-                                fieldWithPath("results.content").description("도서 목록"),
-                                fieldWithPath("results.page").description("페이지 번호"),
-                                fieldWithPath("results.size").description("페이지 크기"),
-                                fieldWithPath("results.totalElements").description("전체 수"),
-                                fieldWithPath("results.totalPages").description("전체 페이지 수"),
-                                fieldWithPath("results.last").description("마지막 페이지 여부")
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data.aiAnswer").description("AI 답변"),
+                                fieldWithPath("data.results").description("검색 결과 페이징 정보"),
+                                fieldWithPath("data.results.content").description("도서 목록"),
+                                fieldWithPath("data.results.page").description("페이지 번호"),
+                                fieldWithPath("data.results.size").description("페이지 크기"),
+                                fieldWithPath("data.results.totalElements").description("전체 수"),
+                                fieldWithPath("data.results.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("data.results.last").description("마지막 페이지 여부")
+                        ))
                 ));
     }
 
@@ -176,14 +176,14 @@ class BookControllerTest extends SupportControllerTest {
                         queryParameters(
                                 parameterWithName("tagIds").description("태그 ID 목록 (콤마 구분)")
                         ),
-                        responseFields(
-                                fieldWithPath("content").description("도서 목록"),
-                                fieldWithPath("page").description("페이지 번호"),
-                                fieldWithPath("size").description("페이지 크기"),
-                                fieldWithPath("totalElements").description("전체 수"),
-                                fieldWithPath("totalPages").description("전체 페이지 수"),
-                                fieldWithPath("last").description("마지막 페이지 여부")
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data.content").description("도서 목록"),
+                                fieldWithPath("data.page").description("페이지 번호"),
+                                fieldWithPath("data.size").description("페이지 크기"),
+                                fieldWithPath("data.totalElements").description("전체 수"),
+                                fieldWithPath("data.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("data.last").description("마지막 페이지 여부")
+                        ))
                 ));
     }
 
@@ -216,14 +216,14 @@ class BookControllerTest extends SupportControllerTest {
                                 parameterWithName("page").description("페이지 번호").optional(),
                                 parameterWithName("size").description("페이지 크기").optional()
                         ),
-                        responseFields(
-                                fieldWithPath("content").description("도서 목록"),
-                                fieldWithPath("page").description("페이지 번호"),
-                                fieldWithPath("size").description("페이지 크기"),
-                                fieldWithPath("totalElements").description("전체 수"),
-                                fieldWithPath("totalPages").description("전체 페이지 수"),
-                                fieldWithPath("last").description("마지막 페이지 여부")
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data.content").description("도서 목록"),
+                                fieldWithPath("data.page").description("페이지 번호"),
+                                fieldWithPath("data.size").description("페이지 크기"),
+                                fieldWithPath("data.totalElements").description("전체 수"),
+                                fieldWithPath("data.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("data.last").description("마지막 페이지 여부")
+                        ))
                 ));
     }
 
@@ -256,7 +256,7 @@ class BookControllerTest extends SupportControllerTest {
         mockMvc.perform(get("/books/{bookId}", bookId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(bookId))
+                .andExpect(jsonPath("$.data.id").value(bookId))
                 .andDo(document("book-detail-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -264,38 +264,38 @@ class BookControllerTest extends SupportControllerTest {
                         pathParameters(
                                 parameterWithName("bookId").description("도서 ID")
                         ),
-                        responseFields(
-                                fieldWithPath("id").description("도서 ID"),
-                                fieldWithPath("isbn").description("ISBN"),
-                                fieldWithPath("title").description("제목"),
-                                fieldWithPath("subtitle").description("부제").optional(),
-                                fieldWithPath("bookIndex").description("목차").optional(),
-                                fieldWithPath("description").description("설명"),
-                                fieldWithPath("publishedDate").description("출판일"),
-                                fieldWithPath("priceStandard").description("정가"),
-                                fieldWithPath("priceSales").description("판매가"),
-                                fieldWithPath("stock").description("재고"),
-                                fieldWithPath("stockStatus").description("재고 상태"),
-                                fieldWithPath("packagingAvailable").description("포장 가능 여부"),
-                                fieldWithPath("pageCount").description("페이지 수").optional(),
-                                fieldWithPath("language").description("언어").optional(),
-                                fieldWithPath("volumeNumber").description("권 호수").optional(),
-                                fieldWithPath("reviewCount").description("리뷰 수"),
-                                fieldWithPath("avgRating").description("평균 평점"),
-                                fieldWithPath("publisher").description("출판사 정보").optional(),
-                                fieldWithPath("publisher.id").description("출판사 ID").optional(),
-                                fieldWithPath("publisher.name").description("출판사 명").optional(),
-                                fieldWithPath("category").description("카테고리 정보").optional(),
-                                fieldWithPath("category.id").description("카테고리 ID").optional(),
-                                fieldWithPath("category.name").description("카테고리 명").optional(),
-                                fieldWithPath("category.kdcCode").description("KDC 코드").optional(),
-                                fieldWithPath("authors").description("저자 목록"),
-                                fieldWithPath("authors[].id").description("저자 ID"),
-                                fieldWithPath("authors[].name").description("저자 명"),
-                                fieldWithPath("authors[].role").description("저자 역할"),
-                                fieldWithPath("tags").description("태그 목록"),
-                                fieldWithPath("imageUrls").description("이미지 목록").optional()
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data.id").description("도서 ID"),
+                                fieldWithPath("data.isbn").description("ISBN"),
+                                fieldWithPath("data.title").description("제목"),
+                                fieldWithPath("data.subtitle").description("부제").optional(),
+                                fieldWithPath("data.bookIndex").description("목차").optional(),
+                                fieldWithPath("data.description").description("설명"),
+                                fieldWithPath("data.publishedDate").description("출판일"),
+                                fieldWithPath("data.priceStandard").description("정가"),
+                                fieldWithPath("data.priceSales").description("판매가"),
+                                fieldWithPath("data.stock").description("재고"),
+                                fieldWithPath("data.stockStatus").description("재고 상태"),
+                                fieldWithPath("data.packagingAvailable").description("포장 가능 여부"),
+                                fieldWithPath("data.pageCount").description("페이지 수").optional(),
+                                fieldWithPath("data.language").description("언어").optional(),
+                                fieldWithPath("data.volumeNumber").description("권 호수").optional(),
+                                fieldWithPath("data.reviewCount").description("리뷰 수"),
+                                fieldWithPath("data.avgRating").description("평균 평점"),
+                                fieldWithPath("data.publisher").description("출판사 정보").optional(),
+                                fieldWithPath("data.publisher.id").description("출판사 ID").optional(),
+                                fieldWithPath("data.publisher.name").description("출판사 명").optional(),
+                                fieldWithPath("data.category").description("카테고리 정보").optional(),
+                                fieldWithPath("data.category.id").description("카테고리 ID").optional(),
+                                fieldWithPath("data.category.name").description("카테고리 명").optional(),
+                                fieldWithPath("data.category.kdcCode").description("KDC 코드").optional(),
+                                fieldWithPath("data.authors").description("저자 목록"),
+                                fieldWithPath("data.authors[].id").description("저자 ID"),
+                                fieldWithPath("data.authors[].name").description("저자 명"),
+                                fieldWithPath("data.authors[].role").description("저자 역할"),
+                                fieldWithPath("data.tags").description("태그 목록"),
+                                fieldWithPath("data.imageUrls").description("이미지 목록").optional()
+                        ))
                 ));
     }
 
@@ -318,22 +318,22 @@ class BookControllerTest extends SupportControllerTest {
                         .header("X-User-Id", testUserId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$.data.size()").value(2))
                 .andDo(document("book-bestseller-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
 
-                        responseFields(
-                                fieldWithPath("[].id").description("도서 ID"),
-                                fieldWithPath("[].title").description("제목"),
-                                fieldWithPath("[].isbn").description("ISBN").optional(),
-                                fieldWithPath("[].priceStandard").description("정가"),
-                                fieldWithPath("[].priceSales").description("판매가"),
-                                fieldWithPath("[].authorNames").description("저자 목록").optional(),
-                                fieldWithPath("[].publisherName").description("출판사").optional(),
-                                fieldWithPath("[].imageUrl").description("이미지 URL").optional(),
-                                fieldWithPath("[].liked").description("좋아요 여부")
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data[].id").description("도서 ID"),
+                                fieldWithPath("data[].title").description("제목"),
+                                fieldWithPath("data[].isbn").description("ISBN").optional(),
+                                fieldWithPath("data[].priceStandard").description("정가"),
+                                fieldWithPath("data[].priceSales").description("판매가"),
+                                fieldWithPath("data[].authorNames").description("저자 목록").optional(),
+                                fieldWithPath("data[].publisherName").description("출판사").optional(),
+                                fieldWithPath("data[].imageUrl").description("이미지 URL").optional(),
+                                fieldWithPath("data[].liked").description("좋아요 여부")
+                        ))
                 ));
     }
 
@@ -357,17 +357,17 @@ class BookControllerTest extends SupportControllerTest {
                         queryParameters(
                                 parameterWithName("keyword").description("검색어")
                         ),
-                        responseFields(
-                                fieldWithPath("[].id").description("도서 ID"),
-                                fieldWithPath("[].title").description("제목"),
-                                fieldWithPath("[].isbn").description("ISBN").optional(),
-                                fieldWithPath("[].priceStandard").description("정가").optional(),
-                                fieldWithPath("[].priceSales").description("판매가").optional(),
-                                fieldWithPath("[].authorNames").description("저자 목록").optional(),
-                                fieldWithPath("[].publisherName").description("출판사").optional(),
-                                fieldWithPath("[].imageUrl").description("이미지 URL").optional(),
-                                fieldWithPath("[].liked").description("좋아요 여부").optional()
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data[].id").description("도서 ID"),
+                                fieldWithPath("data[].title").description("제목"),
+                                fieldWithPath("data[].isbn").description("ISBN").optional(),
+                                fieldWithPath("data[].priceStandard").description("정가").optional(),
+                                fieldWithPath("data[].priceSales").description("판매가").optional(),
+                                fieldWithPath("data[].authorNames").description("저자 목록").optional(),
+                                fieldWithPath("data[].publisherName").description("출판사").optional(),
+                                fieldWithPath("data[].imageUrl").description("이미지 URL").optional(),
+                                fieldWithPath("data[].liked").description("좋아요 여부").optional()
+                        ))
                 ));
     }
 
@@ -391,17 +391,17 @@ class BookControllerTest extends SupportControllerTest {
                         queryParameters(
                                 parameterWithName("tagId").description("조회할 태그 ID")
                         ),
-                        responseFields(
-                                fieldWithPath("[].id").description("도서 ID"),
-                                fieldWithPath("[].title").description("제목"),
-                                fieldWithPath("[].isbn").description("ISBN").optional(),
-                                fieldWithPath("[].priceStandard").description("정가").optional(),
-                                fieldWithPath("[].priceSales").description("판매가").optional(),
-                                fieldWithPath("[].authorNames").description("저자 목록").optional(),
-                                fieldWithPath("[].publisherName").description("출판사").optional(),
-                                fieldWithPath("[].imageUrl").description("이미지 URL").optional(),
-                                fieldWithPath("[].liked").description("좋아요 여부")
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data[].id").description("도서 ID"),
+                                fieldWithPath("data[].title").description("제목"),
+                                fieldWithPath("data[].isbn").description("ISBN").optional(),
+                                fieldWithPath("data[].priceStandard").description("정가").optional(),
+                                fieldWithPath("data[].priceSales").description("판매가").optional(),
+                                fieldWithPath("data[].authorNames").description("저자 목록").optional(),
+                                fieldWithPath("data[].publisherName").description("출판사").optional(),
+                                fieldWithPath("data[].imageUrl").description("이미지 URL").optional(),
+                                fieldWithPath("data[].liked").description("좋아요 여부")
+                        ))
                 ));
     }
 }

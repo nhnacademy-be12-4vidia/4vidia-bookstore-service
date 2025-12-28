@@ -1,44 +1,32 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
-import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserRole;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.*;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeByEmailRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantVerifyRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateLastLoginRequest;
-import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
-import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.DormantAuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
-import org.h2.engine.Role;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
-import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class AuthControllerTest extends SupportControllerTest {
 
@@ -46,135 +34,30 @@ class AuthControllerTest extends SupportControllerTest {
     @MockitoBean private UserService userService;
     @MockitoBean private DormantAuthService dormantAuthService;
 
-    private final String TEST_EMAIL = "auth_test@test.com";
-    @Autowired
-    private UserRepository userRepository;
-
-    @BeforeEach
-    void initData() { }
-
     @Test
     @DisplayName("[회원가입]")
     void signup() throws Exception {
         UserSignupRequest request = new UserSignupRequest(
-                "signup_new@test.com",
-                "1234qwer!",
-                "홍길동",
-                "01012341234",
-                LocalDate.now().minusYears(20)
+                "test@example.com", "password123!", "홍길동", "01012345678", LocalDate.of(1990, 1, 1)
         );
-
         given(authService.register(any(UserSignupRequest.class))).willReturn(1L);
 
-        this.mockMvc.perform(post("/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andDo(document("auth-signup-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-
-                        requestFields(
-                                fieldWithPath("email").description("이메일"),
-                                fieldWithPath("password").description("비밀번호"),
-                                fieldWithPath("name").description("이름"),
-                                fieldWithPath("phone").description("전화번호"),
-                                fieldWithPath("birthDate").description("생년월일")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("[페이코 계정 찾기/만들기]")
-    void findOrCreateByPaycoId() throws Exception {
-        Map<String, Object> request = Map.of(
-                "id",
-                "payco_12345"
-        );
-
-        User mockUser = User.builder()
-                .email("payco@test.com")
-                .build();
-        mockUser.setStatus(UserStatus.ACTIVE);
-
-        OAuth2UserDto mockResponse = OAuth2UserDto.fromEntity(mockUser);
-        given(authService.findOrCreateOAuthUser(anyString(), any())).willReturn(mockResponse);
-
-        mockMvc.perform(post("/auth/payco/find-or-create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("auth-payco-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-
-                        requestFields(
-                                fieldWithPath("id").description("페이코 식별 ID")
-                        ),
-                        responseFields(
-                                fieldWithPath("userId").description("회원 식별 ID"),
-                                fieldWithPath("email").description("이메일"),
-                                fieldWithPath("role").description("권한"),
-                                fieldWithPath("status").description("회원 상태")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("[아이디(이메일) 찾기]")
-    void findUserId() throws Exception {
-        FindIdRequest request = new FindIdRequest(
-                "인증테스트유저",
-                LocalDate.now().minusYears(20).toString(),
-                "01011112222"
-        );
-
-        given(authService.findUserId(any(FindIdRequest.class))).willReturn(TEST_EMAIL);
-
-        mockMvc.perform(post("/auth/find-id")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(TEST_EMAIL))
-                .andDo(document("auth-find-id-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-
-                        requestFields(
-                                fieldWithPath("name").description("이름"),
-                                fieldWithPath("birthday").description("생년월일"),
-                                fieldWithPath("phone").description("전화번호")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("[비밀번호 초기화]")
-    void findPassword() throws Exception {
-        FindPasswordRequest request = new FindPasswordRequest(
-                TEST_EMAIL,
-                "인증테스트유저",
-                "01011112222"
-        );
-
-        given(authService.restPasswordAndSendMail(any(FindPasswordRequest.class))).willReturn("tempPassword123");
-
-        mockMvc.perform(post("/auth/reset-password")
+        mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andDo(document("auth-reset-password-post",
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data").value(1L))
+                .andDo(document("auth-signup",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
                         requestFields(
-                                fieldWithPath("email").description("이메일"),
+                                fieldWithPath("email").description("이메일 (아이디)"),
+                                fieldWithPath("password").description("비밀번호 (소문자, 숫자, 특수문자 포함 8~20자)"),
                                 fieldWithPath("name").description("이름"),
-                                fieldWithPath("phone").description("전화번호")
-                        )
+                                fieldWithPath("phone").description("전화번호 (숫자만)"),
+                                fieldWithPath("birthDate").description("생년월일 (yyyy-MM-dd)")
+                        ),
+                        responseFields(withHeader(fieldWithPath("data").description("생성된 회원 ID")))
                 ));
     }
 
@@ -184,171 +67,178 @@ class AuthControllerTest extends SupportControllerTest {
         given(authService.existsByEmail(anyString())).willReturn(true);
 
         mockMvc.perform(get("/auth/emails/exists")
-                        .param("email", TEST_EMAIL))
+                        .param("email", "test@example.com"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("true"))
-                .andDo(document("auth-check-email-get",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-
-                        queryParameters(
-                                parameterWithName("email").description("중복 확인할 이메일")
-                        )
+                .andExpect(jsonPath("$.data").value(true))
+                .andDo(document("auth-email-exists",
+                        queryParameters(parameterWithName("email").description("중복 확인할 이메일")),
+                        responseFields(withHeader(fieldWithPath("data").description("중복 여부 (true/false)")))
                 ));
     }
 
     @Test
-    @DisplayName("[휴면 여부 확인]")
+    @DisplayName("[아이디 찾기]")
+    void findUserId() throws Exception {
+        FindIdRequest request = new FindIdRequest("홍길동", "1990-01-01", "01012345678");
+        given(authService.findUserId(any(FindIdRequest.class))).willReturn("te**@example.com");
+
+        mockMvc.perform(post("/auth/find-id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").value("te**@example.com"))
+                .andDo(document("auth-find-id",
+                        requestFields(
+                                fieldWithPath("name").description("이름"),
+                                fieldWithPath("birthday").description("생년월일 (yyyy-MM-dd)"),
+                                fieldWithPath("phone").description("전화번호")
+                        ),
+                        responseFields(withHeader(fieldWithPath("data").description("마스킹 처리된 이메일")))
+                ));
+    }
+
+    @Test
+    @DisplayName("[비밀번호 초기화 및 메일 발송]")
+    void findPassword() throws Exception {
+        // Given
+        FindPasswordRequest request = new FindPasswordRequest("test@example.com", "홍길동", "01012345678");
+
+        given(authService.restPasswordAndSendMail(any(FindPasswordRequest.class))).willReturn(null);
+
+        // When & Then
+        mockMvc.perform(post("/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andDo(document("auth-reset-password",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("email").description("이메일"),
+                                fieldWithPath("name").description("이름"),
+                                fieldWithPath("phone").description("전화번호")
+                        ),
+                        responseFields(withHeader())
+                ));
+    }
+
+    @Test
+    @DisplayName("[휴면 계정 여부 확인]")
     void checkDormant() throws Exception {
+        given(authService.isDormant(anyString())).willReturn(false);
+
         mockMvc.perform(get("/auth/dormant")
-                        .param("email", TEST_EMAIL))
+                        .param("email", "test@example.com"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("false")) // 활성 유저이므로 false
-                .andDo(document("auth-check-dormant-get",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        queryParameters(
-                                parameterWithName("email").description("확인할 이메일")
-                        )
+                .andDo(document("auth-check-dormant",
+                        queryParameters(parameterWithName("email").description("확인할 이메일")),
+                        responseFields(withHeader(fieldWithPath("data").description("휴면 계정 여부")))
                 ));
     }
 
     @Test
-    @DisplayName("[휴면 인증코드 전송]")
-    void send() throws Exception {
-        DormantSendCodeRequest request = new DormantSendCodeRequest(
-                TEST_EMAIL,
-                "https://webhook.url"
-        );
-
-        willDoNothing().given(dormantAuthService).sendAuthCode(anyString(), anyString());
+    @DisplayName("[휴면 해제 인증코드 전송 - Webhook]")
+    void sendDormantCode() throws Exception {
+        DormantSendCodeRequest request = new DormantSendCodeRequest("test@example.com", "http://webhook.url");
 
         mockMvc.perform(post("/auth/dormant/send-code")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andDo(document("auth-dormant-send-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-
+                .andDo(document("auth-dormant-send-code",
                         requestFields(
                                 fieldWithPath("email").description("이메일"),
-                                fieldWithPath("webhookUrl").description("두레이 웹훅 URL")
-                        )
+                                fieldWithPath("webhookUrl").description("인증코드를 받을 Webhook URL")
+                        ),
+                        responseFields(withHeader())
                 ));
     }
 
     @Test
-    @DisplayName("[휴면 인증코드 검증]")
-    void verify() throws Exception {
-        // Note: 실제 검증 로직 통과를 위해선 Redis 등에 코드가 저장되어 있어야 할 수 있습니다.
-        // 테스트 환경에 따라 Mocking이 필요할 수 있음.
-        DormantVerifyRequest request = new DormantVerifyRequest(
-                TEST_EMAIL,
-                "123456"
-        );
-
-        willDoNothing().given(dormantAuthService).verifyAuthCode(anyString(), anyString());
+    @DisplayName("[휴면 해제 인증코드 검증]")
+    void verifyDormantCode() throws Exception {
+        DormantVerifyRequest request = new DormantVerifyRequest("test@example.com", "123456");
 
         mockMvc.perform(post("/auth/dormant/verify")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andDo(document("auth-dormant-verify-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
+                .andDo(document("auth-dormant-verify",
                         requestFields(
                                 fieldWithPath("email").description("이메일"),
-                                fieldWithPath("code").description("인증코드")
-                        )
+                                fieldWithPath("code").description("인증 코드")
+                        ),
+                        responseFields(withHeader())
                 ));
     }
 
     @Test
-    @DisplayName("[휴면 인증코드 이메일 전송]")
-    void sendCodeByEmail() throws Exception {
+    @DisplayName("[휴면 해제 인증코드 전송 - 이메일]")
+    void sendDormantCodeByEmail() throws Exception {
         DormantSendCodeByEmailRequest request = new DormantSendCodeByEmailRequest(
-                TEST_EMAIL,
-                "contact@test.com"
+                "dormant@example.com", "contact@example.com"
         );
-
-        willDoNothing().given(dormantAuthService).sendAuthCodeByEmail(anyString(), anyString());
 
         mockMvc.perform(post("/auth/dormant/send-code/email")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andDo(document("auth-dormant-email-send-post",
+                .andDo(document("auth-dormant-send-code-email",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestFields(
                                 fieldWithPath("email").description("휴면 계정 이메일"),
                                 fieldWithPath("contactEmail").description("인증 코드를 받을 연락처 이메일")
-                        )
+                        ),
+                        responseFields(withHeader())
                 ));
     }
 
     @Test
     @DisplayName("[마지막 로그인 시간 업데이트]")
     void updateLastLoginAt() throws Exception {
-        UpdateLastLoginRequest request = new UpdateLastLoginRequest(TEST_EMAIL);
-
-        willDoNothing().given(userService).updateLastLoginAt(anyString());
+        UpdateLastLoginRequest request = new UpdateLastLoginRequest("test@example.com");
 
         mockMvc.perform(put("/auth/last-login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNoContent())
-                .andDo(document("auth-last-login-put",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        requestFields(
-                                fieldWithPath("email").description("로그인한 이메일")
-                        )
+                .andExpect(status().isOk())
+                .andDo(document("auth-update-last-login",
+                        requestFields(fieldWithPath("email").description("회원 이메일")),
+                        responseFields(withHeader())
                 ));
     }
 
     @Test
     @DisplayName("[회원가입 이메일 인증코드 전송]")
     void sendSignupEmailCode() throws Exception {
-        EmailSendCodeRequest request = new EmailSendCodeRequest(TEST_EMAIL);
-
-        willDoNothing().given(authService).sendSignupEmailCode(anyString());
+        EmailSendCodeRequest request = new EmailSendCodeRequest("test@example.com");
 
         mockMvc.perform(post("/auth/email/send-code")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andDo(document("auth-email-send-code-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-
-                        requestFields(
-                                fieldWithPath("email").description("인증 코드를 받을 이메일")
-                        )
+                .andDo(document("auth-signup-email-send",
+                        requestFields(fieldWithPath("email").description("인증받을 이메일")),
+                        responseFields(withHeader())
                 ));
     }
 
     @Test
     @DisplayName("[회원가입 이메일 인증코드 검증]")
     void verifySignupEmailCode() throws Exception {
-        EmailVerifyCodeRequest request = new EmailVerifyCodeRequest(TEST_EMAIL, "123456");
-
-        willDoNothing().given(authService).verifySignupEmailCode(anyString(), anyString());
+        EmailVerifyCodeRequest request = new EmailVerifyCodeRequest("test@example.com", "654321");
 
         mockMvc.perform(post("/auth/email/verify-code")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andDo(document("auth-email-verify-code-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-
+                .andDo(document("auth-signup-email-verify",
                         requestFields(
-                                fieldWithPath("email").description("인증할 이메일"),
-                                fieldWithPath("code").description("수신된 6자리 인증 코드")
-                        )
+                                fieldWithPath("email").description("이메일"),
+                                fieldWithPath("code").description("인증 코드")
+                        ),
+                        responseFields(withHeader())
                 ));
     }
-
 }

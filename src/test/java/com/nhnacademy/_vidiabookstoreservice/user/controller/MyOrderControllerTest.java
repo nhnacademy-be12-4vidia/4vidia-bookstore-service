@@ -1,223 +1,194 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.domain.enums.StockStatus;
-import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
-import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
-import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
-import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
-import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
-import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
-import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
-import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;
-import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
-import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItemViewStatus;
+import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCountResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderPreviewResponse;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
+import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
+import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.MockedStatic;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class MyOrderControllerTest extends SupportControllerTest {
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private GradeRepository gradeRepository;
-    @Autowired private OrderRepository orderRepository;
-    @Autowired private BookRepository bookRepository;
-    @Autowired private OrderItemRepository orderItemRepository;
-    @Autowired private AddressRepository addressRepository;
-    @Autowired private EntityManager entityManager;
+    @MockitoBean
+    private OrderService orderService;
 
-    private Long testUserId;
-
-    @BeforeEach
-    void initData() {
-
-        Grade grade = gradeRepository.save(Grade.builder().gradeName(GradeName.WELCOME).pointRate(1).build());
-
-        User user = User.builder()
-                .email("order_user@test.com")
-                .password("pwd")
-                .name("User")
-                .phone("01012341234")
-                .birthDate(LocalDate.now())
-                .grade(grade)
-                .build();
-        user.setStatus(UserStatus.ACTIVE);
-
-        User savedUser = userRepository.saveAndFlush(user); // Flush
-        this.testUserId = savedUser.getUserId();
-
-        Address address = Address.builder()
-                .user(savedUser)
-                .alias("집")
-                .roadAddress("서울")
-                .zipCode("12345")
-                .addressDetail("101")
-                .build();
-        addressRepository.saveAndFlush(address); // Flush
-
-        Book book = bookRepository.saveAndFlush(
-                    Book.builder()
-                        .title("책")
-                        .priceStandard(1000)
-                        .priceSales(900)
-                        .packagingAvailable(true)
-                        .stockStatus(StockStatus.IN_STOCK)
-                        .build()
-        ); // Flush
-
-        Order order = Order.builder()
-                .user(savedUser)
-                .totalBookPrice(900)
-                .deliveryFee(0)
-                .packagingFee(0)
-                .couponDiscount(0)
-                .pointUsed(0)
-                .deliveryDate(LocalDate.now().plusDays(3))
-                .recipientName("수령인")
-                .recipientPhone("010-0000-0000")
-                .zipCode("12345")
-                .addressRoadname("주소")
-                .addressDetail("상세")
-                .build();
-
-        Order savedOrder = orderRepository.saveAndFlush(order); // Flush
-
-        OrderItem orderItem = OrderItem.builder()
-                .order(savedOrder)
-                .book(book)
-                .quantity(1)
-                .salePrice(900)
-                .confirmStatus(ConfirmStatus.UNCONFIRMED)
-                .build();
-        orderItemRepository.saveAndFlush(orderItem); // Flush
-
-        // 1차 캐시를 비워서 조회 시 SELECT 쿼리가 나가게 함 (필수)
-        entityManager.clear();
-    }
+    @MockitoBean
+    private UserService userService;
 
     @Test
-    @DisplayName("[주문내역 미리보기 (pageable)]")
+    @DisplayName("[내 주문 내역 조회 - 페이징]")
     void getOrderPreview() throws Exception {
-        mockMvc.perform(get("/users/me/orders")
-                        .header("X-User-Id", testUserId)
-                        .param("page", "0")
-                        .param("size", "10")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("user-me-orders-page-get",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
+        // Given
+        Long userId = 1L;
+        OrderPreviewResponse.OrderBookResponse bookResponse = new OrderPreviewResponse.OrderBookResponse(
+                50L, 1L, "테스트 도서", "테스트 저자", "http://image.url", 1, 15000, OrderItemViewStatus.UNCONFIRMED, false
+        );
 
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("사용자 식별 ID")
-                        ),
-                        queryParameters(
-                                parameterWithName("page").description("페이지 번호 (0부터 시작)").optional(),
-                                parameterWithName("size").description("페이지 크기 (기본 10)").optional(),
-                                parameterWithName("status").description("주문 상태 필터 (ALL, WAITING 등)").optional()
-                        ),
-                        responseFields(
-                                fieldWithPath("content[].orderId").description("주문 아이디"),
-                                fieldWithPath("content[].userId").description("유저 아이디"),
-                                fieldWithPath("content[].createdAt").description("주문 생성일"),
-                                fieldWithPath("content[].deliveryStatus").description("배송상태"),
+        OrderPreviewResponse orderPreview = new OrderPreviewResponse(
+                100L, userId, LocalDateTime.now(), DeliveryStatus.WAITING, List.of(bookResponse)
+        );
 
-                                fieldWithPath("content[].orderItems").description("주문 도서 목록"),
-                                fieldWithPath("content[].orderItems[].orderItemId").description("주문 상품 아이디"),
-                                fieldWithPath("content[].orderItems[].bookId").description("도서 아이디"),
-                                fieldWithPath("content[].orderItems[].bookTitle").description("도서 제목"),
-                                fieldWithPath("content[].orderItems[].bookAuthor").description("도서 저자").optional(),
-                                fieldWithPath("content[].orderItems[].bookImageUrl").description("도서 이미지").optional(),
-                                fieldWithPath("content[].orderItems[].quantity").description("주문 수량"),
-                                fieldWithPath("content[].orderItems[].salePrice").description("구매 당시 가격"),
-                                fieldWithPath("content[].orderItems[].orderItemViewStatus").description("주문 확정 상태"),
-                                fieldWithPath("content[].orderItems[].isReviewed").description("리뷰 작성 여부"),
+        Page<OrderPreviewResponse> page = new PageImpl<>(List.of(orderPreview), PageRequest.of(0, 10), 1);
 
-                                fieldWithPath("page").description("현재 페이지 번호"),
-                                fieldWithPath("size").description("페이지 크기"),
-                                fieldWithPath("totalElements").description("전체 요소 수"),
-                                fieldWithPath("totalPages").description("전체 페이지 수"),
-                                fieldWithPath("last").description("마지막 페이지 여부")
-                        )
-                ));
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(orderService.getOrdersByUserId(eq(userId), anyString(), any(Pageable.class))).willReturn(page);
+
+            // When & Then
+            mockMvc.perform(get("/users/me/orders")
+                            .header("X-User-Id", userId)
+                            .param("page", "0")
+                            .param("size", "10")
+                            .param("status", "ALL")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.content[0].orderId").value(100L))
+                    .andDo(document("my-order-preview-get",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 ID")),
+                            queryParameters(
+                                    parameterWithName("page").description("페이지 번호").optional(),
+                                    parameterWithName("size").description("페이지 크기").optional(),
+                                    parameterWithName("status").description("주문 상태 필터 (ALL, WAITING, SHIPPING 등)").optional()
+                            ),
+                            responseFields(withHeader(
+                                    fieldWithPath("data.content[].orderId").description("주문 ID"),
+                                    fieldWithPath("data.content[].userId").description("회원 ID"),
+                                    fieldWithPath("data.content[].createdAt").description("주문 일시"),
+                                    fieldWithPath("data.content[].deliveryStatus").description("배송 상태 (WAITING, SHIPPING, DELIVERED, CANCELED)"),
+                                    fieldWithPath("data.content[].orderItems[]").description("주문 상품 목록"),
+                                    fieldWithPath("data.content[].orderItems[].orderItemId").description("주문 상세 ID"),
+                                    fieldWithPath("data.content[].orderItems[].bookId").description("도서 ID"),
+                                    fieldWithPath("data.content[].orderItems[].bookTitle").description("도서 제목"),
+                                    fieldWithPath("data.content[].orderItems[].bookAuthor").description("저자"),
+                                    fieldWithPath("data.content[].orderItems[].bookImageUrl").description("이미지 URL").optional(),
+                                    fieldWithPath("data.content[].orderItems[].quantity").description("수량"),
+                                    fieldWithPath("data.content[].orderItems[].salePrice").description("판매가"),
+                                    fieldWithPath("data.content[].orderItems[].orderItemViewStatus").description("주문 아이템 표시 상태"),
+                                    fieldWithPath("data.content[].orderItems[].isReviewed").description("리뷰 작성 여부"),
+
+                                    // PageResponse 필드
+                                    fieldWithPath("data.page").description("현재 페이지 번호"),
+                                    fieldWithPath("data.size").description("페이지 크기"),
+                                    fieldWithPath("data.totalElements").description("전체 요소 수"),
+                                    fieldWithPath("data.totalPages").description("전체 페이지 수"),
+                                    fieldWithPath("data.last").description("마지막 페이지 여부")
+                            ))
+                    ));
+        }
     }
 
     @Test
-    @DisplayName("[주문화면에 필요한 유저 정보 조회]")
-    void getOrderInfo() throws Exception {
-        mockMvc.perform(get("/users/me/order-info")
-                        .header("X-User-Id", testUserId)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("user-me-order-info-get",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
+    @DisplayName("[주문 결제 시 유저 정보 조회]")
+    void getOrderUserCheckout() throws Exception {
+        // Given
+        Long userId = 1L;
+        AddressResponse addr = new AddressResponse(10L, "우리집", "도로명주소", "12345", "상세주소");
+        OrderUserResponse mockResponse = new OrderUserResponse(
+                "user@example.com", "홍길동", "01012345678", 5000,
+                10L, "우리집", "도로명주소", "12345", "상세주소", List.of(addr)
+        );
 
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("사용자 식별 ID")
-                        ),
-                        responseFields(
-                                fieldWithPath("email").description("이메일"),
-                                fieldWithPath("name").description("이름"),
-                                fieldWithPath("phone").description("전화번호"),
-                                fieldWithPath("point").description("포인트"),
-                                fieldWithPath("addressId").description("기본주소 PK").optional(),
-                                fieldWithPath("alias").description("별칭").optional(),
-                                fieldWithPath("roadAddress").description("도로명 주소").optional(),
-                                fieldWithPath("zipCode").description("우편번호").optional(),
-                                fieldWithPath("addressDetail").description("상세주소").optional(),
-                                fieldWithPath("addressResponses[]").description("주소 리스트"),
-                                fieldWithPath("addressResponses[].addressId").description("주소 PK들"),
-                                fieldWithPath("addressResponses[].alias").description("별칭들"),
-                                fieldWithPath("addressResponses[].roadAddress").description("도로명 주소들"),
-                                fieldWithPath("addressResponses[].zipCode").description("우편번호들"),
-                                fieldWithPath("addressResponses[].addressDetail").description("상세주소들")
-                        )
-                ));
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(userService.getOrderUser(userId)).willReturn(mockResponse);
+
+            // When & Then
+            mockMvc.perform(get("/users/me/order-info")
+                            .header("X-User-Id", userId)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.email").value("user@example.com"))
+                    .andDo(document("my-order-info-get",
+                            responseFields(withHeader(
+                                    fieldWithPath("data.email").description("이메일"),
+                                    fieldWithPath("data.name").description("이름"),
+                                    fieldWithPath("data.phone").description("전화번호"),
+                                    fieldWithPath("data.point").description("보유 포인트"),
+                                    fieldWithPath("data.addressId").description("기본 배송지 ID").optional(),
+                                    fieldWithPath("data.alias").description("기본 배송지 별칭").optional(),
+                                    fieldWithPath("data.roadAddress").description("기본 배송지 도로명").optional(),
+                                    fieldWithPath("data.zipCode").description("기본 배송지 우편번호").optional(),
+                                    fieldWithPath("data.addressDetail").description("기본 배송지 상세주소").optional(),
+                                    fieldWithPath("data.addressResponses[]").description("등록된 전체 주소 목록"),
+                                    fieldWithPath("data.addressResponses[].addressId").description("주소 ID"),
+                                    fieldWithPath("data.addressResponses[].alias").description("별칭"),
+                                    fieldWithPath("data.addressResponses[].roadAddress").description("도로명 주소"),
+                                    fieldWithPath("data.addressResponses[].zipCode").description("우편번호"),
+                                    fieldWithPath("data.addressResponses[].addressDetail").description("상세 주소")
+                            ))
+                    ));
+        }
     }
 
     @Test
-    @DisplayName("[탭 카운트 조회 API]")
+    @DisplayName("[내 주문 상태별 카운트 조회]")
     void getOrderCounts() throws Exception {
-        mockMvc.perform(get("/users/me/orders/counts")
-                        .header("X-User-Id", testUserId)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("user-me-orders-counts-get",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
+        // Given
+        Long userId = 1L;
+        OrderCountResponse mockResponse = new OrderCountResponse(10, 2, 3, 4, 1);
 
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("사용자 식별 ID")
-                        ),
-                        responseFields(
-                                fieldWithPath("total").description("전체 주문 수"),
-                                fieldWithPath("waiting").description("입금/결제 대기 및 완료 수"),
-                                fieldWithPath("shipping").description("배송 중 수"),
-                                fieldWithPath("delivered").description("배송 완료 수"),
-                                fieldWithPath("canceled").description("취소/반품/교환 수")
-                        )
-                ));
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(orderService.getOrderCounts(userId)).willReturn(mockResponse);
+
+            // When & Then
+            mockMvc.perform(get("/users/me/orders/counts")
+                            .header("X-User-Id", userId)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.total").value(10))
+                    .andDo(document("my-order-counts-get",
+                            responseFields(withHeader(
+                                    fieldWithPath("data.total").description("전체 주문 건수"),
+                                    fieldWithPath("data.waiting").description("입금/결제 대기 건수"),
+                                    fieldWithPath("data.shipping").description("배송 중 건수"),
+                                    fieldWithPath("data.delivered").description("배송 완료 건수"),
+                                    fieldWithPath("data.canceled").description("취소/환불 건수")
+                            ))
+                    ));
+        }
     }
 }

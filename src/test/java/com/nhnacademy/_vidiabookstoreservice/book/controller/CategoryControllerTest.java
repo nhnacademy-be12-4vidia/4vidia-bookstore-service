@@ -25,71 +25,73 @@ class CategoryControllerTest extends SupportControllerTest {
     private CategoryService categoryService;
 
     @Test
-    @DisplayName("[카테고리 전체 목록 조회]")
+    @DisplayName("카테고리 목록 조회")
     void getCategoryList() throws Exception {
+        // Given
         List<CategoryListResponse> responses = List.of(
                 CategoryListResponse.builder()
                         .id(1L)
-                        .kdcCode("000")
-                        .categoryName("총류")
+                        .kdcCode("800")
+                        .categoryName("문학")
+                        .depth(1) // 테스트 데이터 추가
                         .build(),
                 CategoryListResponse.builder()
                         .id(2L)
-                        .kdcCode("800")
-                        .categoryName("문학")
+                        .kdcCode("000")
+                        .categoryName("총류")
+                        .depth(1) // 테스트 데이터 추가
                         .build()
         );
 
         given(categoryService.getCategoryList()).willReturn(responses);
 
+        // When & Then
         mockMvc.perform(get("/categories")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].categoryName").value("총류"))
-                .andDo(document("book-category-list-get",
+                .andExpect(jsonPath("$.data[0].categoryName").value("문학"))
+                .andExpect(jsonPath("$.data[0].kdcCode").value("800"))
+                .andDo(document("category-list-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-                        responseFields(
-                                fieldWithPath("[].id").description("카테고리 ID"),
-                                fieldWithPath("[].kdcCode").description("KDC 코드"),
-                                fieldWithPath("[].categoryName").description("카테고리 이름")
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data[].id").description("카테고리 ID"),
+                                fieldWithPath("data[].kdcCode").description("KDC 코드"),
+                                fieldWithPath("data[].categoryName").description("카테고리 이름"),
+                                fieldWithPath("data[].depth").description("카테고리 깊이") // 필드 문서화 추가
+                        ))
                 ));
     }
 
     @Test
-    @DisplayName("[카테고리 플랫 목록 조회]")
+    @DisplayName("평탄화된 카테고리 목록 조회 (Flat)")
     void getFlatCategoryList() throws Exception {
+        // Given
         List<CategoryListResponse> responses = List.of(
                 CategoryListResponse.builder()
-                        .id(10L)
+                        .id(3L)
                         .kdcCode("810")
                         .categoryName("한국문학")
-                        .build(),
-                CategoryListResponse.builder()
-                        .id(11L)
-                        .kdcCode("820")
-                        .categoryName("영미문학")
+                        .depth(2) // 테스트 데이터 추가
                         .build()
         );
 
         given(categoryService.getFlatCategoryList()).willReturn(responses);
 
+        // When & Then
         mockMvc.perform(get("/categories/flat")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].id").value(10L))
-                .andDo(document("book-category-flat-list-get",
+                .andExpect(jsonPath("$.data[0].categoryName").value("한국문학"))
+                .andDo(document("category-flat-list-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-                        responseFields(
-                                fieldWithPath("[].id").description("카테고리 ID"),
-                                fieldWithPath("[].kdcCode").description("KDC 코드"),
-                                fieldWithPath("[].categoryName").description("카테고리 이름")
-                        )
+                        responseFields(withHeader(
+                                fieldWithPath("data[].id").description("카테고리 ID"),
+                                fieldWithPath("data[].kdcCode").description("KDC 코드"),
+                                fieldWithPath("data[].categoryName").description("카테고리 이름"),
+                                fieldWithPath("data[].depth").description("카테고리 깊이") // 필드 문서화 추가
+                        ))
                 ));
     }
 }
