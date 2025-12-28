@@ -27,8 +27,7 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.requestHe
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -128,6 +127,22 @@ class UserControllerTest extends SupportControllerTest {
                                 fieldWithPath("gradeName").description("회원 등급")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("[회원 존재여부 조회]")
+    void exists() throws Exception {
+        mockMvc.perform(get("/users/{userId}/exists", testUserId))
+                .andExpect(status().isOk())
+                .andDo(document("user-exists-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        pathParameters(
+                                parameterWithName("userId").description("존재 여부를 확인할 회원 식별 ID (PK)")
+                        )
+                ));
+
     }
 
     @Test

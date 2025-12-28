@@ -1,8 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.cart.repository.redis;
 
 import com.nhnacademy._vidiabookstoreservice.cart.domain.CartOwner;
-import com.nhnacademy._vidiabookstoreservice.cart.domain.enums.CartOwnerType;
-import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -13,97 +11,120 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 회원/비회원 장바구니 내용을 Redis에 저장하는 창고
+ * 회원/비회원 장바구니 Redis 저장소
+ * - Redis는 작업 공간
+ * - TTL 만료 이벤트는 외부 Listener에서 처리
  */
-@Slf4j
-@RequiredArgsConstructor
 @Repository
+@RequiredArgsConstructor
+@Slf4j
 public class RedisCartRepository {
+
     private final StringRedisTemplate cartRedisTemplate;
 
-    private static final String USER_PREFIX = "cart:user:";
-    private static final String GUEST_PREFIX = "cart:guest:";
+    private static final String USER_CART_PREFIX = "cart:user:";
+    private static final String GUEST_CART_PREFIX = "cart:guest:";
+    private static final String EXPIRE_PREFIX = "cart:expire:user:";
 
-    private static final Duration GUEST_TTL = Duration.ofDays(3);
-    private static final Duration USER_TTL = Duration.ofDays(30);
+    private static final Duration USER_CART_TTL = Duration.ofHours(3);
+    private static final Duration GUEST_CART_TTL = Duration.ofDays(3);
 
-    // 키 생성
-    private String key(CartOwner owner) {
-        return (owner.type() == CartOwnerType.USER ? USER_PREFIX : GUEST_PREFIX) + owner.id();
+    private String cartKey(CartOwner owner) {
+        return (owner.isUser() ? USER_CART_PREFIX : GUEST_CART_PREFIX) + owner.id();
     }
 
-    private void refreshTtlIfExists(CartOwner owner, String key) {
-        if (existsKey(owner)) {
-            boolean ok;
-            if (owner.isUser()) {
-                ok = Boolean.TRUE.equals(cartRedisTemplate.expire(key, USER_TTL));
-            } else {
-                ok = Boolean.TRUE.equals(cartRedisTemplate.expire(key, GUEST_TTL));
-            }
-            log.info("TTL refresh owner={}, key={}, ttl={}",
-                    owner.type(), key,
-                    owner.isUser() ? USER_TTL : GUEST_TTL
-            );
+    // 만료 이벤트 키
+    private String expireKey(Long userId) {
+        return EXPIRE_PREFIX + userId;
+    }
 
+    // 실제 데이터 키
+    public boolean existsDataKey(CartOwner owner) {
+        return cartRedisTemplate.hasKey(cartKey(owner));
+    }
 
-            if (!ok) {
-                log.warn("Redis TTL 갱신 실패, key={}", key);
-            }
+    /**
+     * DataKey가 있을 때만 TTL 재설정
+     */
+    public void refreshTtlIfDataKeyExists(CartOwner owner) {
+        String dataKey = cartKey(owner);
+        if (!cartRedisTemplate.hasKey(cartKey(owner))) {
+            return;
+        }
+
+        if (owner.isUser()) {
+            cartRedisTemplate.opsForValue().set(expireKey(owner.id()), "1", USER_CART_TTL);
+            cartRedisTemplate.expire(dataKey, USER_CART_TTL.plusHours(3));
+        } else {
+            cartRedisTemplate.expire(dataKey, GUEST_CART_TTL);
         }
     }
 
-    // 키 존재 여부 확인
-    public boolean existsKey(CartOwner owner){
-        String key = key(owner);
-        return cartRedisTemplate.hasKey(key);
+    public boolean existsExpireKey(Long userId) {
+        String dataKey = USER_CART_PREFIX + userId;
+        String expKey = EXPIRE_PREFIX + userId;
+
+        if (!cartRedisTemplate.hasKey(dataKey)) {
+            cartRedisTemplate.delete(expKey);
+            return false;
+        }
+        return cartRedisTemplate.hasKey(expKey);
     }
 
-    // 장바구니 전체 조회
     public Map<Long, Integer> getCartItems(CartOwner owner) {
-        String key = key(owner);
-
-        Map<Object, Object> entries = cartRedisTemplate.opsForHash().entries(key);
+        Map<Object, Object> entries = cartRedisTemplate.opsForHash().entries(cartKey(owner));
         Map<Long, Integer> result = new HashMap<>();
-        entries.forEach((k, v) -> {
-            Long bookId = Long.valueOf((String) k);
-            Integer quantity = Integer.valueOf((String) v);
-            result.put(bookId, quantity);
-        });
-
+        entries.forEach((k, v) -> result.put(Long.valueOf(k.toString()), Integer.valueOf(v.toString())));
         return result;
     }
 
-    // 장바구니 도서 수량 수정
+    public void putAllNoTtl(CartOwner owner, Map<Long, Integer> items) {
+        if (items == null || items.isEmpty()) return;
+
+        Map<String, String> toPut = new HashMap<>();
+        items.forEach((k, v)
+                -> toPut.put(String.valueOf(k), String.valueOf(v)));
+
+        cartRedisTemplate.opsForHash().putAll(cartKey(owner), toPut);
+    }
+
     public void setItemQuantity(CartOwner owner, Long bookId, int quantity) {
-        String key = key(owner);
-        cartRedisTemplate.opsForHash().put(key, String.valueOf(bookId), String.valueOf(quantity));
-        refreshTtlIfExists(owner, key);
+        cartRedisTemplate.opsForHash().put(cartKey(owner), String.valueOf(bookId), String.valueOf(quantity));
+        refreshTtlIfDataKeyExists(owner);
     }
 
     public void incrementItemQuantity(CartOwner owner, Long bookId, int delta) {
-        String key = key(owner);
-
         Long newVal = cartRedisTemplate.opsForHash()
-                .increment(key, String.valueOf(bookId), delta);
+                .increment(cartKey(owner), String.valueOf(bookId), delta);
 
-        if (newVal <= 0) {
-            cartRedisTemplate.opsForHash().delete(key, String.valueOf(bookId));
+        if (newVal != null && newVal <= 0) {
+            cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
         }
-
-       refreshTtlIfExists(owner,key);
+        refreshTtlIfDataKeyExists(owner);
     }
 
-
-    // 장바구니 도서 제거
     public void removeItem(CartOwner owner, Long bookId) {
-        String key = key(owner);
-        cartRedisTemplate.opsForHash().delete(key, String.valueOf(bookId));
-
-        refreshTtlIfExists(owner,key);
+        cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
+        refreshTtlIfDataKeyExists(owner);
     }
 
-    // 장바구니 비우기 : 키 삭제
+    /**
+     * TTL 갱신 없이 삭제(조회 중 정리용)
+     */
+    public void removeNoTtl(CartOwner owner, Long bookId) {
+        cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
+    }
+
     public void clearCart(CartOwner owner) {
-        cartRedisTemplate.delete(key(owner));
+        cartRedisTemplate.delete(cartKey(owner));
+        if (owner.isUser()) {
+            cartRedisTemplate.delete(expireKey(owner.id()));
+        }
     }
+
+    public boolean isEmpty(CartOwner owner) {
+        Long size = cartRedisTemplate.opsForHash().size(cartKey(owner));
+        return size == null || size == 0;
+    }
+
 }

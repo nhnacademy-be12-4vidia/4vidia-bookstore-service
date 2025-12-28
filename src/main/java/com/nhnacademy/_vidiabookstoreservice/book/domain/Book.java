@@ -47,55 +47,43 @@ public class Book extends BaseEntity {
     private Long id;
 
     @Column(name = "isbn_13", length = 13)
-    
     private String isbn;
 
     @Column(name = "title", nullable = false, length = 500)
-    
     private String title;
 
     @Column(name = "subtitle", length = 500)
-    
     private String subtitle;
 
     @Column(name = "book_index", columnDefinition = "TEXT")
-    
     private String bookIndex;
 
     @Column(name = "description", columnDefinition = "TEXT")
-    
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "publisher_id")
-    
     private Publisher publisher;
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookAuthor> bookAuthorList = new ArrayList<>();
 
     @Column(name = "published_date")
-    
     private LocalDate publishedDate;
 
     @Column(name = "page_count")
-    
     private Integer pageCount;
 
     @Column(name = "language", length = 10)
-    
     private String language;
 
     @Column(name = "price_standard")
-    
     private Integer priceStandard;
 
     @Column(name = "price_sales")
-    
     private Integer priceSales;
 
     @Column(name = "stock", columnDefinition = "INT DEFAULT 10")
-    
     private Integer stock;
 
     @Column(name = "stock_status", nullable = false, columnDefinition = "TINYINT DEFAULT 1")
@@ -106,7 +94,6 @@ public class Book extends BaseEntity {
     private boolean packagingAvailable = true;
 
     @Column(name = "volume_number", columnDefinition = "INT DEFAULT 1")
-    
     private Integer volumeNumber;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -125,7 +112,7 @@ public class Book extends BaseEntity {
     public Book(String isbn, String title, String description, String subtitle,String bookIndex,
         Publisher publisher,
         LocalDate publishedDate, Integer priceStandard, Integer priceSales, Integer volumeNumber, Category category,
-        Integer stock, Integer pageCount, String language, boolean packagingAvailable) {
+        Integer stock, StockStatus stockStatus, Integer pageCount, String language, boolean packagingAvailable) {
         this.isbn = isbn;
         this.title = title;
         this.subtitle = subtitle;
@@ -138,6 +125,7 @@ public class Book extends BaseEntity {
         this.priceSales = priceSales;
         this.volumeNumber = volumeNumber;
         this.stock = stock;
+        this.stockStatus = stockStatus;
         this.pageCount = pageCount;
         this.language = language;
         this.packagingAvailable = packagingAvailable;
@@ -257,7 +245,6 @@ public class Book extends BaseEntity {
 
     private void removeBookTag(BookTag bookTag) {
         this.bookTagList.remove(bookTag);
-        bookTag.setBook(null);
     }
 
     private String createBookAuthorCompositeKey(Author author, String role) {
@@ -289,6 +276,5 @@ public class Book extends BaseEntity {
 
     private void removeBookAuthor(BookAuthor bookAuthor) {
         this.bookAuthorList.remove(bookAuthor);
-        bookAuthor.setBook(null);
     }
 }

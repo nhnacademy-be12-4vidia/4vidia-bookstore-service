@@ -7,7 +7,6 @@ import com.nhnacademy._vidiabookstoreservice.cart.domain.CartOwner;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.request.AddCartItemRequest;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequest;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.jpa.CartRepository;
-import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.DirtyCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.RedisCartRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,8 +34,8 @@ public class CartServiceImplTest {
     @Mock
     private RedisCartRepository redisCartRepository;
 
-    @Mock
-    private DirtyCartRepository dirtyCartRepository;
+//    @Mock
+//    private DirtyCartRepository dirtyCartRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -61,8 +60,8 @@ public class CartServiceImplTest {
 
         verify(redisCartRepository, times(1))
                 .incrementItemQuantity(cartOwner, request.bookId(), request.quantity());
-
-        verify(dirtyCartRepository, times(1)).markDirty(cartOwner.id());
+//
+//        verify(dirtyCartRepository, times(1)).markDirty(cartOwner.id());
     }
 
     @Test
@@ -76,7 +75,7 @@ public class CartServiceImplTest {
         assertEquals("도서를 찾을 수 없습니다.", ex.getMessage());
 
         verify(redisCartRepository, never()).incrementItemQuantity(any(), anyLong(), anyInt());
-        verify(dirtyCartRepository, never()).markDirty(anyLong());
+//        verify(dirtyCartRepository, never()).markDirty(anyLong());
     }
 
     @Test
@@ -111,7 +110,7 @@ public class CartServiceImplTest {
         cartService.updateItem(cartOwner, bookId, new UpdateCartItemRequest(5));
 
         verify(redisCartRepository, times(1)).setItemQuantity(cartOwner, bookId, 5);
-        verify(dirtyCartRepository, times(1)).markDirty(cartOwner.id());
+//        verify(dirtyCartRepository, times(1)).markDirty(cartOwner.id());
     }
 
     @Test

@@ -26,7 +26,7 @@ public class OrderController {
     /**
      * 주문 생성 및 저장
      * @param orderCreateRequest : 주문화면에서 넘어온
-     * @return
+     * @return 주문아이디 DTO
      */
     @PostMapping // 주문 생성 및 저장
     public ResponseEntity<OrderCreateResponse> createOrder(@RequestBody @Valid OrderCreateRequest orderCreateRequest) {
@@ -37,15 +37,23 @@ public class OrderController {
     }
 
     /**
-     * 주문 내역 상세보기 OrderDetail
+     * 회원 주문 내역 상세보기 OrderDetail
      * @param orderId : 주문아이디
      * @return 주문내역 상세보기
      */
-    @GetMapping("/{orderId}") // todo : {order-id} 로 수정?
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable long orderId) {
-        OrderResponse orderResponse = orderService.getOrderResponse(orderId);
+    @GetMapping("/{order-id}")
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable(value = "order-id") long orderId) {
+        Long userId = UserContext.get().getUserId();
+        OrderResponse orderResponse = orderService.getOrderResponse(userId, orderId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(orderResponse);
+    }
+
+    @GetMapping("/{order-id}/amount")
+    public ResponseEntity<OrderAmountResponse> getOrderPayPrice(@PathVariable(value = "order-id") long orderId) {
+        OrderAmountResponse orderAmountResponse = orderService.getOrderPayPrice(orderId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(orderAmountResponse);
     }
 
     /**
@@ -55,11 +63,9 @@ public class OrderController {
      */
     @PostMapping("/guest") // api 매핑 고민
     public ResponseEntity<OrderResponse> getOrder(@RequestBody OrderTrackingRequest orderTrackingRequest) {
-        if (orderService.validateGuest(orderTrackingRequest)) {
-            OrderResponse orderResponse = orderService.getOrderResponse(orderTrackingRequest.orderId());
-            return ResponseEntity.status(HttpStatus.OK).body(orderResponse);
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        OrderResponse orderResponse = orderService.getGuestOrderResponse(orderTrackingRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).body(orderResponse);
     }
 
     /**
@@ -67,8 +73,8 @@ public class OrderController {
      * @param orderId : 주문아이디
      * @return 200 OK
      */
-    @PutMapping("/{orderId}/cancel") // todo : {order-id} 로 수정?
-    public void cancelOrder(@PathVariable long orderId) {
+    @PutMapping("/{order-id}/cancel")
+    public void cancelOrder(@PathVariable(value = "order-id") long orderId) {
         orderService.cancelOrder(orderId, "배송 전 취소");
     }
 

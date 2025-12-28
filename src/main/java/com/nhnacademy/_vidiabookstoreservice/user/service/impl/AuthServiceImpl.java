@@ -14,16 +14,21 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.UserSignupReq
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.event.BirthdayCouponIssueEvent;
 import com.nhnacademy._vidiabookstoreservice.user.dto.event.WelcomeCouponIssueEvent;
+import com.nhnacademy._vidiabookstoreservice.user.exception.EmailVerificationExpiredException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.ResignedUserAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.already.UserAlreadyExistsException;
+import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.InvalidAuthCodeException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
+import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisSignupEmailAuthRepository;
+import com.nhnacademy._vidiabookstoreservice.user.repository.redis.RedisSignupEmailVerifiedRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +51,9 @@ public class AuthServiceImpl implements AuthService {
 //    private final CouponClient couponClient;
     private final PointCommandService pointCommandService;
     private final ApplicationEventPublisher eventPublisher;
+    private final RedisSignupEmailAuthRepository  signupEmailAuthRepository;
+    private final RedisSignupEmailVerifiedRepository  signupEmailVerifiedRepository;
+
 
     /**
      * 회원가입
@@ -53,8 +61,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
 //    @Transactional // 이거 없으면 롤백이 안됩니다요 (근데 지금 생일쿠폰 호출 오류나서 transaction 있으면 회원가입 안됨.. 쿠폰 호출 주석처리 하세요.. )
     public Long register(UserSignupRequest request) {
+
+        // 이미 가입된 이메일인지
         if (userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException(request.email());
+        }
+
+        if(!signupEmailVerifiedRepository.isVerified(request.email())){
+            throw new EmailVerificationExpiredException();
         }
 
         Grade defaultGrade = gradeRepository.findByGradeName(GradeName.WELCOME);
@@ -72,6 +86,8 @@ public class AuthServiceImpl implements AuthService {
 
         User saved = userRepository.save(user);
         Long userId = saved.getUserId();
+        // 회원가입 성공 후 인증 완료 플래그 제거 (1회성)
+        signupEmailVerifiedRepository.clear(request.email());
         pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 1L));
 
 //        couponClient.getRegisterCoupon(user.getUserId()); // todo : 분리
@@ -176,7 +192,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public int convertDormantUsers(LocalDateTime day) {
         List<User> targets =
-                userRepository.findActiveUsersNotLoggedInSince(UserStatus.ACTIVE, day);
+                userRepository.findActiveUsersToDormant(UserStatus.ACTIVE, day);
         targets.forEach(
                 user ->
                         user.setStatus(UserStatus.DORMANT)
@@ -212,8 +228,49 @@ public class AuthServiceImpl implements AuthService {
                 .password(encodedPassword)
                 .grade(defaultGrade)
                 .build();
+        pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(user.getUserId(), 1L));
 
         return userRepository.save(user);
     }
+
+    @Override
+    public void sendSignupEmailCode(String email) {
+        // 1) 이미 가입된 이메일이면 발송 자체를 막음
+        if (userRepository.existsByEmail(email)) {
+            throw new UserAlreadyExistsException(email);
+        }
+
+        // 2) 코드 생성 (6자리)
+        String code = String.valueOf((int)(Math.random() * 900000) + 100000);
+
+        // 3) Redis 저장 (TTL은 Repository에서 관리)
+        signupEmailAuthRepository.saveCode(email, code);
+
+        // 4) 메일 발송
+        // EmailService에 메서드 하나 추가해서 쓰는 걸 추천!
+        mailService.sendSignupAuthCode(email, code);
+    }
+    @Override
+    public void verifySignupEmailCode(String email, String code) {
+        String saved = signupEmailAuthRepository.getCode(email);
+
+        // 인증코드 만료/ 없음
+        if (saved == null) {
+            throw new EmailVerificationExpiredException();
+        }
+        // 인증코드 불일치
+        if (!saved.equals(code)) {
+            throw new InvalidAuthCodeException();
+        }
+
+        // 검증 성공 → 코드 삭제 (재사용 방지)
+        signupEmailAuthRepository.deleteCode(email);
+
+        // 인증 상태 저장 (회원가입시 검증용)
+        signupEmailVerifiedRepository.markVerified(email);
+
+    }
+
+
 
 }

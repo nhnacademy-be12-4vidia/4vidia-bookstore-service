@@ -23,10 +23,18 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
             "where r.order.user.userId = :userId " +
             "and (:status is null or r.refundStatus = :status) " +
             "order by r.createdAt desc")
-    List<Refund> findAllByUserIdAndStatusWithDetails(
+    Page<Refund> findAllByUserIdAndStatusWithDetails(
             @Param("userId") Long userId,
-            @Param("status") RefundStatus status
+            @Param("status") RefundStatus status,
+            Pageable pageable
     );
+
+
+    // 전체 반품 개수
+    long countByOrder_User_UserId(Long userId);
+
+    // 상태별 반품 개수
+    long countByOrder_User_UserIdAndRefundStatus(Long userId, RefundStatus status);
 
 
 }

@@ -16,4 +16,6 @@ public interface BookImageService {
 
     void replaceThumbnail(Book book, MultipartFile thumbnail);
 
+    void replaceThumbnail(Book book, String thumbnailUrl);
+
 }

@@ -20,14 +20,27 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
 
     boolean existsByIsbn(String isbn);
 
+    Optional<Book> findByIsbn(String isbn);
+
     @Query("""
             SELECT DISTINCT b
             FROM Book b
+            LEFT JOIN FETCH b.publisher
+            LEFT JOIN FETCH b.category
             LEFT JOIN FETCH b.bookAuthorList ba
             LEFT JOIN FETCH ba.author
             WHERE b.id = :bookId
             """)
     Optional<Book> findByIdWithAuthors(@Param("bookId") Long bookId);
+
+    @Query("""
+            SELECT DISTINCT b
+            FROM Book b
+            LEFT JOIN FETCH b.publisher
+            LEFT JOIN FETCH b.category
+            WHERE b.isbn = :isbn
+            """)
+    Optional<Book> findByIsbnWithDetails(@Param("isbn") String isbn);
 
     Page<Book> findByTitleContaining(String keyword, Pageable pageable);
 
@@ -57,7 +70,7 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
 
     @Query(
             value = """
-                            SELECT DISTINCT b 
+                            SELECT DISTINCT b
                             FROM Book b
                             JOIN b.bookTagList bt
                             WHERE bt.tag.id = :tagId

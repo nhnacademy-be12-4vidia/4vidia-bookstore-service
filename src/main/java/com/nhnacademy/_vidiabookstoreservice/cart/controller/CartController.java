@@ -9,12 +9,14 @@ import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
@@ -116,20 +118,20 @@ public class CartController {
 
     // 비회원 -> 회원 로그인 시 merge (팝업에서 "예" 눌렀을 때 호출)
     @PostMapping("/merge-guest")
-    public ResponseEntity<Void> mergeGuestToMember(
+    public void mergeGuestToMember(
     ) {
 
         Long userId = UserContext.get().getUserId();
         Long guestId = UserContext.get().getGuestId();
         cartService.mergeGuestCartToUser(guestId, userId);
-        return ResponseEntity.ok().build();
     }
 
     // 정상 로그아웃 시 호출
     @PostMapping("/logout-sync")
     public void logoutSync() {
         Long userId = UserContext.get().getUserId();
-        cartService.flushCartFromRedisToMySql(userId);
+        cartService.logoutSyncCart(userId);
+        return ResponseEntity.noContent().build();
     }
 
     // 정상 로그인 직후 호출 (redis에 없으면 MySQL -> Redis 복원)

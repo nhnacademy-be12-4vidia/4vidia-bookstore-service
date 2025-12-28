@@ -25,8 +25,8 @@ public class PaymentController {
     private final OrderService orderService;
 
     // 결제 조회
-    @GetMapping("/{orderId}") // todo : {order-id}로 수정?
-    public ResponseEntity<PaymentResponse> getPayment(@PathVariable long orderId) {
+    @GetMapping("/{order-id}")
+    public ResponseEntity<PaymentResponse> getPayment(@PathVariable(value = "order-id") long orderId) {
         PaymentResponse paymentResponse = paymentService.getPayment(orderId);
 
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);

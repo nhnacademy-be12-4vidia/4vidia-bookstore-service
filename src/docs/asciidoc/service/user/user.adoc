@@ -10,7 +10,6 @@ include::{snippets}/user-by-email-get/http-request.adoc[]
 .쿼리 파라미터 (Query-Parameters)
 include::{snippets}/user-by-email-get/query-parameters.adoc[]
 
-
 .응답 (Response)
 include::{snippets}/user-by-email-get/http-response.adoc[]
 .응답 필드 (Response Fields)
@@ -23,7 +22,6 @@ include::{snippets}/user-by-email-get/response-fields.adoc[]
 include::{snippets}/user-by-id-get/http-request.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-by-id-get/request-headers.adoc[]
-
 
 .응답 (Response)
 include::{snippets}/user-by-id-get/http-response.adoc[]
@@ -148,6 +146,18 @@ include::{snippets}/user-me-delete/http-response.adoc[]
 
 // --------------------------------------------------------------
 // 1. 조회 (GET)
+==== 회원 존재 여부 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/user-exists-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/user-exists-get/path-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/user-exists-get/http-response.adoc[]
+
+
 ==== 회원 권한 조회
 :table-number: 0
 

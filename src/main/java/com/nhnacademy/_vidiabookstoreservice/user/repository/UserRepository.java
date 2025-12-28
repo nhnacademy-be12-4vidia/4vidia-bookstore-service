@@ -40,10 +40,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     select u
     from User u
     where u.status = :status
-      and (u.lastLoginAt is null or u.lastLoginAt < :threshold)
+      and (
+          (u.lastLoginAt is not null and u.lastLoginAt < :threshold)
+          or
+          (u.lastLoginAt is null and u.createdAt < :threshold)
+      )
     """)
-    List<User> findActiveUsersNotLoggedInSince(@Param("status") UserStatus status,
-                                               @Param("threshold") LocalDateTime threshold);
+    List<User> findActiveUsersToDormant(@Param("status") UserStatus status,
+                                        @Param("threshold") LocalDateTime threshold);
+
+
     Optional<User> findByProviderAndSocialId(String provider, String socialId);
 
     //관리자 페이지  회원 검색용

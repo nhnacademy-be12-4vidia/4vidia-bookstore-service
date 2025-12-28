@@ -18,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface BookService {
 
-    BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail, List<MultipartFile> detailImages);
+    String getBookIsbnById(Long bookId);
+
+    BookIdResponse createBook(BookCreateRequest request, MultipartFile thumbnail);
 
     Page<BookListResponse> getBookList(BookSearchRequest request, Pageable pageable);
 
@@ -49,4 +51,6 @@ public interface BookService {
     PageResponse<BaseBookListResponse> getBookListResponseByTagId(Long tagId, Long userId, Pageable pageable);
 
     PageResponse<BaseBookListResponse> getBooksByTag(Long tagId, String tagName, BookSortKey sortKey, boolean asc, Pageable pageable, Long userId);
+
+    List<BookListResponse> getMainBookList(Long tagId, Long userId);
 }

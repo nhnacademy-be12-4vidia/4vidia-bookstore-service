@@ -41,23 +41,23 @@ public class BookController {
 
     @GetMapping("/search")
     public ResponseEntity<SearchBooksResponse> searchBooks(
-        @Valid @ModelAttribute EsBookSearchRequest request,
-        @PageableDefault(size = 20) Pageable pageable
+            @Valid @ModelAttribute EsBookSearchRequest request,
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Long userId = UserContext.get().getUserId();
         SearchBooksResponse result = bookSearchService.searchBooks(request, pageable,
-            userId);
+                userId);
 
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/search/ai")
     public ResponseEntity<AiBookSearchResponse> searchBooksWithLlm(
-        @Valid EsBookSearchRequest request,
-        @PageableDefault(size = 20) Pageable pageable) {
+            @Valid EsBookSearchRequest request,
+            @PageableDefault(size = 20) Pageable pageable) {
         Long userId = UserContext.get().getUserId();
         AiBookSearchResponse response = bookSearchService.searchBookWithLlm(request, pageable,
-            userId);
+                userId);
 
         return ResponseEntity.ok(response);
     }
@@ -80,7 +80,7 @@ public class BookController {
             @RequestParam(required = false) String sortKey,
             @RequestParam(required = false) String direction,
             @PageableDefault(size = 20) Pageable pageable
-            ) {
+    ) {
         Long userId = UserContext.get().getUserId();
 
         BookSortKey sort = BookSortKey.from(sortKey);
@@ -125,5 +125,13 @@ public class BookController {
         List<BookListResponse> response = bookSearchService.searchBooksForCoupon(keyword);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/main-list")
+    public ResponseEntity<List<BookListResponse>> getMainBookList(@RequestParam Long tagId) {
+        Long userId = UserContext.get().getUserId();
+
+        List<BookListResponse> responses = bookService.getMainBookList(tagId, userId);
+        return ResponseEntity.ok(responses);
     }
 }

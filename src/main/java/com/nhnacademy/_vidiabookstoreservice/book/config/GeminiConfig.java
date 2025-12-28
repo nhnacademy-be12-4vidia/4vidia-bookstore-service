@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
@@ -18,6 +19,9 @@ public class GeminiConfig {
 
     private final GeminiProperties geminiProperties;
 
+    @Value("${google.api.api-key2}")
+    private String apiKey2;
+
     @Bean
     public RestClient geminiRestClient() {
         return RestClient.builder()
@@ -29,6 +33,14 @@ public class GeminiConfig {
                 }
                 return execution.execute(request, body);
             })
+            .build();
+    }
+
+    @Bean
+    public RestClient geminiRagRestClient() {
+        return RestClient.builder()
+            .baseUrl("https://generativelanguage.googleapis.com/v1beta")
+            .defaultHeader("x-goog-api-key", apiKey2)
             .build();
     }
 

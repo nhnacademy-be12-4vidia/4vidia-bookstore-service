@@ -14,6 +14,7 @@ import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.OrderItemResponse;
+import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundCountResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryGroupResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotAvailableException;
@@ -21,6 +22,8 @@ import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import com.nhnacademy._vidiabookstoreservice.refund.service.RefundService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,13 +71,11 @@ public class RefundServiceImpl implements RefundService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<RefundHistoryGroupResponse> getMyRefunds(Long userId, RefundStatus status) {
+    public Page<RefundHistoryGroupResponse> getMyRefunds(Long userId, RefundStatus status, Pageable pageable) {
 
-        List<Refund> refunds = refundRepository.findAllByUserIdAndStatusWithDetails(userId, status);
+        Page<Refund> refunds = refundRepository.findAllByUserIdAndStatusWithDetails(userId, status, pageable);
 
-        return refunds.stream()
-                .map(RefundHistoryGroupResponse::from)
-                .toList();
+        return refunds.map(RefundHistoryGroupResponse::from);
     }
 
     /**
@@ -151,4 +152,14 @@ public class RefundServiceImpl implements RefundService {
             }
         }
     }
+    @Override
+    @Transactional(readOnly = true)
+    public RefundCountResponse getMyRefundCounts(Long userId) {
+        long total = refundRepository.countByOrder_User_UserId(userId);
+        long process = refundRepository.countByOrder_User_UserIdAndRefundStatus(userId, RefundStatus.PROCESS);
+        long approved = refundRepository.countByOrder_User_UserIdAndRefundStatus(userId, RefundStatus.APPROVED);
+
+        return new RefundCountResponse(total, process, approved);
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.cart.service.scheduler;
 
-import com.nhnacademy._vidiabookstoreservice.cart.repository.redis.DirtyCartRepository;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,24 +13,25 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class CartSyncScheduler {
 
-    private final DirtyCartRepository dirtyCartRepository;
+    private final CartExpireListener cartExpireListener;
     private final CartService cartService;
 
-    @Scheduled(fixedDelay = 3 * 60 * 1000) // 3분 간격으로 redis -> mysql
-    public void syncDirtyCarts() {
-        Set<Long> dirtyUserIds = dirtyCartRepository.popAllDirtyUsers();
-        if (dirtyUserIds.isEmpty()) {
+    @Scheduled(fixedDelay = 10 * 60 * 1000)
+    public void flushExpiredCarts() {
+        Set<Long> expiredUserIds = cartExpireListener.consumeExpiredUserIds();
+
+        if (expiredUserIds.isEmpty()) {
             return;
         }
 
-        for (Long userId : dirtyUserIds) {
+        log.info("만료된 장바구니 flush 시작 대상={}", expiredUserIds);
+
+        expiredUserIds.forEach(userId -> {
             try {
-                cartService.flushCartFromRedisToMySql(userId); // redis -> mysql
+                cartService.flushCartFromRedisToMySql(userId);
             } catch (Exception e) {
-                // 실패 시 로그 + 다시 dirty로 되돌리기
-                log.error("[장바구니 스케줄러] 실패 userId={}", userId, e);
-                dirtyCartRepository.markDirty(userId);
+                log.error("장바구니 flush 실패 userId={}", userId, e);
             }
-        }
+        });
     }
 }
