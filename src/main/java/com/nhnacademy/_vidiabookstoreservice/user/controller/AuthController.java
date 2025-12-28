@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.dto.ApiResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.*;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeByEmailRequest;
@@ -53,9 +54,8 @@ public class AuthController {
      * 기존 "/find-password"
      */
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
+    public void findPassword(@Valid @RequestBody FindPasswordRequest findPasswordRequest) {
         authService.restPasswordAndSendMail(findPasswordRequest);
-        return ResponseEntity.ok().build();
     }
 
     /**
