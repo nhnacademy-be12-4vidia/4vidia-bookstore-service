@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.global.dto.ApiResponse;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
@@ -59,11 +60,11 @@ public class UserController {
      * 회원 이름 조회
      */
     @GetMapping("/name")
-    public ResponseEntity<String> getUserName() {
+    public ApiResponse<String> getUserName() {
         Long userId = UserContext.get().getUserId();
 
         String userName = userService.getUserName(userId);
-        return ResponseEntity.ok().body(userName);
+        return ApiResponse.success(userName);
     }
 
     /**
@@ -92,31 +93,29 @@ public class UserController {
      * 비밀번호 수정
      */
     @PutMapping("/me/password") // 기존 "/change-password"
-    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+    public void changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
         Long userId = UserContext.get().getUserId();
 
         userService.changePassword(userId, changePasswordRequest);
-        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     /**
      * 회원 탈퇴
      */
     @PutMapping("/delete")
-    public ResponseEntity<Void> deleteUser(@Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
+    public void deleteUser(@Valid @RequestBody DeleteUserRequest deletePasswordRequest) {
         Long userId = UserContext.get().getUserId();
         userService.deleteUserById(userId, deletePasswordRequest);
-        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     /**
      * 회원 역할 조회
      */
     @GetMapping("/role")
-    public ResponseEntity<String> getUserRole() {
+    public ApiResponse<String> getUserRole() {
         Long userId = UserContext.get().getUserId();
         String userRole = userService.getUserRole(userId);
-        return ResponseEntity.ok().body(userRole);
+        return ApiResponse.success(userRole);
     }
 
     // 기존 회원 아이디/비밀번호 찾기 auth controller 에 있어서(중복) 삭제함

@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
+import com.nhnacademy._vidiabookstoreservice.global.dto.ApiResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
@@ -41,21 +42,14 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userId); // 201 Created
     }
 
-    /**
-     * 페이코 계정 찾거나 만들기(auth서버에서 사용)
-     */
-    @PostMapping("/payco/find-or-create")
-    public ResponseEntity<OAuth2UserDto> findOrCreateByPaycoId(@RequestBody PaycoUserRequest paycoUserRequest) {
-        OAuth2UserDto payco = authService.findOrCreateOAuthUser("payco", paycoUserRequest);
-        return ResponseEntity.ok().body(payco);
-    }
+
     /**
      * 회원 아이디(email) 찾기
      * */
     @PostMapping("/find-id")
-    public ResponseEntity<String> findUserId(@Valid @RequestBody FindIdRequest findIdRequest) {
+    public ApiResponse<String> findUserId(@Valid @RequestBody FindIdRequest findIdRequest) {
         String email = authService.findUserId(findIdRequest);
-        return ResponseEntity.ok().body(email); // 200 OK + JSON
+        return ApiResponse.success(email);
     }
 
     /**
@@ -122,9 +116,8 @@ public class AuthController {
      * 기존 "/update-time"
      */
     @PutMapping("/last-login")
-    public ResponseEntity<Void> updateLastLoginAt(@RequestBody UpdateLastLoginRequest updateLastLoginRequest) {
+    public void updateLastLoginAt(@RequestBody UpdateLastLoginRequest updateLastLoginRequest) {
         userService.updateLastLoginAt(updateLastLoginRequest.email());
-        return ResponseEntity.noContent().build();
     }
 
 

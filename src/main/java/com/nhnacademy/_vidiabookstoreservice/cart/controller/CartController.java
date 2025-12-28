@@ -79,30 +79,28 @@ public class CartController {
      * 장바구니 삭제
      */
     @DeleteMapping
-    public ResponseEntity<Void> deleteCart() { // MySQL에서 장바구니 삭제 (회원만)
+    public void deleteCart() { // MySQL에서 장바구니 삭제 (회원만)
         Long userId = UserContext.get().getUserId();
         cartService.deleteCart(userId);
-        return ResponseEntity.noContent().build();
     }
 
     /**
      * 장바구니 특정 도서 삭제
      */
     @DeleteMapping("/items/{book-id}")
-    public ResponseEntity<Void> deleteItem(
+    public void deleteItem(
             @PathVariable("book-id") Long bookId
     ) {
         Long userId = UserContext.get().getUserId();
         Long guestId = UserContext.get().getGuestId();
         cartService.removeItem(resolveOwner(userId, guestId), bookId);
-        return ResponseEntity.noContent().build();
     }
 
     /**
      * 장바구니 아이템 여러권 삭제
      */
     @DeleteMapping("/items")
-    public ResponseEntity<Void> deleteSelectItems(
+    public void deleteSelectItems(
             @RequestParam("itemIds") List<Long> bookIds
     ){
         Long userId = UserContext.get().getUserId();
@@ -111,10 +109,9 @@ public class CartController {
         Long id = (userId == null) ? guestId : userId;
 
         if(bookIds == null || bookIds.isEmpty()){
-            return ResponseEntity.badRequest().build();
+            //예외추가
         }
         cartService.removeItemByOrder(id, bookIds);
-        return ResponseEntity.noContent().build();
     }
 
     // 비회원 -> 회원 로그인 시 merge (팝업에서 "예" 눌렀을 때 호출)
@@ -130,27 +127,24 @@ public class CartController {
 
     // 정상 로그아웃 시 호출
     @PostMapping("/logout-sync")
-    public ResponseEntity<Void> logoutSync() {
+    public void logoutSync() {
         Long userId = UserContext.get().getUserId();
         cartService.flushCartFromRedisToMySql(userId);
-        return ResponseEntity.noContent().build();
     }
 
     // 정상 로그인 직후 호출 (redis에 없으면 MySQL -> Redis 복원)
     @PostMapping("/login-sync")
-    public ResponseEntity<Void> loginSync() {
+    public void loginSync() {
         Long userId = UserContext.get().getUserId();
         cartService.loginSyncCart(userId);
-        return ResponseEntity.noContent().build();
     }
 
     // 비회원 장바구니만 삭제 (팝업에서 "아니오" 선택 시)
     @DeleteMapping("/guest")
-    public ResponseEntity<Void> clearGuestCart(
+    public void clearGuestCart(
     ) {
         Long guestId = UserContext.get().getGuestId();
         cartService.clear(CartOwner.guest(guestId));
-        return ResponseEntity.noContent().build();
     }
 
 }

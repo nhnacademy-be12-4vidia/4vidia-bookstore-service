@@ -15,28 +15,28 @@ public interface CouponClient {
     // 근데 실제로 헤더는 누락 가능성이 있어서 DTO에 명시적으로 담아 처리하는 것이 더 안전함
     // 하지만 이번 프로젝트에서 유저아이디는 헤더로만 받는걸로
 
-    @PostMapping("/coupons/calculate") //실제 선택된 쿠폰 검증하기
+    @PostMapping("/internal/coupons/calculate") //실제 선택된 쿠폰 검증하기
     CouponCalculationResponse calculateCoupons(@RequestHeader("X-User-Id") Long userId,
                                                @RequestBody CouponCalculationRequest couponCalculationRequest);
 
-    @PostMapping("/coupons/use")
+    @PostMapping("/internal/coupons/use")
     void useCoupon(@RequestHeader("X-User-Id") Long userId,
                    @RequestBody CouponUseRequest couponUseRequest);
 
 
     // 회원가입 시 welcome 쿠폰 요청
-    @PostMapping("/coupons/welcome")
+    @PostMapping("/internal/coupons/welcome")
     void getRegisterCoupon(@RequestHeader("X-User-Id") Long userId);
 
     //회원가입 시 birthday 쿠폰 요청
-    @PostMapping("/policies/birthday")
+    @PostMapping("/internal/policies/birthday")
     void getRegisterBirthdayCoupon(@RequestHeader("X-User-Id") Long userId);
 
     // 반품 : 주문에 사용한 쿠폰 정보 요청
-    @PostMapping("/coupons/refund")
+    @PostMapping("/internal/coupons/refund")
     UseCouponResponse getUseCouponDetail(@RequestBody RefundCouponRequest refundCouponRequest);
 
-    @GetMapping("/policies/active")
+    @GetMapping("/internal/policies/active")
     ResponseEntity<ActivePolicyIdResponse> getActivePolicy(
             @RequestParam String policyType
     );

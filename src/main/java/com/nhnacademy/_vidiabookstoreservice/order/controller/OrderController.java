@@ -68,10 +68,8 @@ public class OrderController {
      * @return 200 OK
      */
     @PutMapping("/{orderId}/cancel") // todo : {order-id} 로 수정?
-    public ResponseEntity<Void> cancelOrder(@PathVariable long orderId) {
+    public void cancelOrder(@PathVariable long orderId) {
         orderService.cancelOrder(orderId, "배송 전 취소");
-
-        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -79,10 +77,9 @@ public class OrderController {
      * @param orderId : 주문아이디
      */
     @PutMapping("/{order-id}/confirm-order")
-    public ResponseEntity<Void> changeConfirmOrder(@PathVariable("order-id") Long orderId) {
+    public void changeConfirmOrder(@PathVariable("order-id") Long orderId) {
         orderService.changeOrderStatus_ByUser(orderId, ConfirmStatus.CONFIRMED);
 
-        return ResponseEntity.noContent().build();
     }
 
 }

@@ -54,23 +54,21 @@ public class LikeController {
      * 좋아요 삭제
      */
     @DeleteMapping("/{book-id}")
-    public ResponseEntity<Void> removeLike(@PathVariable("book-id") Long bookId) {
+    public void removeLike(@PathVariable("book-id") Long bookId) {
         Long userId = UserContext.get().getUserId();
 
         likeService.removeLike(userId, bookId);
-        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     /**
      * 좋아요 전체 삭제
      */
     @DeleteMapping
-    public ResponseEntity<Void> removeAllLike(){
+    public void removeAllLike(){
         Long userId = UserContext.get().getUserId();
         List<Long> bookIds = likeService.getLikes(userId).stream()
                 .map(LikeResponse::bookId)
                 .toList();
         likeService.removeAllLike(userId, bookIds);
-        return ResponseEntity.noContent().build(); // 204 No Content
     }
 }
