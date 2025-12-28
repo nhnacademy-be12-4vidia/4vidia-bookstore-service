@@ -3,6 +3,7 @@ package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.book.service.DiscountPolicyService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
@@ -68,6 +69,7 @@ public class OrderServiceImpl implements OrderService {
     private final ApplicationEventPublisher eventPublisher;
     private final RefundItemRepository refundItemRepository;
     private final OrderItemViewStatusResolver resolver;
+    private final DiscountPolicyService discountPolicyService;
 
     @Override
     public OrderCreateResponse saveOrder(Long userId, @Valid OrderCreateRequest request) {
@@ -446,12 +448,14 @@ public class OrderServiceImpl implements OrderService {
 
             Book book = bookService.getBookEntity(itemDto.bookId());
 
-            serverItemPrice += (book.getPriceSales() * itemDto.quantity());
+            Integer calculatedPrice = discountPolicyService.calculateSalesPrice(book.getPriceStandard(), book.getCategory());
+
+            serverItemPrice += (calculatedPrice * itemDto.quantity());
 
             orderItems.add(OrderItem.builder()
                     .book(book)
                     .quantity(itemDto.quantity()) // 사용자가 선택한 수량
-                    .salePrice(book.getPriceSales()) // 도서에서 가져온 값
+                    .salePrice(calculatedPrice) // 도서에서 가져온 값
                     .confirmStatus(ConfirmStatus.UNCONFIRMED)
                     .build()
             );
@@ -473,7 +477,7 @@ public class OrderServiceImpl implements OrderService {
                     .map(item -> new CouponCalculationRequest.ItemInfo(
                             item.getBook().getId(),
                             item.getBook().getCategory().getKdcCode(),
-                            item.getBook().getPriceSales(),
+                            item.getSalePrice(),
                             item.getQuantity()
                     )).toList();
 

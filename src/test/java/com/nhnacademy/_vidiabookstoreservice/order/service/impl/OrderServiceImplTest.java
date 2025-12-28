@@ -70,6 +70,7 @@ class OrderServiceImplTest {
     @Mock private com.nhnacademy._vidiabookstoreservice.cart.service.CartService cartService;
     @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
     @Mock private com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository refundItemRepository;
+    @Mock private com.nhnacademy._vidiabookstoreservice.book.service.DiscountPolicyService discountPolicyService;
 
     @Test
     @DisplayName("모든 검증 통과 후 주문 저장 성공")
@@ -94,9 +95,11 @@ class OrderServiceImplTest {
 
         Book mockBook = mock(Book.class);
         given(mockBook.getId()).willReturn(bookId);
-        given(mockBook.getPriceSales()).willReturn(salePrice);
+        given(mockBook.getPriceStandard()).willReturn(salePrice);
         given(mockBook.getCategory()).willReturn(mockCategory);
         given(bookService.getBookEntity(bookId)).willReturn(mockBook);
+
+        given(discountPolicyService.calculateSalesPrice(anyInt(), eq(mockCategory))).willReturn(salePrice);
 
         PackagingOption mockOption = mock(PackagingOption.class);
         given(mockOption.getPrice()).willReturn(packagingPrice);
@@ -160,9 +163,11 @@ class OrderServiceImplTest {
 
         Book mockBook = mock(Book.class);
         given(mockBook.getId()).willReturn(bookId);
-        given(mockBook.getPriceSales()).willReturn(realDbPrice);
+        given(mockBook.getPriceStandard()).willReturn(realDbPrice);
         given(mockBook.getCategory()).willReturn(mockCategory);
         given(bookService.getBookEntity(bookId)).willReturn(mockBook);
+
+        given(discountPolicyService.calculateSalesPrice(anyInt(), eq(mockCategory))).willReturn(realDbPrice);
 
         PackagingOption mockOption = mock(PackagingOption.class);
         given(mockOption.getPrice()).willReturn(packagingPrice);
