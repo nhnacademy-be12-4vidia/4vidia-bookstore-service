@@ -59,4 +59,7 @@ public class Category extends BaseEntity {
         this.depth = depth;
     }
 
+    public void updateCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 }

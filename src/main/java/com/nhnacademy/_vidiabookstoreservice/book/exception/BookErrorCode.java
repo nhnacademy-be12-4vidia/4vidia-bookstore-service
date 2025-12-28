@@ -13,6 +13,7 @@ public enum BookErrorCode implements ErrorCodeProvider {
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "B004", "리뷰를 찾을 수 없습니다."),
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "B005", "태그가 존재하지 않습니다."),
     DISCOUNT_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "B006", "할인 정책을 찾을 수 없습니다."),
+    PARENT_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "B007", "상위 카테고리가 존재하지 않습니다."),
 
     // BAD_REQUEST (400)
 
@@ -25,6 +26,7 @@ public enum BookErrorCode implements ErrorCodeProvider {
     TAG_NAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "B206", "이미 존재하는 태그입니다"),
     CATEGORY_CANNOT_DELETE(HttpStatus.CONFLICT, "B207", "해당 카테고리를 삭제할 수 없습니다."),
     DISCOUNT_POLICY_ALREADY_EXISTS(HttpStatus.CONFLICT, "B208", "해당 카테고리(또는 전체)에 대한 할인 정책이 이미 존재합니다."),
+    CATEGORY_ALREADY_EXISTS(HttpStatus.CONFLICT, "B209", "이미 존재하는 카테고리입니다."),
 
     // UNPROCESSABLE_ENTITY(422) -> INVALID (요청 값 자체가 도메인 위반, 논리적 오류 : 나이 필드에 -1입력 등등)
     BOOK_AUTHOR_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "B301", "작가는 최소 한 명 이상 필요합니다."),
