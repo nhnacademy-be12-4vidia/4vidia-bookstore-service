@@ -11,7 +11,7 @@ spring:
     config:
       enabled: false
 
-  # [중요] Local 프로필의 구조를 따라가되, 호스트는 localhost로 설정하여 실제 DB 연결 방지
+  # Redis: 테스트 환경에서는 로컬(localhost)을 바라보거나 Mocking 처리
   data:
     redis:
       cart:
@@ -24,7 +24,7 @@ spring:
         host: localhost
         port: 6379
         password: ""
-        database: 0 # 테스트라 굳이 분리 안 해도 됨 (Mocking 하거나 Embedded 사용 시)
+        database: 0
         timeout: 100ms
       bestseller:
         host: localhost
@@ -51,8 +51,11 @@ spring:
         database: 0
         timeout: 100ms
 
-  # 데이터베이스는 H2 유지 (테스트 격리성)
+  # Datasource: 메인 yml의 DBCP 설정을 덮어쓰기 위해 type을 명시합니다.
   datasource:
+    # [핵심 수정] 프로덕션의 DBCP2 설정을 무시하고 기본(HikariCP) 사용 강제
+    type: com.zaxxer.hikari.HikariDataSource
+
     url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
