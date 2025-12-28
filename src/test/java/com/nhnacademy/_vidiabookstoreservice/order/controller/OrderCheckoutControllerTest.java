@@ -30,16 +30,11 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// [핵심 1] @WebMvcTest 제거!
-// 부모(SupportControllerTest)가 이미 @SpringBootTest(서버 전체 로딩)를 선언했으므로,
-// 자식도 그 환경을 그대로 따라가야 충돌이 안 납니다.
 class OrderCheckoutControllerTest extends SupportControllerTest {
 
-    // [핵심 2] 서비스 Mocking
-    // @SpringBootTest 환경이지만, 이 서비스만 가짜로 교체해서 컨트롤러 로직만 집중 테스트합니다.
     @MockitoBean
     private OrderCheckoutService orderCheckoutService;
 
@@ -60,8 +55,7 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
                 List.of(new PackagingOptionResponse(1L, "선물 포장", 1000))
         );
 
-        // [핵심 3] UserContext Static Method Mocking
-        // Controller 내부에서 UserContext.get()을 호출하므로, 이를 가로채서 가짜 값을 줍니다.
+        // UserContext Static Mocking
         try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
             UserContext mockContextInstance = mock(UserContext.class);
             given(mockContextInstance.getUserId()).willReturn(userId);
@@ -71,35 +65,37 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
                     .willReturn(mockResponse);
 
             // When & Then
-            // mockMvc는 부모 클래스(SupportControllerTest)에 있는 것을 그대로 씁니다.
             mockMvc.perform(get("/orders")
                             .param("key", key)
-                            .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
-                    .andDo(document("order-checkout-get", // 문서 이름
+                    // ResponseWrapperAdvice가 적용되어 data 필드 아래에 응답이 옵니다.
+                    .andExpect(jsonPath("$.data.orderName").value("노인과 바다 외 1권"))
+                    .andDo(document("order-checkout-get",
                             preprocessRequest(prettyPrint()),
                             preprocessResponse(prettyPrint()),
                             queryParameters(
                                     parameterWithName("key").description("장바구니/상세페이지에서 생성된 Redis Key")
                             ),
-                            // responseFields 생략 가능하지만, 문서화를 위해 작성하는 것을 추천 (이전 코드 참고)
-                            responseFields(
-                                    fieldWithPath("orderName").description("주문명"),
-                                    fieldWithPath("finalAmount").description("최종 가격"),
-                                    fieldWithPath("bookItems[].bookId").description("도서 ID"),
-                                    fieldWithPath("bookItems[].bookTitle").description("도서 제목"),
-                                    fieldWithPath("bookItems[].bookAuthor").description("저자"),
-                                    fieldWithPath("bookItems[].bookImageUrl").description("이미지 URL"),
-                                    fieldWithPath("bookItems[].categoryKdc").description("KDC 코드"),
-                                    fieldWithPath("bookItems[].quantity").description("수량"),
-                                    fieldWithPath("bookItems[].salePrice").description("판매가"),
-                                    fieldWithPath("deliveryDateResponses[].value").description("배송일 값"),
-                                    fieldWithPath("deliveryDateResponses[].displayDate").description("배송일 표기"),
-                                    fieldWithPath("packagingOptions[].packagingOptionId").description("포장 ID"),
-                                    fieldWithPath("packagingOptions[].name").description("포장 이름"),
-                                    fieldWithPath("packagingOptions[].price").description("포장 가격")
-                            )
+                            responseFields(withHeader(
+                                    fieldWithPath("data.orderName").description("주문명"),
+                                    fieldWithPath("data.finalAmount").description("최종 가격"),
+                                    fieldWithPath("data.bookItems[]").description("도서 목록"),
+                                    fieldWithPath("data.bookItems[].bookId").description("도서 ID"),
+                                    fieldWithPath("data.bookItems[].bookTitle").description("도서 제목"),
+                                    fieldWithPath("data.bookItems[].bookAuthor").description("저자"),
+                                    fieldWithPath("data.bookItems[].bookImageUrl").description("이미지 URL"),
+                                    fieldWithPath("data.bookItems[].categoryKdc").description("KDC 코드"),
+                                    fieldWithPath("data.bookItems[].quantity").description("수량"),
+                                    fieldWithPath("data.bookItems[].salePrice").description("판매가"),
+                                    fieldWithPath("data.deliveryDateResponses[]").description("배송 가능일 목록"),
+                                    fieldWithPath("data.deliveryDateResponses[].value").description("배송일 데이터"),
+                                    fieldWithPath("data.deliveryDateResponses[].displayDate").description("배송일 표시 문자열"),
+                                    fieldWithPath("data.packagingOptions[]").description("포장 옵션 목록"),
+                                    fieldWithPath("data.packagingOptions[].packagingOptionId").description("포장 옵션 ID"),
+                                    fieldWithPath("data.packagingOptions[].name").description("포장지 이름"),
+                                    fieldWithPath("data.packagingOptions[].price").description("포장 가격")
+                            ))
                     ));
         }
     }
@@ -109,6 +105,7 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
     void createCheckoutSession() throws Exception {
         // Given
         String generatedKey = "new-redis-key-123";
+        // OrderCheckoutListRequest(List<OrderCheckoutRequest> items)
         OrderCheckoutListRequest request = new OrderCheckoutListRequest(
                 List.of(new OrderCheckoutRequest(101L, 2))
         );
@@ -121,15 +118,19 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
                         .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(content().string(generatedKey))
+                .andExpect(status().isOk()) // ApiResponse.success()는 기본 200 OK
+                .andExpect(jsonPath("$.data").value(generatedKey))
                 .andDo(document("order-checkout-post",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestFields(
+                                fieldWithPath("items[]").description("주문할 도서 목록"),
                                 fieldWithPath("items[].bookId").description("도서 ID"),
                                 fieldWithPath("items[].quantity").description("수량")
-                        )
+                        ),
+                        responseFields(withHeader(
+                                fieldWithPath("data").description("생성된 Redis 세션 키")
+                        ))
                 ));
     }
 }
