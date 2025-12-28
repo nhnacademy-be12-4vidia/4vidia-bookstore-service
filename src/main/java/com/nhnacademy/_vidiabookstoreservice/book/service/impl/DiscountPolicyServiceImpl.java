@@ -8,6 +8,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.discountpolicy.DiscountPol
 import com.nhnacademy._vidiabookstoreservice.book.exception.create.DiscountPolicyAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.CategoryNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.DiscountPolicyNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.mq.producer.DiscountPolicyProducer;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.DiscountPolicyRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.DiscountPolicyService;
@@ -25,6 +26,7 @@ public class DiscountPolicyServiceImpl implements DiscountPolicyService {
 
     private final DiscountPolicyRepository discountPolicyRepository;
     private final CategoryRepository categoryRepository;
+    private final DiscountPolicyProducer discountPolicyProducer;
     private static final int DEFAULT_DISCOUNT_RATE = 10; // 정책이 아예 없을 때 안전장치
 
     @Override
@@ -75,15 +77,16 @@ public class DiscountPolicyServiceImpl implements DiscountPolicyService {
                 throw new DiscountPolicyAlreadyExistsException();
             }
         }
-
+        
         Category category = null;
         if (request.getCategoryId() != null) {
             category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new CategoryNotFoundException(request.getCategoryId()));
         }
-
+        
         DiscountPolicy policy = request.toEntity(category);
         discountPolicyRepository.save(policy);
+        discountPolicyProducer.sendChangedEvent(request.getCategoryId(), "CREATED");
     }
 
     @Override
@@ -98,12 +101,23 @@ public class DiscountPolicyServiceImpl implements DiscountPolicyService {
             request.getStartDate(),
             request.getEndDate()
         );
+        
+        discountPolicyProducer.sendChangedEvent(
+            policy.getCategory() != null ? policy.getCategory().getId() : null,
+            "UPDATED"
+        );
     }
 
     @Override
     @Transactional
     public void deletePolicy(Long id) {
+        DiscountPolicy policy = discountPolicyRepository.findById(id)
+            .orElseThrow(() -> new DiscountPolicyNotFoundException(id));
+        
+        Long categoryId = policy.getCategory() != null ? policy.getCategory().getId() : null;
+        
         discountPolicyRepository.deleteById(id);
+        discountPolicyProducer.sendChangedEvent(categoryId, "DELETED");
     }
 
     private int findBestDiscountRate(Category category) {
