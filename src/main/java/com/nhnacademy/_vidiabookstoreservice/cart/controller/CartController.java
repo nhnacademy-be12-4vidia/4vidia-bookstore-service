@@ -131,7 +131,6 @@ public class CartController {
     public void logoutSync() {
         Long userId = UserContext.get().getUserId();
         cartService.logoutSyncCart(userId);
-        return ResponseEntity.noContent().build();
     }
 
     // 정상 로그인 직후 호출 (redis에 없으면 MySQL -> Redis 복원)
