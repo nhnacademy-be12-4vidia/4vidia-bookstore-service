@@ -17,4 +17,5 @@ public interface CategoryService {
 
     Category getCategoryProxy(Long categoryId);
 
+    void deleteCategory(Long categoryId);
 }

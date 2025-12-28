@@ -83,4 +83,6 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
                     """
     )
     Page<Book> findAllByTag(@Param("tagId") Long tagId, Pageable pageable);
+
+    boolean existsByCategoryId(Long categoryId);
 }

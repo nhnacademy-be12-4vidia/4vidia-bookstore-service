@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.repository;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.DiscountPolicy;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +22,10 @@ public interface DiscountPolicyRepository extends JpaRepository<DiscountPolicy, 
            "WHERE dp.category IS NULL " +
            "AND :today BETWEEN dp.startDate AND dp.endDate")
     Optional<DiscountPolicy> findActiveGlobalPolicy(@Param("today") LocalDate today);
+
+    List<DiscountPolicy> findByCategoryId(Long categoryId);
+
+    boolean existsByCategoryId(Long categoryId);
+
+    boolean existsByCategoryIsNull();
 }

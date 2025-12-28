@@ -2,11 +2,15 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.dto.category.response.CategoryListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.exception.delete.CategoryCannotDeleteException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.CategoryNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
+import com.nhnacademy._vidiabookstoreservice.book.repository.DiscountPolicyRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.CategoryService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final BookRepository bookRepository;
+    private final DiscountPolicyRepository discountPolicyRepository;
 
     @Override
     @Cacheable(cacheNames = "categoryList", cacheManager = "categoryListCacheManager")
@@ -67,5 +73,32 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public Category getCategoryProxy(Long categoryId) {
         return categoryRepository.getReferenceById(categoryId);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(
+            cacheNames = {"categoryList", "flatCategoryList"},
+            allEntries = true,
+            cacheManager = "categoryListCacheManager"
+    )
+    public void deleteCategory(Long categoryId) {
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new CategoryNotFoundException(categoryId);
+        }
+
+        if (categoryRepository.existsByParentCategoryId(categoryId)) {
+            throw new CategoryCannotDeleteException("하위 카테고리가 존재하여 삭제할 수 없습니다.");
+        }
+
+        if (bookRepository.existsByCategoryId(categoryId)) {
+            throw new CategoryCannotDeleteException("해당 카테고리에 등록된 도서가 있어 삭제할 수 없습니다.");
+        }
+
+        if (discountPolicyRepository.existsByCategoryId(categoryId)) {
+            throw new CategoryCannotDeleteException("해당 카테고리에 적용된 할인 정책이 있어 삭제할 수 없습니다.");
+        }
+
+        categoryRepository.deleteById(categoryId);
     }
 }
