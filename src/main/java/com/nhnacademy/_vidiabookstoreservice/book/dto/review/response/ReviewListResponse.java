@@ -22,7 +22,8 @@ public class ReviewListResponse {
     private List<String> imageUrlList;
     private LocalDate createdAt;
 
-    private boolean isMyReview;
+    private boolean myReview;
+    private boolean modified;
 
     public static ReviewListResponse of(Review review, Long currentUserId) {
         return ReviewListResponse.builder()
@@ -33,7 +34,8 @@ public class ReviewListResponse {
             .rating(review.getRating())
             .imageUrlList(review.getImageList().stream().map(ReviewImage::getImageUrl).toList())
             .createdAt(review.getCreatedAt())
-            .isMyReview(review.getUser().getUserId().equals(currentUserId))
+            .myReview(review.getUser().getUserId().equals(currentUserId))
+                .modified(review.isModified())
             .build();
     }
 }
