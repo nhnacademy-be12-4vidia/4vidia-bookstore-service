@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindIdRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.FindPasswordRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.AuthUserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
@@ -15,6 +16,7 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileR
 
 public interface UserService {
     UserInfoResponse getUserByEmail(String email);
+    AuthUserDto getAuthUser(String email);
     User getProxyById(Long userId);
     User getUserById(Long userId);
     Integer getUserByPoint(Long userId);
