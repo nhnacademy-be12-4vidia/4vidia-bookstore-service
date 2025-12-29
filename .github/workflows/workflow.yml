@@ -76,7 +76,14 @@ jobs:
             echo "Pulling latest images..."
             docker compose pull 4vidia-bookstore-service-1 4vidia-bookstore-service-2
             
-            # GREEN (bookstore-service-1) 배포
+            echo "Setting GREEN container DOWN in Eureka..."
+            curl -X PUT \
+            "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-1/status?value=DOWN" || true
+            
+            echo "Waiting for Gateway cache refresh (15s)..."
+            sleep 15  # 게이트웨이가 명단 갱신할 시간 벌어주기
+            
+            # 2. GREEN (1번) 배포 & 재시작
             echo "Starting 4vidia-bookstore-service-1 (GREEN)..."
             docker compose up -d 4vidia-bookstore-service-1
             
