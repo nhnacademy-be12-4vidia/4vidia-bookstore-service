@@ -43,7 +43,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
       and (
           (u.lastLoginAt is not null and u.lastLoginAt < :threshold)
           or
-          (u.lastLoginAt is null and u.createdAt < :threshold)
+          (u.lastLoginAt is null and cast(u.createdAt as localdatetime) < :threshold)
       )
     """)
     List<User> findActiveUsersToDormant(@Param("status") UserStatus status,
