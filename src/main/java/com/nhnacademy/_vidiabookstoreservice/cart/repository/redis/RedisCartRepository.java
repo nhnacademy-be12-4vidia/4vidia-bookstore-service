@@ -26,8 +26,8 @@ public class RedisCartRepository {
     private static final String GUEST_CART_PREFIX = "cart:guest:";
     private static final String EXPIRE_PREFIX = "cart:expire:user:";
 
-    private static final Duration USER_CART_TTL = Duration.ofHours(3);
-    private static final Duration GUEST_CART_TTL = Duration.ofDays(3);
+    private static final Duration USER_CART_TTL = Duration.ofHours(2); // 장바구니 미접근 2시간 -> 장바구니 만료 이벤트
+    private static final Duration GUEST_CART_TTL = Duration.ofDays(2);
 
     private String cartKey(CartOwner owner) {
         return (owner.isUser() ? USER_CART_PREFIX : GUEST_CART_PREFIX) + owner.id();
@@ -54,7 +54,7 @@ public class RedisCartRepository {
 
         if (owner.isUser()) {
             cartRedisTemplate.opsForValue().set(expireKey(owner.id()), "1", USER_CART_TTL);
-            cartRedisTemplate.expire(dataKey, USER_CART_TTL.plusHours(3));
+            cartRedisTemplate.expire(dataKey, USER_CART_TTL.plusHours(3)); // 만료 이벤트 발생 + 3h 후 실제 장바구니 데이터 삭제
         } else {
             cartRedisTemplate.expire(dataKey, GUEST_CART_TTL);
         }
@@ -105,6 +105,12 @@ public class RedisCartRepository {
 
     public void removeItem(CartOwner owner, Long bookId) {
         cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
+
+        if (isEmpty(owner)) {
+            clearCart(owner); 
+            return;
+        }
+
         refreshTtlIfDataKeyExists(owner);
     }
 

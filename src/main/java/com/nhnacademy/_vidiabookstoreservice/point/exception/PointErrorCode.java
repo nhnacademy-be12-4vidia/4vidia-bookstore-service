@@ -18,7 +18,6 @@ public enum PointErrorCode implements ErrorCodeProvider {
     // UNPROCESSABLE_ENTITY(422) -> INVALID (요청 값 자체가 도메인 위반, 논리적 오류 : 나이 필드에 -1입력 등등)
     POINT_GUEST_USE(HttpStatus.UNPROCESSABLE_ENTITY, "P301", "비회원은 포인트를 사용할 수 없습니다."),
     POINT_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "P302", "사용/적립하는 포인트 값은 음수일 수 없습니다."),
-
     // UNPROCESSABLE_ENTITY(422) -> NOT_ENOUGH (422)-> 입력 값/요청은 합리적, 단지 현재 상태가 부족
     POINT_NOT_ENOUGH(HttpStatus.UNPROCESSABLE_ENTITY, "P303", "현재 보유 포인트가 부족합니다"),
     POINT_USE_UNEXPIRE(HttpStatus.UNPROCESSABLE_ENTITY, "P304", "만료된 포인트가 포함되어 실제 사용 가능한 포인트가 부족합니다.");

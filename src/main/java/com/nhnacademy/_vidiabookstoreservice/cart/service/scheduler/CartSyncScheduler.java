@@ -16,7 +16,8 @@ public class CartSyncScheduler {
     private final CartExpireListener cartExpireListener;
     private final CartService cartService;
 
-    @Scheduled(fixedDelay = 10 * 60 * 1000)
+    // 30분마다 -> 만료된 장바구니 (expire 키) flush
+    @Scheduled(fixedDelay = 30 * 60 * 1000)
     public void flushExpiredCarts() {
         Set<Long> expiredUserIds = cartExpireListener.consumeExpiredUserIds();
 
