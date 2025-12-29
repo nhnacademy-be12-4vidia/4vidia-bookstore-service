@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,16 +31,15 @@ public class ReviewController {
             value = "/books/{bookId}/reviews",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    ResponseEntity<Void> createReview(@PathVariable Long bookId,
+    public void createReview(@PathVariable Long bookId,
                                       @ModelAttribute ReviewCreateRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> reviewImageList) {
         Long userId = UserContext.get().getUserId();
         reviewService.createReview(request, userId, reviewImageList);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/books/{book-id}/reviews")
-    ResponseEntity<ReviewListWithSummaryResponse> getReviewsWithSummary(@PathVariable(name = "book-id") Long bookId, Pageable pageable) {
+    public ResponseEntity<ReviewListWithSummaryResponse> getReviewsWithSummary(@PathVariable(name = "book-id") Long bookId, Pageable pageable) {
         Long userId = UserContext.get().getUserId();
         Page<ReviewListResponse> reviewListResponsePage = reviewService.getReviewListByBookId(bookId, userId, pageable);
 
@@ -50,25 +50,22 @@ public class ReviewController {
     }
 
     @PostMapping("/books/{book-id}/reviews/{review-id}/deactivate")
-    ResponseEntity<Void> deactivateReview(@PathVariable(name = "book-id") Long bookId, @PathVariable(name = "review-id") Long reviewId) {
+    public void deactivateReview(@PathVariable(name = "book-id") Long bookId, @PathVariable(name = "review-id") Long reviewId) {
         Long userId = UserContext.get().getUserId();
 
         reviewService.deactivateReview(userId, reviewId, bookId);
 
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/books/{book-id}/reviews/{review-id}/edit")
-    ResponseEntity<Void> editReview(@PathVariable(name = "book-id") Long bookId,
+    public void editReview(@PathVariable(name = "book-id") Long bookId,
                                     @PathVariable(name = "review-id") Long reviewId,
                                     @ModelAttribute ReviewUpdateRequest request,
-                                    @RequestPart(value = "images", required = false) List<MultipartFile> newImageList
-                                    ) {
+                                    @RequestPart(value = "images", required = false) List<MultipartFile> newImageList,
+                                    @RequestHeader(value = "Referer", required = false) String referer) {
         Long userId = UserContext.get().getUserId();
 
         reviewService.updateReview(userId, reviewId, bookId, request, newImageList);
-
-        return ResponseEntity.noContent().build();
 
     }
 }
