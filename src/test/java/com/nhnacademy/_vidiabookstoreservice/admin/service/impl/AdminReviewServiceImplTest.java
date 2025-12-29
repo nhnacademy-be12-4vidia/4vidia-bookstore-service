@@ -1,14 +1,16 @@
 package com.nhnacademy._vidiabookstoreservice.admin.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminReviewResponse;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.ReviewNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
@@ -16,6 +18,8 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,5 +96,33 @@ class AdminReviewServiceImplTest {
         assertThat(response.createdAt()).isNotNull();
 
         verify(reviewRepository).searchAdminReviews(keyword, rating, pageable);
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제 성공")
+    void deleteReview_Success() {
+        Long reviewId = 1L;
+
+        given(reviewRepository.existsById(1L)).willReturn(true);
+
+        adminReviewService.deleteReview(reviewId);
+
+        verify(reviewRepository).existsById(reviewId);
+        verify(reviewRepository, times(1)).deleteById(reviewId);
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제 실패 - 존재하지 않는 리뷰")
+    void deleteReview_Fail_NotFound() {
+        Long reviewId = 99L;
+
+        given(reviewRepository.existsById(anyLong())).willReturn(false);
+
+        assertThatThrownBy(() -> adminReviewService.deleteReview(reviewId))
+                .isInstanceOf(ReviewNotFoundException.class);
+
+        verify(reviewRepository).existsById(reviewId);
+        verify(reviewRepository, never()).deleteById(reviewId);
+
     }
 }

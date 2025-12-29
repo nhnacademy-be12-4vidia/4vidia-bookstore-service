@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.admin.dto.refund;
 
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 
 public record RefundItemDto(
         Long refundItemId,
