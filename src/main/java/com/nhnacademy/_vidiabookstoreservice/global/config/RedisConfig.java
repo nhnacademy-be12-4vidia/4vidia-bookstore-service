@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.global.config;
 
 import com.nhnacademy._vidiabookstoreservice.cart.service.scheduler.CartExpireListener;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -16,12 +17,13 @@ public class RedisConfig {
 
     @Bean
     public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory factory
+            @Qualifier("cartRedisConnectionFactory")
+            RedisConnectionFactory cartRedisConnectionFactory
     ) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(factory);
+        RedisMessageListenerContainer container =
+                new RedisMessageListenerContainer();
+        container.setConnectionFactory(cartRedisConnectionFactory);
 
-        // 🔥 keyevent expired 구독
         container.addMessageListener(
                 cartExpireListener,
                 new PatternTopic("__keyevent@*__:expired")
