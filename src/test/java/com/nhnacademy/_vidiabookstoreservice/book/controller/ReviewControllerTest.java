@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
@@ -14,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -41,25 +39,22 @@ class ReviewControllerTest extends SupportControllerTest {
     private BookReviewSummaryService bookReviewSummaryService;
 
     @Test
-    @DisplayName("[리뷰 생성]")
+    @DisplayName("[리뷰 생성] - 성공")
     void createReview() throws Exception {
         // Given
-        Long userId = 1L;
         Long bookId = 1L;
-
-        ReviewCreateRequest request = new ReviewCreateRequest();
-        request.setBookId(bookId);
-        request.setOrderItemId(100L);
-        request.setRating(5);
-        request.setContent("정말 좋은 책입니다!");
+        Long userId = 1L;
 
         // When & Then
         mockMvc.perform(post("/books/{bookId}/reviews", bookId)
                         .header("X-User-Id", userId)
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE) // 컨트롤러 요구사항 유지
-                        .content(objectMapper.writeValueAsString(request))
-                        .characterEncoding(StandardCharsets.UTF_8))
-                .andExpect(status().isCreated())
+                        // @ModelAttribute는 폼 데이터 형태로 전달됩니다.
+                        .param("bookId", String.valueOf(bookId))
+                        .param("orderItemId", "100")
+                        .param("rating", "5")
+                        .param("content", "정말 좋은 책입니다!")
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk())
                 .andDo(document("book-review-post",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -68,13 +63,6 @@ class ReviewControllerTest extends SupportControllerTest {
                         ),
                         pathParameters(
                                 parameterWithName("bookId").description("도서 ID (URL 경로)")
-                        ),
-                        // requestParameters 대신 requestFields 사용
-                        requestFields(
-                                fieldWithPath("bookId").description("도서 ID"),
-                                fieldWithPath("orderItemId").description("주문 아이템 ID"),
-                                fieldWithPath("rating").description("별점 (1~5)"),
-                                fieldWithPath("content").description("리뷰 내용")
                         )
                 ));
     }
@@ -126,7 +114,6 @@ class ReviewControllerTest extends SupportControllerTest {
                                 parameterWithName("size").description("페이지 크기").optional()
                         ),
                         responseFields(withHeader(
-                                // 1. 리뷰 요약 및 기본 정보
                                 fieldWithPath("data.reviewSummary").description("리뷰 요약 정보 (예: 평점 및 리뷰 수)"),
                                 fieldWithPath("data.reviews.content[]").description("리뷰 목록"),
                                 fieldWithPath("data.reviews.content[].reviewId").description("리뷰 ID"),
@@ -139,15 +126,59 @@ class ReviewControllerTest extends SupportControllerTest {
                                 fieldWithPath("data.reviews.content[].myReview").description("본인 리뷰 여부"),
                                 fieldWithPath("data.reviews.content[].modified").description("수정 여부"),
 
-                                // 2. PageResponse 레코드의 필드와 정확히 일치시켜야 함
                                 fieldWithPath("data.reviews.page").description("현재 페이지 번호 (0부터 시작)"),
                                 fieldWithPath("data.reviews.size").description("페이지당 항목 수"),
                                 fieldWithPath("data.reviews.totalElements").description("전체 데이터 개수"),
                                 fieldWithPath("data.reviews.totalPages").description("전체 페이지 수"),
                                 fieldWithPath("data.reviews.last").description("마지막 페이지 여부")
-
-                                // 주의: .pageable, .number, .sort 등 PageImpl 전용 필드들은 여기서 모두 삭제해야 합니다.
                         ))
+                ));
+    }
+
+    @Test
+    @DisplayName("[리뷰 비활성화] - 성공")
+    void deactivateReview() throws Exception {
+        // When & Then
+        mockMvc.perform(post("/books/{book-id}/reviews/{review-id}/deactivate", 1L, 10L)
+                        .header("X-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andDo(document("review-deactivate-post",
+                        pathParameters(
+                                parameterWithName("book-id").description("도서 ID"),
+                                parameterWithName("review-id").description("리뷰 ID")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[리뷰 수정] - 성공")
+    void editReview() throws Exception {
+        // Given
+        Long bookId = 1L;
+        Long reviewId = 10L;
+        Long userId = 1L;
+
+        // When & Then
+        mockMvc.perform(post("/books/{book-id}/reviews/{review-id}/edit", bookId, reviewId)
+                        .header("X-User-Id", userId)
+                        .header("Referer", "http://localhost:8080/previous-page")
+                        .param("reviewId", String.valueOf(reviewId))
+                        .param("bookId", String.valueOf(bookId))
+                        .param("content", "수정된 리뷰 내용입니다.")
+                        .param("rating", "4")
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk())
+                .andDo(document("review-edit-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("book-id").description("도서 ID"),
+                                parameterWithName("review-id").description("리뷰 ID")
+                        ),
+                        requestHeaders(
+                                headerWithName("X-User-Id").description("사용자 식별 ID"),
+                                headerWithName("Referer").description("이전 페이지 주소").optional()
+                        )
                 ));
     }
 }

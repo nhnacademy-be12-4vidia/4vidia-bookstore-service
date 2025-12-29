@@ -106,7 +106,6 @@ class RefundControllerTest extends SupportControllerTest {
                 "테스트 도서", 1, 15000, RefundItemStatus.PROCESS, null
         );
 
-        // 날짜 데이터가 null이면 Response 구조상 에러가 날 수 있으므로 Mock 객체 생성 시 주의
         RefundHistoryGroupResponse history = new RefundHistoryGroupResponse(
                 10L, 100L, LocalDate.now().minusDays(3), LocalDate.now(),
                 RefundStatus.PROCESS, "사유", 15000, List.of(item)
@@ -152,7 +151,6 @@ class RefundControllerTest extends SupportControllerTest {
                                     fieldWithPath("data.content[].items[].refundItemStatus").description("아이템별 상태"),
                                     fieldWithPath("data.content[].items[].rejectDetail").description("거절 시 사유").optional(),
 
-                                    // PageResponse 필드 (global.dto.PageResponse 구조 반영)
                                     fieldWithPath("data.page").description("현재 페이지 번호"),
                                     fieldWithPath("data.size").description("페이지 크기"),
                                     fieldWithPath("data.totalElements").description("전체 데이터 수"),

@@ -69,7 +69,6 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
                             .param("key", key)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
-                    // ResponseWrapperAdvice가 적용되어 data 필드 아래에 응답이 옵니다.
                     .andExpect(jsonPath("$.data.orderName").value("노인과 바다 외 1권"))
                     .andDo(document("order-checkout-get",
                             preprocessRequest(prettyPrint()),
@@ -105,7 +104,6 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
     void createCheckoutSession() throws Exception {
         // Given
         String generatedKey = "new-redis-key-123";
-        // OrderCheckoutListRequest(List<OrderCheckoutRequest> items)
         OrderCheckoutListRequest request = new OrderCheckoutListRequest(
                 List.of(new OrderCheckoutRequest(101L, 2))
         );

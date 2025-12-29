@@ -145,17 +145,18 @@ class CartControllerTest extends SupportControllerTest {
     @Test
     @DisplayName("장바구니 선택 아이템 삭제")
     void deleteSelectItems() throws Exception {
-        String itemIds = "1,2,3";
-
-        mockMvc.perform(delete("/cart/items") // RestDocumentationRequestBuilders.delete 사용 확인
+        mockMvc.perform(delete("/cart/items?itemIds=1&itemIds=2&itemIds=3")
                         .header("X-User-Id", "1")
-                        .param("itemIds", itemIds)) // 쿼리 파라미터로 전달
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("cart-items-delete-selected",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("X-User-Id").description("회원 식별 ID (또는 X-Guest-Id)").optional()
+                        ),
                         queryParameters(
-                                parameterWithName("itemIds").description("삭제할 도서 ID 리스트 (콤마로 구분하여 여러 개 전달 가능)")
+                                parameterWithName("itemIds").description("삭제할 도서 ID 리스트 (예: itemIds=1&itemIds=2)")
                         ),
                         responseFields(withHeader())
                 ));

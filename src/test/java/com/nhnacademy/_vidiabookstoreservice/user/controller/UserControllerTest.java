@@ -2,7 +2,9 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
+import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
@@ -57,6 +59,69 @@ class UserControllerTest extends SupportControllerTest {
                                 fieldWithPath("data.password").description("암호화된 비밀번호"),
                                 fieldWithPath("data.roles").description("권한 (ROLE_USER, ROLE_ADMIN)")
                         ))
+                ));
+    }
+
+    @Test
+    @DisplayName("[ID로 회원 조회]")
+    void getUserById() throws Exception {
+        Long userId = 1L;
+        // User 엔티티 모킹 (Service에서 User 객체를 반환하므로)
+        User mockUser = mock(User.class);
+        given(mockUser.getUserId()).willReturn(userId);
+        given(mockUser.getEmail()).willReturn("test@example.com");
+        given(mockUser.getName()).willReturn("홍길동");
+        given(mockUser.getPhone()).willReturn("01012345678");
+        given(mockUser.getBirthDate()).willReturn(LocalDate.of(1990, 1, 1));
+        given(mockUser.getPoint()).willReturn(1000);
+
+        // Grade 모킹 필요 (UserProfileResponse.fromEntity 내부에서 사용)
+        Grade mockGrade = mock(Grade.class);
+        given(mockGrade.getGradeName()).willReturn(GradeName.WELCOME);
+        given(mockUser.getGrade()).willReturn(mockGrade);
+
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(userService.getUserById(userId)).willReturn(mockUser);
+
+            mockMvc.perform(get("/users/id")
+                            .header("X-User-Id", userId)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.userId").value(userId))
+                    .andDo(document("user-get-by-id",
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                            responseFields(withHeader(
+                                    fieldWithPath("data.userId").description("회원 ID"),
+                                    fieldWithPath("data.email").description("이메일"),
+                                    fieldWithPath("data.name").description("이름"),
+                                    fieldWithPath("data.phone").description("전화번호"),
+                                    fieldWithPath("data.birthDate").description("생년월일"),
+                                    fieldWithPath("data.point").description("보유 포인트"),
+                                    fieldWithPath("data.defaultAddress").description("기본 배송지 (없을 시 null)"),
+                                    fieldWithPath("data.gradeName").description("회원 등급")
+                            ))
+                    ));
+        }
+    }
+
+    @Test
+    @DisplayName("[회원 존재 여부 확인]")
+    void exists() throws Exception {
+        Long userId = 1L;
+        // 서비스에서 예외가 발생하지 않으면 존재하는 것으로 간주
+        given(userService.getUserById(userId)).willReturn(mock(User.class));
+
+        mockMvc.perform(get("/users/{userId}/exists", userId))
+                .andExpect(status().isOk())
+                .andDo(document("user-exists",
+                        pathParameters(
+                                parameterWithName("userId").description("확인할 회원 ID")
+                        )
                 ));
     }
 
@@ -154,7 +219,6 @@ class UserControllerTest extends SupportControllerTest {
                                     fieldWithPath("data.userId").description("회원 ID"),
                                     fieldWithPath("data.name").description("변경된 이름"),
                                     fieldWithPath("data.phone").description("변경된 전화번호"),
-                                    // ... 나머지 필드 설명 생략 가능(위 조회와 동일)
                                     fieldWithPath("data.email").ignored(),
                                     fieldWithPath("data.birthDate").ignored(),
                                     fieldWithPath("data.point").ignored(),
@@ -211,6 +275,33 @@ class UserControllerTest extends SupportControllerTest {
                     .andDo(document("user-delete",
                             requestFields(fieldWithPath("currentPassword").description("본인 확인용 비밀번호")),
                             responseFields(withHeader())
+                    ));
+        }
+    }
+
+    @Test
+    @DisplayName("[회원 역할 조회]")
+    void getUserRole() throws Exception {
+        Long userId = 1L;
+        String role = "ROLE_USER";
+
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(userService.getUserRole(userId)).willReturn(role);
+
+            mockMvc.perform(get("/users/role")
+                            .header("X-User-Id", userId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data").value(role))
+                    .andDo(document("user-get-role",
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                            responseFields(withHeader(
+                                    fieldWithPath("data").description("회원 권한 정보 (예: ROLE_USER, ROLE_ADMIN)")
+                            ))
                     ));
         }
     }

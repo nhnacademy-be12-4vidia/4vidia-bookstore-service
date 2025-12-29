@@ -66,6 +66,5 @@ public class ReviewController {
         Long userId = UserContext.get().getUserId();
 
         reviewService.updateReview(userId, reviewId, bookId, request, newImageList);
-
     }
 }
