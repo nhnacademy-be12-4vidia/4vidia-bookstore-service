@@ -94,7 +94,7 @@ class ReviewControllerTest extends SupportControllerTest {
                 .rating(5)
                 .imageUrlList(List.of("http://test.com/image.jpg"))
                 .createdAt(LocalDate.now())
-                .isMyReview(true)
+                .myReview(true)
                 .build();
 
         Page<ReviewListResponse> page = new PageImpl<>(List.of(review), PageRequest.of(0, 10), 1);
@@ -126,21 +126,27 @@ class ReviewControllerTest extends SupportControllerTest {
                                 parameterWithName("size").description("페이지 크기").optional()
                         ),
                         responseFields(withHeader(
-                                fieldWithPath("data.reviewSummary").description("리뷰 요약 정보"),
+                                // 1. 리뷰 요약 및 기본 정보
+                                fieldWithPath("data.reviewSummary").description("리뷰 요약 정보 (예: 평점 및 리뷰 수)"),
                                 fieldWithPath("data.reviews.content[]").description("리뷰 목록"),
                                 fieldWithPath("data.reviews.content[].reviewId").description("리뷰 ID"),
                                 fieldWithPath("data.reviews.content[].userId").description("작성자 ID"),
                                 fieldWithPath("data.reviews.content[].userName").description("작성자 이름"),
                                 fieldWithPath("data.reviews.content[].content").description("리뷰 내용"),
-                                fieldWithPath("data.reviews.content[].rating").description("평점"),
+                                fieldWithPath("data.reviews.content[].rating").description("평점 (1~5)"),
                                 fieldWithPath("data.reviews.content[].imageUrlList").description("이미지 URL 목록"),
                                 fieldWithPath("data.reviews.content[].createdAt").description("작성일"),
                                 fieldWithPath("data.reviews.content[].myReview").description("본인 리뷰 여부"),
-                                fieldWithPath("data.reviews.page").description("현재 페이지 번호"),
-                                fieldWithPath("data.reviews.size").description("페이지 크기"),
-                                fieldWithPath("data.reviews.totalElements").description("전체 리뷰 수"),
+                                fieldWithPath("data.reviews.content[].modified").description("수정 여부"),
+
+                                // 2. PageResponse 레코드의 필드와 정확히 일치시켜야 함
+                                fieldWithPath("data.reviews.page").description("현재 페이지 번호 (0부터 시작)"),
+                                fieldWithPath("data.reviews.size").description("페이지당 항목 수"),
+                                fieldWithPath("data.reviews.totalElements").description("전체 데이터 개수"),
                                 fieldWithPath("data.reviews.totalPages").description("전체 페이지 수"),
                                 fieldWithPath("data.reviews.last").description("마지막 페이지 여부")
+
+                                // 주의: .pageable, .number, .sort 등 PageImpl 전용 필드들은 여기서 모두 삭제해야 합니다.
                         ))
                 ));
     }
