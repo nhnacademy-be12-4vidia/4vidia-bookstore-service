@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.book.service;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -21,5 +22,9 @@ public interface ReviewService {
     Double getAvgReviewRating(Long bookId);
 
     List<Review> getTop200ReviewListByBookId(Long bookId);
+
+    void deactivateReview(Long userId, Long reviewId, Long bookId);
+
+    void updateReview(Long userId, Long reviewId, Long bookId, ReviewUpdateRequest request, List<MultipartFile> newImageList);
 
 }

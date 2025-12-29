@@ -3,15 +3,17 @@ package com.nhnacademy._vidiabookstoreservice.book.repository;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import java.util.List;
 import java.util.Optional;
+
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    @Query("SELECT r FROM Review r JOIN FETCH r.user WHERE r.book.id = :bookId")
+    @Query("SELECT r FROM Review r JOIN FETCH r.user WHERE r.book.id = :bookId and r.active = true")
     Page<Review> findByBookId(@Param("bookId") Long bookId, Pageable pageable);
 
     @Query("""
@@ -45,4 +47,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Double findAverageRatingByBookId(@Param("bookId") Long bookId);
 
     List<Review> findTop200ByBook_IdOrderByIdDesc(Long bookId);
+
+    @Modifying
+    @Query("""
+                    UPDATE Review  r
+                    SET r.active = false
+                    WHERE r.id = :reviewId
+                    AND r.user.userId = :userId
+                    AND r.book.id = :bookId
+            """)
+    int deactivateReview(@Param("reviewId") Long reviewId, @Param("userId") Long userId, @Param("bookId") Long bookId);
+
 }

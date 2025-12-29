@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.controller;
 
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListWithSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
@@ -26,12 +27,11 @@ public class ReviewController {
     private final BookReviewSummaryService bookReviewSummaryService;
 
     @PostMapping(
-        value = "/books/{bookId}/reviews",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+            value = "/books/{bookId}/reviews",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-
     ResponseEntity<Void> createReview(@PathVariable Long bookId,
-        @ModelAttribute ReviewCreateRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> reviewImageList) {
+                                      @ModelAttribute ReviewCreateRequest request, @RequestPart(value = "images", required = false) List<MultipartFile> reviewImageList) {
         Long userId = UserContext.get().getUserId();
         reviewService.createReview(request, userId, reviewImageList);
 
@@ -49,4 +49,26 @@ public class ReviewController {
         return ResponseEntity.ok(new ReviewListWithSummaryResponse(reviewList, reviewSummary));
     }
 
+    @PostMapping("/books/{book-id}/reviews/{review-id}/deactivate")
+    ResponseEntity<Void> deactivateReview(@PathVariable(name = "book-id") Long bookId, @PathVariable(name = "review-id") Long reviewId) {
+        Long userId = UserContext.get().getUserId();
+
+        reviewService.deactivateReview(userId, reviewId, bookId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/books/{book-id}/reviews/{review-id}/edit")
+    ResponseEntity<Void> editReview(@PathVariable(name = "book-id") Long bookId,
+                                    @PathVariable(name = "review-id") Long reviewId,
+                                    @ModelAttribute ReviewUpdateRequest request,
+                                    @RequestPart(value = "images", required = false) List<MultipartFile> newImageList
+                                    ) {
+        Long userId = UserContext.get().getUserId();
+
+        reviewService.updateReview(userId, reviewId, bookId, request, newImageList);
+
+        return ResponseEntity.noContent().build();
+
+    }
 }
