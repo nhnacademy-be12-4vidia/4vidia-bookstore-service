@@ -153,7 +153,6 @@ eureka:
   instance:
     # 1. 유레카 서버에 "나 살았어"라고 신호 보내는 주기 (기본 30초 -> 10초)
     lease-renewal-interval-in-seconds: 10
-    # 2. 신호가 안 오면 죽은 걸로 간주하는 시간 (기본 9
 
 google:
   api:
