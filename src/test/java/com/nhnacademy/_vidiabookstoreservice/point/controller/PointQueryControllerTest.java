@@ -110,7 +110,6 @@ class PointQueryControllerTest extends SupportControllerTest {
         PointHistoryResponse history = new PointHistoryResponse(
                 LocalDateTime.now(), 500, "구매 적립", "구매 정책", LocalDate.now().plusYears(1)
         );
-        // PageRequest와 함께 PageImpl 생성
         Page<PointHistoryResponse> pageResponse = new PageImpl<>(List.of(history), PageRequest.of(0, 10), 1);
 
         try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
