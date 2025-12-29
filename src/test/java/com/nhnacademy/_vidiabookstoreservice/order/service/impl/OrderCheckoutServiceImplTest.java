@@ -4,12 +4,14 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookStockNot
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
-import com.nhnacademy._vidiabookstoreservice.global.exception.NoSuchElementException;
 import com.nhnacademy._vidiabookstoreservice.order.domain.CheckoutSession;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCheckoutResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.PackagingOptionResponse;
+import com.nhnacademy._vidiabookstoreservice.order.exception.OrderIllegalArgumentException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderBookNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderRedisNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -106,7 +109,7 @@ class OrderCheckoutServiceImplTest {
 
     @Test
     @DisplayName("주문 응답 조회 - 성공")
-    void getOrderCheckoutResponse() {
+    void getOrderCheckoutResponse_Success() {
         String key = "test-uuid";
         Long bookId1 = 1L;
         Long bookId2 = 2L;
@@ -145,16 +148,40 @@ class OrderCheckoutServiceImplTest {
     }
 
     @Test
+    @DisplayName("체크아웃 시작 - 실패 : 재고 부족")
+    void getOrderCheckoutResponse_Fail_StockNotEnough() {
+        List<OrderCheckoutRequest> requests = List.of(new OrderCheckoutRequest(1L, 5));
+
+        List<Object[]> stockResult = new ArrayList<>();
+        stockResult.add(new Object[]{1L, 3});
+        given(bookRepository.findIdsAndStocksById(anyList())).willReturn(stockResult);
+
+        assertThatThrownBy(() -> orderCheckoutService.initiateCheckout(requests))
+                .isInstanceOf(BookStockNotEnoughException.class);
+    }
+
+    @Test
     @DisplayName("주문 응답 조회 - 실패 : Redis 세션 만료")
     void getOrderCheckoutResponse_Fail_SessionExpired() {
         String key = "expired-uuid";
-
         given(orderRedisTemplate.opsForValue()).willReturn(valueOperations);
         given(valueOperations.get(anyString())).willReturn(null);
 
         assertThatThrownBy(() -> orderCheckoutService.getOrderCheckoutResponse(1L, key))
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("주문 세션이 만료되었거나 존재하지 않습니다.");
+                .isInstanceOf(OrderRedisNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("주문 응답 조회 - 실패 : 세션 내 주문 목록이 비어있음")
+    void getOrderCheckoutResponse_Fail_EmptyList() {
+        String key = "empty-list-uuid";
+        CheckoutSession session = new CheckoutSession(Collections.emptyList());
+
+        given(orderRedisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get(anyString())).willReturn(session);
+
+        assertThatThrownBy(() -> orderCheckoutService.getOrderCheckoutResponse(1L, key))
+                .isInstanceOf(OrderIllegalArgumentException.class);
     }
 
     @Test
@@ -176,8 +203,7 @@ class OrderCheckoutServiceImplTest {
         given(bookService.getOrderBookByBookIds(anyList())).willReturn(List.of(book1));
 
         assertThatThrownBy(() -> orderCheckoutService.getOrderCheckoutResponse(1L, key))
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("요청한 상품 중 일부 상품 정보를 찾을 수 없습니다.");
+                .isInstanceOf(OrderBookNotFoundException.class);
     }
 
 
