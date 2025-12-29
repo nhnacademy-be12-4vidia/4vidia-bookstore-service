@@ -1,5 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.book.domain;
 
+import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.global.entity.BaseEntity;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
@@ -60,9 +61,26 @@ public class Review extends BaseEntity {
     @OrderBy("displayOrder ASC ")
     private List<ReviewImage> imageList = new ArrayList<>();
 
-    public void updateContent(String content, Integer rating) {
-        this.content = content;
-        this.rating = rating;
+    @Column(name = "is_active")
+    private boolean active = true;
+
+    @Column(name = "is_modified")
+    private boolean modified = false;
+
+    public void updateContent(ReviewUpdateRequest request) {
+        this.content = request.getContent();
+        this.rating = request.getRating();
+    }
+
+    public void cleanImageList() {
+        for (ReviewImage image : imageList) {
+            image.setReview(null);
+        }
+        imageList.clear();
+    }
+
+    public void setModified() {
+        this.modified = true;
     }
 
     public void addReviewImage(ReviewImage reviewImage) {
