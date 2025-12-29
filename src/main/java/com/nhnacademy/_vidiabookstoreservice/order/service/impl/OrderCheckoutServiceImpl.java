@@ -4,10 +4,12 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoun
 import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookStockNotEnoughException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
-import com.nhnacademy._vidiabookstoreservice.global.exception.NoSuchElementException;
 import com.nhnacademy._vidiabookstoreservice.order.domain.CheckoutSession;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
+import com.nhnacademy._vidiabookstoreservice.order.exception.OrderIllegalArgumentException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderBookNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderRedisNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderCheckoutService;
 import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
 import lombok.RequiredArgsConstructor;
@@ -87,10 +89,10 @@ public class OrderCheckoutServiceImpl implements OrderCheckoutService {
 
         CheckoutSession checkoutSession = (CheckoutSession) orderRedisTemplate.opsForValue().get(SESSION_PREFIX + key);
         if (checkoutSession == null) {
-            throw new NoSuchElementException("주문 세션이 만료되었거나 존재하지 않습니다.");
+            throw new OrderRedisNotFoundException();
         }
         if (checkoutSession.orderCheckoutList.isEmpty()) {
-            throw new IllegalArgumentException("주문할 상품이 존재하지 않습니다.");
+            throw new OrderIllegalArgumentException();
         }
         List<OrderCheckoutRequest> orderCheckoutRequests = checkoutSession.orderCheckoutList;
 
@@ -101,7 +103,7 @@ public class OrderCheckoutServiceImpl implements OrderCheckoutService {
         List<BookOrderResponse> books = bookService.getOrderBookByBookIds(bookIds);
 
         if (books.size() != bookIds.size()) {
-            throw new NoSuchElementException("요청한 상품 중 일부 상품 정보를 찾을 수 없습니다. (판매 중지 또는 삭제됨)");
+            throw new OrderBookNotFoundException();
         }
 
         List<OrderBookResponse> bookItems = getOrderBookMappingQuantity(books, orderCheckoutRequests);
@@ -161,15 +163,13 @@ public class OrderCheckoutServiceImpl implements OrderCheckoutService {
         Map<Long, BookOrderResponse> bookMap = books.stream() //O(N) -> O(1)
                 .collect(Collectors.toMap(BookOrderResponse::id, Function.identity()));
 
-        List<OrderBookResponse> bookItems = orderCheckoutRequests.stream()
+        return orderCheckoutRequests.stream()
                 .map(req -> {
                     BookOrderResponse bookOrderResponse = bookMap.get(req.bookId());
 
                     return OrderBookResponse.from(bookOrderResponse, req.quantity());
                 })
                 .toList();
-
-        return bookItems;
     }
 }
 
