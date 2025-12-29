@@ -176,3 +176,13 @@ server:
       min-spare: 20   # 항상 대기 중인 최소 Thread
     accept-count: 100 # Thread 꽉 찼을 때 대기 큐
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
