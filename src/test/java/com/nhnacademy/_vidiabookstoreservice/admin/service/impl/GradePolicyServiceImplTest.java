@@ -15,11 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
-
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
@@ -31,6 +28,32 @@ class GradePolicyServiceImplTest {
 
     @InjectMocks
     private GradePolicyServiceImpl gradePolicyService;
+
+    @Test
+    @DisplayName("특정 등급 정책 조회 테스트 성공")
+    void get_Success() {
+        Grade grade1 = new Grade(1L, GradeName.WELCOME,1);
+
+        when(gradeRepository.findById(1L)).thenReturn(Optional.of(grade1));
+
+        GradePolicyResponse response = gradePolicyService.get(1L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.gradeId()).isEqualTo(1L);
+        assertThat(response.gradeName()).isEqualTo(GradeName.WELCOME.toString());
+        assertThat(response.pointRate()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("특정 등급 정책 조회 테스트 실패 - 존재하지 않는 정책")
+    void get_Fail_NotFound() {
+        when(gradeRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> gradePolicyService.get(99L))
+                .isInstanceOf(GradeNotFoundException.class);
+
+        verify(gradeRepository, times(1)).findById(anyLong());
+    }
 
     @Test
     @DisplayName("모든 등급 정책 조회 테스트")
