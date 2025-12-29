@@ -112,63 +112,75 @@ class UserRepositoryTest {
 
     @Test
     @DisplayName("3개월 이전 로그인하지 않은 Active 사용자 조회")
-    void findActiveUsersNotLoggedInSince(){
-        // 4개월 전 로그인 기록이 있는 사용자 추가
+    void findActiveUsersNotLoggedInSince() {
+        // Given: 4개월 전 로그인 기록이 있는 사용자 (조회 대상)
         User oldLoginUser = User.builder()
                 .email("old@example.com")
                 .password("pw")
                 .name("OldUser")
-                .phone("010-1234-5678")
-                .birthDate(LocalDate.of(1980,1,1))
+                .phone("010-1234-5671")
+                .birthDate(LocalDate.of(1980, 1, 1))
                 .grade(grade)
                 .build();
-
         oldLoginUser.setStatus(UserStatus.ACTIVE);
         oldLoginUser.setLastLoginAt(LocalDateTime.now().minusMonths(4));
         entityManager.persist(oldLoginUser);
 
-        // 최근 로그인 사용자 (조회되지 않아야 함)
-        user.setLastLoginAt(LocalDateTime.now().minusMonths(1));
-        entityManager.persist(user);
+        // Given: 최근 로그인 사용자 (조회되지 않아야 함)
+        User recentLoginUser = User.builder()
+                .email("recent@example.com")
+                .password("pw")
+                .name("RecentUser")
+                .phone("010-1234-5672")
+                .birthDate(LocalDate.of(1995, 1, 1))
+                .grade(grade)
+                .build();
+        recentLoginUser.setStatus(UserStatus.ACTIVE);
+        recentLoginUser.setLastLoginAt(LocalDateTime.now().minusMonths(1));
+        entityManager.persist(recentLoginUser);
+
+        entityManager.flush();
+        entityManager.clear();
 
         // 3개월 기준 설정
         LocalDateTime threshold = LocalDateTime.now().minusMonths(3);
 
-        // 조회 실행
+        // When
         List<User> dormantCandidates = userRepository.findActiveUsersToDormant(UserStatus.ACTIVE, threshold);
 
+        // Then
         assertThat(dormantCandidates)
                 .extracting(User::getEmail)
                 .contains("old@example.com")
                 .doesNotContain("recent@example.com");
-
-
     }
 
     @Test
-    @DisplayName("Active 사용자 중 로그인 기록이 없는 사용자도 휴면 대상 조회 포함 확인")
+    @DisplayName("Active 사용자 중 로그인 기록이 없는 사용자도 가입일 기준 휴면 대상 포함 확인")
     void findActiveUsersNotLoggedInSince_NullLastLogin() {
-        // 로그인 기록이 없는 사용자 (lastLoginAt == null )
+        // Given
         User neverLoggedInUser = User.builder()
-                .email("naver@example.com")
+                .email("never@example.com")
                 .password("pw")
                 .name("testName")
                 .phone("010-1234-5534")
                 .birthDate(LocalDate.of(2000, 1, 1))
                 .grade(grade)
                 .build();
-
         neverLoggedInUser.setStatus(UserStatus.ACTIVE);
         entityManager.persist(neverLoggedInUser);
+        entityManager.flush();
 
-        LocalDateTime threshold = LocalDateTime.now().minusMonths(3);
+        // DB의 created_at이 'date' 타입이므로, 'LocalDateTime'의 'now().plusSeconds(1)'을 넘기면 에러가 납니다.
+        // 쿼리에서 요구하는 논리적 시점을 맞추기 위해 내일 날짜의 자정으로 설정합니다.
+        LocalDateTime threshold = LocalDate.now().plusDays(1).atStartOfDay();
 
+        // When
         List<User> result = userRepository.findActiveUsersToDormant(UserStatus.ACTIVE, threshold);
 
-        // 현재 user (마지막 로그인 null)와 neverLoggedInUser 둘다 조회되어야 함(setup의 user도 로그인 기록 없음)
+        // Then
         assertThat(result).extracting("email")
-                .contains("test@example.com", "naver@example.com");
-        
+                .contains("test@example.com", "never@example.com");
     }
 
     @Test
