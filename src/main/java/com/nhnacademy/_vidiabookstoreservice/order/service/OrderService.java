@@ -10,11 +10,13 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentR
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface OrderService {
 
-    OrderResponse getOrderResponse(Long orderItemId);
+    OrderResponse getOrderResponse(Long userId, Long orderItemId);
+
+    OrderResponse getGuestOrderResponse(OrderTrackingRequest request);
+
+    OrderAmountResponse getOrderPayPrice(Long orderId);
 
     OrderCreateResponse saveOrder(Long userId, OrderCreateRequest request);
 
@@ -23,13 +25,12 @@ public interface OrderService {
     Order getOrder(Long orderId);
 
     Page<OrderPreviewResponse> getOrdersByUserId(Long userId, String status, Pageable pageable);
+
     OrderCountResponse getOrderCounts(Long userId);
 
     void cancelOrderIfPending(Long orderId);
 
     void cancelOrder(Long orderId, String message);
-
-    Boolean validateGuest(OrderTrackingRequest orderTrackingRequest);
 
     void changeOrderStatus(Long orderId, ConfirmStatus confirmStatus);
 

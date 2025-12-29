@@ -7,7 +7,7 @@
 
 .요청 (Request)
 include::{snippets}/user-address-get/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/user-address-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-address-get/request-headers.adoc[]
@@ -39,7 +39,7 @@ include::{snippets}/user-addresses-get/response-fields.adoc[]
 include::{snippets}/user-address-post/http-request.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-address-post/request-headers.adoc[]
-.요청 필드 (Request fields)
+.요청 필드 (Request Fields)
 include::{snippets}/user-address-post/request-fields.adoc[]
 
 .응답 (Response)
@@ -51,7 +51,7 @@ include::{snippets}/user-address-post/http-response.adoc[]
 
 .요청 (Request)
 include::{snippets}/user-address-put/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/user-address-put/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-address-put/request-headers.adoc[]
@@ -69,7 +69,7 @@ include::{snippets}/user-address-put/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/user-address-delete/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/user-address-delete/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-address-delete/request-headers.adoc[]
@@ -103,7 +103,7 @@ include::{snippets}/user-address-default-get/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/user-address-default-put/http-request.adoc[]
-.Path Parameters
+.요청 파라미터 (Path Parameters)
 include::{snippets}/user-address-default-put/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/user-address-default-put/request-headers.adoc[]

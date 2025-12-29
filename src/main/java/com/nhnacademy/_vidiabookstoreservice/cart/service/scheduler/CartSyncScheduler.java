@@ -29,11 +29,9 @@ public class CartSyncScheduler {
         expiredUserIds.forEach(userId -> {
             try {
                 cartService.flushCartFromRedisToMySql(userId);
-                cartService.clearRedisCartAfterFlush(userId);
             } catch (Exception e) {
                 log.error("장바구니 flush 실패 userId={}", userId, e);
             }
         });
     }
 }
-

@@ -2,6 +2,7 @@ package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.request.GradePolicyUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.GradePolicyResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.response.PointPolicyResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.GradePolicyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,11 @@ public class GradePolicyController {
     @GetMapping
     public ResponseEntity<List<GradePolicyResponse>> getAll(){
        return ResponseEntity.ok().body(gradePolicyService.getAll());
+    }
+
+    @GetMapping("/{policy-id}")
+    public ResponseEntity<GradePolicyResponse> get(@PathVariable("policy-id") Long policyId){
+        return ResponseEntity.ok().body(gradePolicyService.get(policyId));
     }
 
     @PutMapping("/{gradeId}")

@@ -1,109 +1,94 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.SupportControllerTest;
-import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
-import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
-import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
-import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.MockedStatic;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDate;
-
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class GradeControllerTest extends SupportControllerTest {
 
-    @Autowired private GradeRepository gradeRepository;
-    @Autowired private UserRepository userRepository;
-
-    private Long testUserId;
-    private Long targetGradeId;
-
-    @BeforeEach
-    void initData() {
-
-        Grade welcomeGrade = Grade.builder()
-                .gradeName(GradeName.WELCOME)
-                .pointRate(1)
-                .build();
-        gradeRepository.save(welcomeGrade);
-
-        Grade goldGrade = Grade.builder()
-                .gradeName(GradeName.GOLD)
-                .pointRate(3)
-                .build();
-        gradeRepository.save(goldGrade);
-        this.targetGradeId = goldGrade.getGradeId();
-
-        User user = User.builder()
-                .email("grade_test@h2.com")
-                .password("password")
-                .name("등급테스트유저")
-                .phone("01011112222")
-                .birthDate(LocalDate.now())
-                .grade(welcomeGrade)
-                .build();
-        user.setStatus(UserStatus.ACTIVE);
-
-        User savedUser = userRepository.save(user);
-        this.testUserId = savedUser.getUserId();
-    }
+    @MockitoBean
+    private GradeService gradeService;
 
     @Test
-    @DisplayName("[등급 조회]")
+    @DisplayName("[내 등급 조회]")
     void getGrade() throws Exception {
-        mockMvc.perform(get("/users/me/grade")
-                        .header("X-User-Id", testUserId)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.gradeName").value("WELCOME"))
-                .andDo(document("user-grade-get",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
+        Long userId = 1L;
+        GradeResponse response = new GradeResponse("PLATINUM", 5);
 
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("사용자 식별 ID")
-                        ),
-                        responseFields(
-                                fieldWithPath("gradeName").description("등급 이름 (예: WELCOME, ROYAL, GOLD, PLATINUM)"),
-                                fieldWithPath("pointRate").description("포인트 적립률 (%)")
-                        )
-                ));
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(gradeService.getGrade(userId)).willReturn(response);
+
+            mockMvc.perform(get("/users/me/grade")
+                            .header("X-User-Id", userId)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.gradeName").value("PLATINUM"))
+                    .andDo(document("grade-get",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 식별 ID")),
+                            responseFields(withHeader(
+                                    fieldWithPath("data.gradeName").description("등급 이름"),
+                                    fieldWithPath("data.pointRate").description("포인트 적립률")
+                            ))
+                    ));
+        }
     }
 
     @Test
     @DisplayName("[등급 변경]")
     void updateGrade() throws Exception {
-        mockMvc.perform(put("/users/me/grade/{grade-id}", targetGradeId)
-                        .header("X-User-Id", testUserId))
-                .andExpect(status().isNoContent())
-                .andDo(document("user-grade-put",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
+        // Given
+        Long userId = 1L;
+        Long gradeId = 3L;
 
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("사용자 식별 ID")
-                        ),
-                        pathParameters(
-                                parameterWithName("grade-id").description("변경할 등급 ID")
-                        )
-                ));
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            doNothing().when(gradeService).updateGrade(eq(userId), eq(gradeId));
+
+            // When & Then
+            mockMvc.perform(put("/users/me/grade/{grade-id}", gradeId)
+                            .header("X-User-Id", userId))
+                    .andExpect(status().isOk())
+                    .andDo(document("grade-update-put",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 식별 ID")),
+                            pathParameters(parameterWithName("grade-id").description("변경할 등급 ID")),
+                            responseFields(withHeader()) // 응답 바디가 비어있어도 ApiResponse 공통 필드 검증
+                    ));
+
+            // 실제로 서비스가 호출되었는지 검증 (선택사항)
+            verify(gradeService, times(1)).updateGrade(eq(userId), eq(gradeId));
+        }
     }
 }

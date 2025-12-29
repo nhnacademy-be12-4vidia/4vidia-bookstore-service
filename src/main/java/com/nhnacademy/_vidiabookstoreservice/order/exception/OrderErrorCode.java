@@ -11,10 +11,14 @@ public enum OrderErrorCode implements ErrorCodeProvider {
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "O002", "주문 내역을 찾을 수 없습니다."),
     PACKAGING_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "O003", "포장을 찾을 수 없습니다."),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "O004", "결제내역을 찾을 수 없습니다."),
-    // BAD_REQUEST (400)
+
+    // FORBIDDEN(403)
+    ORDER_USER_MISMATCH(HttpStatus.FORBIDDEN, "O101", "해당 주문에 접근할 권한이 없습니다."),
 
     // ALREADY_EXISTS (409)
     ORDER_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "O201", "주문 금액에 변화가 있습니다."),
+
+    ORDER_PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "O301", "주문 비밀번호가 일치하지 않습니다."),
     // UNPROCESSABLE_ENTITY(422) -> INVALID (요청 값 자체가 도메인 위반, 논리적 오류 : 나이 필드에 -1입력 등등)
 
     // UNPROCESSABLE_ENTITY(422) -> NOT_ENOUGH (422)-> 입력 값/요청은 합리적, 단지 현재 상태가 부족
@@ -22,7 +26,11 @@ public enum OrderErrorCode implements ErrorCodeProvider {
     // 500
     ORDER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "O501", "주문 처리 중 오류가 발생했습니다."),
     ORDER_ROLLBACK_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "O502", "주문 취소 및 환불 처리 중 오류가 발생했습니다.")
+
+    // BAD_REQUEST (400)
     ;
+
+
 
     private final HttpStatus status;
     private final String code;

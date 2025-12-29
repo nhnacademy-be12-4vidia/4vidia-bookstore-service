@@ -1,0 +1,151 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  application:
+    name: 4vidia-bookstore-service-test
+
+  # 외부 설정 서버 로드 방지
+  cloud:
+    config:
+      enabled: false
+
+  # Redis: 테스트 환경에서는 로컬(localhost)을 바라보거나 Mocking 처리
+  data:
+    redis:
+      cart:
+        host: localhost
+        port: 6379
+        password: ""
+        database: 0
+        timeout: 100ms
+      dormant:
+        host: localhost
+        port: 6379
+        password: ""
+        database: 0
+        timeout: 100ms
+      bestseller:
+        host: localhost
+        port: 6379
+        password: ""
+        database: 0
+        timeout: 100ms
+      ai:
+        host: localhost
+        port: 6379
+        password: ""
+        database: 0
+        timeout: 100ms
+      signup:
+        host: localhost
+        port: 6379
+        password: ""
+        database: 0
+        timeout: 100ms
+      isbn:
+        host: localhost
+        port: 6379
+        password: ""
+        database: 0
+        timeout: 100ms
+
+  # Datasource: 메인 yml의 DBCP 설정을 덮어쓰기 위해 type을 명시합니다.
+  datasource:
+    # [핵심 수정] 프로덕션의 DBCP2 설정을 무시하고 기본(HikariCP) 사용 강제
+    type: com.zaxxer.hikari.HikariDataSource
+
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # 테스트 시작 시 생성, 종료 시 삭제
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        default_batch_fetch_size: 100
+    open-in-view: true
+
+  # ElasticSearch (Mock 사용하므로 로컬로 설정하거나 꺼둠)
+  elasticsearch:
+    uris: http://localhost:9200
+    socket-timeout: 1s
+    connection-timeout: 1s
+    username: test
+    password: test
+
+  # RabbitMQ (MockBean으로 처리되어 있지만, Config 로딩 에러 방지용)
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false # 리스너 자동 시작 방지
+        retry:
+          enabled: false
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
+  # Mail (테스트용 Dummy)
+  mail:
+    host: localhost
+    port: 2525
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+# 외부 API 키 (값이 없으면 @Value 주입 시 에러 날 수 있으므로 Dummy 값 채움)
+google:
+  api:
+    api-keyList: test-key-list
+    api-key2: test-key-2
+    model: gemini-test-model
+
+aladin:
+  api:
+    key: test-aladin-key
+
+toss:
+  secretKey: test_toss_key
+
+# Eureka Client 비활성화
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# S3 (MinioService가 Mocking 되어 있으므로 구조만 맞춤)
+cloud:
+  aws:
+    s3:
+      endpoint: http://localhost:8001
+      bucket: test-bucket
+    credentials:
+      access-key: test
+      secret-key: test
+    region:
+      static: us-east-1
+    stack:
+      auto: false
+
+image:
+  default:
+    thumbnail: http://localhost/images/default.png
+
+server:
+  port: 8084

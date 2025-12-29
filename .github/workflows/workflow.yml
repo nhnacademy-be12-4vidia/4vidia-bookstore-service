@@ -52,12 +52,20 @@ jobs:
           TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GOOGLE_API_KEY2: ${{ secrets.GOOGLE_API_KEY2 }}
+          ALADIN_API_KEY1: ${{ secrets.ALADIN_API_KEY1 }}
+          ALADIN_API_KEY2: ${{ secrets.ALADIN_API_KEY2 }}
+          ALADIN_API_KEY3: ${{ secrets.ALADIN_API_KEY3 }}
+          ALADIN_API_KEY4: ${{ secrets.ALADIN_API_KEY4 }}
+          ALADIN_API_KEY5: ${{ secrets.ALADIN_API_KEY5 }}
+          ALADIN_API_KEY6: ${{ secrets.ALADIN_API_KEY6 }}
+          ALADIN_API_KEY7: ${{ secrets.ALADIN_API_KEY7 }}
+          ALADIN_API_KEY8: ${{ secrets.ALADIN_API_KEY8 }}
         with:
           host: s2.java21.net
           username: be12-team4
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 8822
-          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,MINIO_SECRET_KEY,REDIS_PASSWORD,MYSQL_PASSWORD,NHN_PASSWORD,MINIO_SECRET_KEY,SMTP_PASSWORD,TOSS_SECRET_KEY,GOOGLE_API_KEY,GOOGLE_API_KEY2
+          envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,MINIO_SECRET_KEY,REDIS_PASSWORD,MYSQL_PASSWORD,NHN_PASSWORD,MINIO_SECRET_KEY,SMTP_PASSWORD,TOSS_SECRET_KEY,GOOGLE_API_KEY,GOOGLE_API_KEY2,ALADIN_API_KEY1,ALADIN_API_KEY2,ALADIN_API_KEY3,ALADIN_API_KEY4,ALADIN_API_KEY5,ALADIN_API_KEY6,ALADIN_API_KEY7,ALADIN_API_KEY8
           script_stop: true
           script: |
             echo $GH_TOKEN | docker login ghcr.io -u baejongto --password-stdin

@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.global.dto.ApiResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCheckoutListRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCheckoutResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderCheckoutService;
@@ -36,10 +37,10 @@ public class OrderCheckoutController {
      * @return 레디스 저장키값 반환
      */
     @PostMapping("/checkout-temp")
-    public ResponseEntity<String> createCheckoutSession(@RequestBody OrderCheckoutListRequest orderCheckoutListRequest) {
+    public ApiResponse<String> createCheckoutSession(@RequestBody OrderCheckoutListRequest orderCheckoutListRequest) {
 
         String key = orderCheckoutService.initiateCheckout(orderCheckoutListRequest.items());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(key);
+        return ApiResponse.success(key);
     }
 }

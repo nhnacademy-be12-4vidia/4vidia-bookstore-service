@@ -61,12 +61,11 @@ public class AdminUserController {
      */
     
     @PutMapping("/{userId}/status")
-    public ResponseEntity<Void> updateUserStatus(
+    public void updateUserStatus(
             @PathVariable Long userId,
             @RequestBody UpdateUserStatusRequest request
     ) {
         adminUserService.updateUserStatus(userId, request.status());
-        return ResponseEntity.noContent().build();
     }
 
 

@@ -125,6 +125,33 @@ include::{snippets}/auth-dormant-email-send-post/request-fields.adoc[]
 
 .응답 (Response)
 include::{snippets}/auth-dormant-email-send-post/http-response.adoc[]
+
+
+
+==== 회원가입 이메일 인증코드 전송
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-email-send-code-post/http-request.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/auth-email-send-code-post/request-fields.adoc[]
+
+
+.응답 (Response)
+include::{snippets}/auth-email-send-code-post/http-response.adoc[]
+
+
+==== 회원가입 이메일 인증코드 검증
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-email-verify-code-post/http-request.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/auth-email-verify-code-post/request-fields.adoc[]
+
+.응답 (Response)
+include::{snippets}/auth-email-verify-code-post/http-response.adoc[]
+
 // --------------------------------------------------------------
 // 3. 수정 (PUT/PATCH)
 // --------------------------------------------------------------

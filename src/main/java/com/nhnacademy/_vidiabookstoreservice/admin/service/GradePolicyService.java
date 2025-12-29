@@ -6,7 +6,7 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.response.GradePolicyRespo
 import java.util.List;
 
 public interface GradePolicyService {
-
+    GradePolicyResponse get(Long gradePolicyId);
     List<GradePolicyResponse> getAll();
     void update(Long gradeId, GradePolicyUpdateRequest gradePolicyUpdateRequest);
 

@@ -73,7 +73,7 @@ public class BookImageServiceImpl implements BookImageService {
         BookImage existingImage = book.getBookImageList().stream()
             .filter(bi -> bi.getImageType().equals(ImageType.THUMBNAIL)).findFirst().orElse(null);
 
-        if (Objects.nonNull(existingImage)) {
+        if (Objects.nonNull(existingImage) && minioService.isMinioUrl(existingImage.getImageUrl())) {
             minioService.delete(existingImage.getImageUrl());
         }
 
@@ -93,5 +93,31 @@ public class BookImageServiceImpl implements BookImageService {
             book.addBookImage(newBookImage);
         }
 
+    }
+
+    @Override
+    @Transactional
+    public void replaceThumbnail(Book book, String thumbnailUrl) {
+        BookImage existingImage = book.getBookImageList().stream()
+            .filter(bi -> bi.getImageType().equals(ImageType.THUMBNAIL))
+            .findFirst()
+            .orElse(null);
+
+        if (Objects.nonNull(existingImage)) {
+            if (minioService.isMinioUrl(existingImage.getImageUrl())) {
+                minioService.delete(existingImage.getImageUrl());
+            }
+            existingImage.updateImageUrl(thumbnailUrl);
+        } else {
+            BookImage newBookImage = BookImage.builder()
+                .book(book)
+                .imageUrl(thumbnailUrl)
+                .imageType(ImageType.THUMBNAIL)
+                .displayOrder(0)
+                .build();
+
+            bookImageRepository.save(newBookImage);
+            book.addBookImage(newBookImage);
+        }
     }
 }

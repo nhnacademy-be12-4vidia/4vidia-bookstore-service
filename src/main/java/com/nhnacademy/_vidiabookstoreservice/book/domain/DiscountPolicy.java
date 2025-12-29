@@ -30,7 +30,7 @@ public class DiscountPolicy {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", unique = true)
     private Category category;
 
     @Column(name = "discount_policy_name", nullable = false, length = 255)
@@ -52,6 +52,13 @@ public class DiscountPolicy {
         LocalDate startDate,
         LocalDate endDate) {
         this.category = category;
+        this.discountPolicyName = discountPolicyName;
+        this.discountRate = discountRate;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public void update(String discountPolicyName, Integer discountRate, LocalDate startDate, LocalDate endDate) {
         this.discountPolicyName = discountPolicyName;
         this.discountRate = discountRate;
         this.startDate = startDate;
