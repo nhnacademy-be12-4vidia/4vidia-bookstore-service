@@ -80,12 +80,14 @@ jobs:
             curl -X PUT \
             "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-1/status?value=OUT_OF_SERVICE" || true
             
-            echo "Waiting for Gateway cache refresh (30s)..."
+            # echo "Waiting for Gateway cache refresh (30s)..."
             sleep 30  # 게이트웨이가 명단 갱신할 시간 벌어주기
             
             # 2. GREEN (1번) 배포 & 재시작
             echo "Starting 4vidia-bookstore-service-1 (GREEN)..."
             docker compose up -d 4vidia-bookstore-service-1
+            
+            sleep 60
             
             echo "Waiting for GREEN health check..."
             HEALTH_CHECK_COUNT=0
@@ -110,6 +112,7 @@ jobs:
             curl -X PUT \
             "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-2/status?value=OUT_OF_SERVICE" || true
             
+            sleep 30
             
             # BLUE 재기동
             echo "Stopping 4vidia-bookstore-service-2 (BLUE)..."
@@ -117,6 +120,8 @@ jobs:
             
             echo "Starting 4vidia-bookstore-service-2 (BLUE)..."
             docker compose up -d 4vidia-bookstore-service-2
+            
+            sleep 60
             
             echo "Waiting for BLUE health check..."
             HEALTH_CHECK_COUNT=0
