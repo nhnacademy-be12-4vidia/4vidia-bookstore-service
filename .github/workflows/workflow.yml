@@ -81,7 +81,7 @@ jobs:
             "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-1/status?value=OUT_OF_SERVICE" || true
             
             echo "Waiting for Gateway cache refresh (15s)..."
-            sleep 15  # 게이트웨이가 명단 갱신할 시간 벌어주기
+            sleep 30  # 게이트웨이가 명단 갱신할 시간 벌어주기
             
             # 2. GREEN (1번) 배포 & 재시작
             echo "Starting 4vidia-bookstore-service-1 (GREEN)..."
