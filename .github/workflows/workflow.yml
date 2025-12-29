@@ -112,7 +112,6 @@ jobs:
             curl -X PUT \
             "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-2/status?value=OUT_OF_SERVICE" || true
             
-            sleep 30
             
             # BLUE 재기동
             echo "Stopping 4vidia-bookstore-service-2 (BLUE)..."
