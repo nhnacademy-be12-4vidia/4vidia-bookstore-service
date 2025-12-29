@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminIsbnSearchResponse;
+import com.nhnacademy._vidiabookstoreservice.admin.dto.response.BookIsbnResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
@@ -62,11 +63,11 @@ public class AdminBookController {
     }
 
     @GetMapping("/{book-id}/isbn")
-    public ResponseEntity<String> getBookIsbn(
+    public ResponseEntity<BookIsbnResponse> getBookIsbn(
             @PathVariable("book-id") Long bookId
     ) {
         String isbn = bookService.getBookIsbnById(bookId);
-        return ResponseEntity.ok(isbn);
+        return ResponseEntity.ok(new BookIsbnResponse(isbn));
     }
 
     @PostMapping("/images")
