@@ -421,7 +421,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<RefundItem> refundItems = refundItemRepository.findAlLByOrderItem_OrderItemIdInAndRefundItemStatus(orderItemIds, RefundItemStatus.APPROVED);
 
-        List<Long> refundIds = refundItems.stream().map(RefundItem::getRefundItemId).toList();
+        List<Long> refundIds = refundItems.stream().map(item -> item.getOrderItem().getOrderItemId()).toList();
 
         for (OrderItem orderItem : order.getOrderItems()) {
             if (refundIds.contains(orderItem.getOrderItemId())) {
