@@ -90,7 +90,6 @@ public class AuthServiceImpl implements AuthService {
         signupEmailVerifiedRepository.clear(request.email());
         pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(userId, 1L));
 
-//        couponClient.getRegisterCoupon(user.getUserId()); // todo : 분리
         eventPublisher.publishEvent(new WelcomeCouponIssueEvent(userId));
 
         // 🎂 생일 달이면 생일 쿠폰 이벤트도 발행

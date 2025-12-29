@@ -146,7 +146,6 @@ public class User extends BaseEntity {
 
     // 휴먼상태인지 확인 (마지막 로그인이 3개월 전이면 )
     public boolean isDormant(){
-        // todo : 회원가입하고 로그인을 안하면 -> 몇년이 지나도 휴먼이 안되요? -> 3개월 휴면 처리할때 같이 처리
         if(lastLoginAt == null){
             return false;
         }
