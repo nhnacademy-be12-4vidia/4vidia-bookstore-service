@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.user.dto.user.response;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 
-// user-service -> auth
 public record UserInfoResponse(
         Long id,
         String email,

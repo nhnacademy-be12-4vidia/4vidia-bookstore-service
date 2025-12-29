@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.global.controller;
 
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.PaycoUserRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.AuthUserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.AuthService;
@@ -18,8 +19,8 @@ public class InternalController {
     private final AuthService authService;
 
     @GetMapping("/internal/users")
-    public ResponseEntity<UserInfoResponse> getInternalUserByEmail(@RequestParam String email) {
-        UserInfoResponse user = userService.getUserByEmail(email);
+    public ResponseEntity<AuthUserDto> getInternalUserByEmail(@RequestParam String email) {
+        AuthUserDto user = userService.getAuthUser(email);
         log.info("{}",user.email());
         return ResponseEntity.ok().body(user); // 200 OK + JSON
     }
