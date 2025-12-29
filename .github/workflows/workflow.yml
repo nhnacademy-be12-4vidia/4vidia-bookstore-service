@@ -68,13 +68,68 @@ jobs:
           envs: GH_TOKEN,GH_OWNER,SSH_PRIVATE_KEY,ADMIN_ID,ADMIN_PASSWORD,MINIO_SECRET_KEY,REDIS_PASSWORD,MYSQL_PASSWORD,NHN_PASSWORD,MINIO_SECRET_KEY,SMTP_PASSWORD,TOSS_SECRET_KEY,GOOGLE_API_KEY,GOOGLE_API_KEY2,ALADIN_API_KEY1,ALADIN_API_KEY2,ALADIN_API_KEY3,ALADIN_API_KEY4,ALADIN_API_KEY5,ALADIN_API_KEY6,ALADIN_API_KEY7,ALADIN_API_KEY8
           script_stop: true
           script: |
-            echo $GH_TOKEN | docker login ghcr.io -u baejongto --password-stdin
+            set -e
+            
+            echo "$GH_TOKEN" | docker login ghcr.io -u baejongto --password-stdin
             cd ~
             
-            echo "Deploy bookstore-service-1"
-            docker compose pull 4vidia-bookstore-service-1
+            echo "Pulling latest images..."
+            docker compose pull 4vidia-bookstore-service-1 4vidia-bookstore-service-2
+            
+            # GREEN (bookstore-service-1) 배포
+            echo "Starting 4vidia-bookstore-service-1 (GREEN)..."
             docker compose up -d 4vidia-bookstore-service-1
             
-            echo "Deploy bookstore-service-2"
-            docker compose pull 4vidia-bookstore-service-2
+            echo "Waiting for GREEN health check..."
+            HEALTH_CHECK_COUNT=0
+            while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
+            if curl -s http://localhost:10461/actuator/health | grep -q '"status":"UP"'; then
+            echo "4vidia-bookstore-service-1 (GREEN) is UP."
+            break
+            fi
+            
+            echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
+            sleep 10
+            HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
+            done
+            
+            if [ $HEALTH_CHECK_COUNT -eq 12 ]; then
+            echo "GREEN container failed. Aborting deployment."
+            exit 1
+            fi
+            
+            # BLUE (bookstore-service-2) 트래픽 드레인
+            echo "Setting BLUE container DOWN in Eureka..."
+            curl -X PUT \
+            "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-2/status?value=DOWN" || true
+            
+            sleep 30
+            
+            # BLUE 재기동
+            echo "Stopping 4vidia-bookstore-service-2 (BLUE)..."
+            docker compose stop 4vidia-bookstore-service-2
+            
+            echo "Starting 4vidia-bookstore-service-2 (BLUE)..."
             docker compose up -d 4vidia-bookstore-service-2
+            
+            echo "Waiting for BLUE health check..."
+            HEALTH_CHECK_COUNT=0
+            while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
+            if curl -s http://localhost:10462/actuator/health | grep -q '"status":"UP"'; then
+            echo "4vidia-bookstore-service-2 (BLUE) is UP."
+            break
+            fi
+            
+            echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
+            sleep 10
+            HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
+            done
+            
+            if [ $HEALTH_CHECK_COUNT -eq 12 ]; then
+            echo "BLUE container failed."
+            exit 1
+            fi
+            echo "Cleaning up unused Docker images..."
+            docker image prune -f
+            
+            echo "🚀 Deployment completed successfully!"
