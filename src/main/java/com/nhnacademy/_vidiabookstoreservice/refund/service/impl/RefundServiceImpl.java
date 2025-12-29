@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -52,8 +53,15 @@ public class RefundServiceImpl implements RefundService {
     @Override
     @Transactional(readOnly = true)
     public RefundResponse getRefundList(long orderId) {
-        orderRepository.findByOrderId(orderId)
+        Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        LocalDate deliveryDate = order.getActualDeliveryDate();
+
+        boolean canReturnByChangeOfMind = false;
+        if (deliveryDate != null) {
+            canReturnByChangeOfMind = deliveryDate.plusDays(10).isAfter(LocalDate.now());
+        }
 
         List<OrderItem> orderItems =
                 orderItemRepository.findAllByOrderIdWithRefunds(orderId);
@@ -63,7 +71,7 @@ public class RefundServiceImpl implements RefundService {
                 .map(OrderItemResponse::from)
                 .toList();
 
-        return new RefundResponse(orderId, returnableItems);
+        return new RefundResponse(orderId, canReturnByChangeOfMind, returnableItems);
     }
 
     /**
