@@ -6,8 +6,10 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.domain.ReviewImage;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.event.ReviewRatingEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewCreateRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.review.request.ReviewUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.ReviewUserMismatchException;
+import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.ReviewNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookReviewSummaryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
@@ -29,8 +31,8 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -164,5 +166,38 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public Double getAvgReviewRating(Long bookId) {
         return reviewRepository.findAverageRatingByBookId(bookId);
+    }
+
+    @Override
+    @Transactional
+    public void deactivateReview(Long userId, Long reviewId, Long bookId) {
+        int updated = reviewRepository.deactivateReview(reviewId, userId, bookId);
+        if (updated == 0) {
+            throw new AccessDeniedException("삭제 불가");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateReview(Long userId, Long reviewId, Long bookId, ReviewUpdateRequest request, List<MultipartFile> newImageList) {
+        Review reviewBefore = reviewRepository.findById(reviewId).orElseThrow(() -> new ReviewNotFoundException(reviewId));
+
+        if (!reviewBefore.getUser().getUserId().equals(userId) || !reviewBefore.getBook().getId().equals(bookId)) {
+            throw new AccessDeniedException("수정 불가");
+        }
+
+        reviewBefore.updateContent(request);
+
+        if (newImageList != null) {
+            List<ReviewImage> oldImageList = reviewBefore.getImageList();
+            for (ReviewImage image : oldImageList) {
+                minioService.delete(image.getImageUrl());
+            }
+            reviewBefore.cleanImageList();
+            if (!newImageList.isEmpty())
+                saveReviewImages(newImageList, reviewBefore);
+        }
+        reviewBefore.updateHasPhotoStatus();
+        reviewBefore.setModified();
     }
 }
