@@ -98,7 +98,7 @@ class ReviewControllerTest extends SupportControllerTest {
                 .rating(5)
                 .imageUrlList(List.of("https://image.url/review1.jpg"))
                 .createdAt(LocalDate.of(2024, 12, 25))
-                .isMyReview(true)
+                .myReview(true)
                 .build();
 
         // Page 객체 생성
