@@ -49,7 +49,7 @@ class RefundControllerTest extends SupportControllerTest {
         // Given
         long orderId = 100L;
         OrderItemResponse item = new OrderItemResponse(50L, 1L, "테스트 책", 2);
-        RefundResponse response = new RefundResponse(orderId, List.of(item));
+        RefundResponse response = new RefundResponse(orderId, true, List.of(item));
 
         given(refundService.getRefundList(orderId)).willReturn(response);
 

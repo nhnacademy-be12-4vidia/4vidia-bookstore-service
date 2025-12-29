@@ -4,6 +4,7 @@ import java.util.List;
 
 public record RefundResponse (
         Long orderId,
+        boolean canReturnByChangeOfMind,
         List<OrderItemResponse> orderItems
 ){
 }
