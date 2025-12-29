@@ -261,16 +261,14 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<BookOrderResponse> getOrderBookByBookIds(List<Long> bookIds) {
-        List<Book> books = bookIds.stream().map(bookId -> bookRepository.findById(bookId).orElse(null)).toList();
+        List<Book> bookList = bookRepository.findAllByIdIn(bookIds);
 
         //TODO 해당책에 discount policy 다시 체크해서 판매가 반환
         //TODO 카테고리 아이디 뒤져서 해당 policy 가져와서 적용하는 서비스 불러와서 확인
-        return books.stream()
+        return bookList.stream()
                 .map(BookOrderResponse::from)
                 .toList();
 
-//        return bookRepository.findById(bookId).orElseThrow(
-//            () -> new BookNotFoundException(bookId));
     }
 
     @Override

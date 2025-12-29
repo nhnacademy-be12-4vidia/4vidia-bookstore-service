@@ -191,12 +191,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void completeProfile(Long userId, CompleteProfileRequest request) { // todo : request에 valid 체크 따로 안하나요?
+    public void completeProfile(Long userId, CompleteProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new UserNotFoundException(userId));
 
-        // todo : 아래 4개의 if문에 대해서는 왜 예외처리를 안하나요?
-        //      null이거나 빈문자열이 들어오면, 해당 값은 설정되지 않고 프로필이 만들어지는건가요?
         if (request.email() != null && !request.email().isBlank()) {
             user.setEmail(request.email());
         }
