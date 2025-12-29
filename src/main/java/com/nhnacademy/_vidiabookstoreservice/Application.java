@@ -40,6 +40,6 @@ public class Application {
 
     private void loadData() throws InterruptedException {
         //  30초
-        Thread.sleep(30000);
+        Thread.sleep(600000);
     }
 }
