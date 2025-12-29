@@ -227,9 +227,10 @@ public class AuthServiceImpl implements AuthService {
                 .password(encodedPassword)
                 .grade(defaultGrade)
                 .build();
-        pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(user.getUserId(), 1L));
+        User save = userRepository.save(user);
+        pointCommandService.rewardByPolicy(new PointPolicyRewardRequest(save.getUserId(), 1L));
+        return save;
 
-        return userRepository.save(user);
     }
 
     @Override
