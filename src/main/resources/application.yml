@@ -148,6 +148,8 @@ eureka:
     service-url:
       defaultZone: http://${ADMIN_ID}:${ADMIN_PASSWORD}@4vidia-discovery-1:8080/eureka/
     # 유레카 서버에서 서비스 목록을 새로고침하는 주기 (기본 30초 -> 5초)
+    register-with-eureka: false
+    fetch-registry: true
     registry-fetch-interval-seconds: 5
 
   instance:
