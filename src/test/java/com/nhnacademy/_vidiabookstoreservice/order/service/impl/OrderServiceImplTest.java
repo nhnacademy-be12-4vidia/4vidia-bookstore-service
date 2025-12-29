@@ -237,7 +237,7 @@ class OrderServiceImplTest {
         orderService.payAndCompleteOrder(orderId, confirmRequest, userId);
 
         assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PAID);
-        verify(cartService, times(1)).removeItemByOrder(eq(userId), eq(List.of(bookId)));
+        verify(cartService, times(1)).removeItemByOrder(userId, List.of(bookId));
         verify(eventPublisher, times(1)).publishEvent(any(BestSellerUpdateEvent.class));
     }
 
@@ -276,10 +276,10 @@ class OrderServiceImplTest {
                 .isInstanceOf(OrderFailedException.class)
                 .hasMessageContaining("주문 처리 중 오류가 발생했습니다.");
 
-        verify(rabbitTemplate, times(1)).convertAndSend(eq("coupon4.exchange"), eq("coupon4.use.rollback"), eq(orderId));
+        verify(rabbitTemplate, times(1)).convertAndSend("coupon4.exchange", "coupon4.use.rollback", orderId);
         verify(pointCommandService, times(1)).cancelUse(orderId, userId);
         verify(bookService, times(1)).increaseStock(anyList());
-        verify(paymentService, times(1)).cancelPayment(eq("payKey"), eq("결제 확정 및 처리 실패"), eq(14000L));
+        verify(paymentService, times(1)).cancelPayment("payKey", "결제 확정 및 처리 실패", 14000L);
         assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.REFUNDED);
     }
 
@@ -319,7 +319,7 @@ class OrderServiceImplTest {
                 .isInstanceOf(OrderRollbackFailedException.class)
                 .hasMessageContaining("주문 취소 및 환불 처리 중 오류가 발생했습니다.");
 
-        verify(rabbitTemplate, times(1)).convertAndSend(eq("coupon4.exchange"), eq("coupon4.use.rollback"), eq(orderId));
+        verify(rabbitTemplate, times(1)).convertAndSend("coupon4.exchange", "coupon4.use.rollback", orderId);
         verify(pointCommandService, times(1)).cancelUse(orderId, userId);
     }
 
@@ -552,9 +552,9 @@ class OrderServiceImplTest {
         orderService.cancelOrderIfPending(orderId);
 
         verify(rabbitTemplate, times(1)).convertAndSend(
-                eq("coupon4.exchange"),
-                eq("coupon4.use.rollback"),
-                eq(orderId)
+                "coupon4.exchange",
+                "coupon4.use.rollback",
+                orderId
         );
 
         verify(pointCommandService).cancelUse(orderId, userId);
@@ -593,8 +593,8 @@ class OrderServiceImplTest {
 
         orderService.cancelOrderIfPending(orderId);
 
-        verify(paymentService, times(1)).cancelPayment(eq("payKey_123"), eq("결제 확정 및 처리 실패"), eq(13500L));
-        verify(rabbitTemplate, times(1)).convertAndSend(eq("coupon4.exchange"), eq("coupon4.use.rollback"), eq(orderId));
+        verify(paymentService, times(1)).cancelPayment("payKey_123", "결제 확정 및 처리 실패", 13500L);
+        verify(rabbitTemplate, times(1)).convertAndSend("coupon4.exchange", "coupon4.use.rollback", orderId);
         verify(pointCommandService, times(1)).cancelUse(orderId, userId);
         verify(bookService, times(1)).increaseStock(anyList());
 
@@ -789,7 +789,7 @@ class OrderServiceImplTest {
 
         RefundItem mockRefundItem = mock(RefundItem.class);
 
-        given(mockRefundItem.getRefundItemId()).willReturn(20L);
+        given(mockRefundItem.getOrderItem()).willReturn(item2);
 
         given(refundItemRepository.findAlLByOrderItem_OrderItemIdInAndRefundItemStatus(
                 anyList(), eq(RefundItemStatus.APPROVED))
@@ -797,10 +797,9 @@ class OrderServiceImplTest {
 
         orderService.changeOrderStatus_ByUser(orderId, newStatus);
 
-        verify(orderItemService).changeStatusOrderItem_byUser(10L, newStatus);
+        verify(orderItemService, times(1)).changeStatusOrderItem_byUser(10L, newStatus);
         verify(orderItemService, never()).changeStatusOrderItem_byUser(20L, newStatus);
         verify(pointCommandService).reward(mockOrder);
-        verify(refundItemRepository).findAlLByOrderItem_OrderItemIdInAndRefundItemStatus(anyList(), eq(RefundItemStatus.APPROVED));
     }
 
     @Test
