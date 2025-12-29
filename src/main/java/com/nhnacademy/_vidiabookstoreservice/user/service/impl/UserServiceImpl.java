@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfileRequest;
+import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.AuthUserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
@@ -48,6 +49,12 @@ public class UserServiceImpl implements UserService {
         return UserInfoResponse.fromEntity(user);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AuthUserDto getAuthUser(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+        return AuthUserDto.fromEntity(user);
+    }
     /**
      * 회원 포인트 반환
      */
