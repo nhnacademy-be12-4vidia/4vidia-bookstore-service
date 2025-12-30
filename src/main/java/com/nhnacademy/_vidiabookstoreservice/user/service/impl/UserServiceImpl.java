@@ -185,7 +185,10 @@ public class UserServiceImpl implements UserService {
     public void updateLastLoginAt(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
-
+        // 휴면회원 아닐때만 상태 업데이트
+        if(user.getStatus() != UserStatus.ACTIVE){
+            return;
+        }
         user.setLastLoginAt(LocalDateTime.now());
     }
 

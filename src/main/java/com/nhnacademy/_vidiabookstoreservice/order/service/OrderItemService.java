@@ -21,4 +21,6 @@ public interface OrderItemService{
     OrderItem getProxyById(Long orderItemId);
 
     List<OrderItemRequest> getOrderItemRequests(Order order);
+
+    int autoConfirmDeliveredOrderItems();
 }
