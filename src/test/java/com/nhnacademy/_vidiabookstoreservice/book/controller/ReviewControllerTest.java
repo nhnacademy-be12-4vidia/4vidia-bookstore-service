@@ -5,7 +5,9 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.review.response.ReviewList
 import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +32,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(ReviewController.class)
 class ReviewControllerTest extends SupportControllerTest {
 
     @MockitoBean
@@ -39,38 +42,9 @@ class ReviewControllerTest extends SupportControllerTest {
     private BookReviewSummaryService bookReviewSummaryService;
 
     @Test
-    @DisplayName("[리뷰 생성] - 성공")
-    void createReview() throws Exception {
-        // Given
-        Long bookId = 1L;
-        Long userId = 1L;
-
-        // When & Then
-        mockMvc.perform(post("/books/{bookId}/reviews", bookId)
-                        .header("X-User-Id", userId)
-                        // @ModelAttribute는 폼 데이터 형태로 전달됩니다.
-                        .param("bookId", String.valueOf(bookId))
-                        .param("orderItemId", "100")
-                        .param("rating", "5")
-                        .param("content", "정말 좋은 책입니다!")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andDo(document("book-review-post",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("사용자 식별 ID")
-                        ),
-                        pathParameters(
-                                parameterWithName("bookId").description("도서 ID (URL 경로)")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("도서별 리뷰 목록 조회")
+    @Order(1)
+    @DisplayName("GET - 리뷰 목록 조회 (요약포함)")
     void getReviewsWithSummary() throws Exception {
-        // Given
         Long bookId = 1L;
         Long userId = 1L;
 
@@ -90,7 +64,6 @@ class ReviewControllerTest extends SupportControllerTest {
         given(reviewService.getReviewListByBookId(eq(bookId), any(), any(Pageable.class))).willReturn(page);
         given(bookReviewSummaryService.getSummary(bookId)).willReturn("4.5 (10 reviews)");
 
-        // When & Then
         mockMvc.perform(get("/books/{book-id}/reviews", bookId)
                         .header("X-User-Id", String.valueOf(userId))
                         .param("page", "0")
@@ -103,9 +76,7 @@ class ReviewControllerTest extends SupportControllerTest {
                 .andDo(document("review-list-with-summary-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("회원 ID (로그인 시)").optional()
-                        ),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         pathParameters(
                                 parameterWithName("book-id").description("도서 ID")
                         ),
@@ -136,29 +107,39 @@ class ReviewControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[리뷰 비활성화] - 성공")
-    void deactivateReview() throws Exception {
-        // When & Then
-        mockMvc.perform(post("/books/{book-id}/reviews/{review-id}/deactivate", 1L, 10L)
-                        .header("X-User-Id", 1L))
+    @Order(2)
+    @DisplayName("POST - 리뷰 생성")
+    void createReview() throws Exception {
+        Long bookId = 1L;
+        Long userId = 1L;
+
+        mockMvc.perform(post("/books/{bookId}/reviews", bookId)
+                        .header("X-User-Id", userId)
+                        .param("bookId", String.valueOf(bookId))
+                        .param("orderItemId", "100")
+                        .param("rating", "5")
+                        .param("content", "정말 좋은 책입니다!")
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
-                .andDo(document("review-deactivate-post",
+                .andDo(document("book-review-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         pathParameters(
-                                parameterWithName("book-id").description("도서 ID"),
-                                parameterWithName("review-id").description("리뷰 ID")
-                        )
+                                parameterWithName("bookId").description("도서 ID (URL 경로)")
+                        ),
+                        responseFields(withHeader())
                 ));
     }
 
     @Test
-    @DisplayName("[리뷰 수정] - 성공")
+    @Order(3)
+    @DisplayName("POST - 리뷰 수정")
     void editReview() throws Exception {
-        // Given
         Long bookId = 1L;
         Long reviewId = 10L;
         Long userId = 1L;
 
-        // When & Then
         mockMvc.perform(post("/books/{book-id}/reviews/{review-id}/edit", bookId, reviewId)
                         .header("X-User-Id", userId)
                         .header("Referer", "http://localhost:8080/previous-page")
@@ -178,7 +159,27 @@ class ReviewControllerTest extends SupportControllerTest {
                         requestHeaders(
                                 headerWithName("X-User-Id").description("사용자 식별 ID"),
                                 headerWithName("Referer").description("이전 페이지 주소").optional()
-                        )
+                        ),
+                        responseFields(withHeader())
                 ));
     }
+
+    @Test
+    @Order(4)
+    @DisplayName("POST - 리뷰 삭제")
+    void deactivateReview() throws Exception {
+        mockMvc.perform(post("/books/{book-id}/reviews/{review-id}/deactivate", 1L, 10L)
+                        .header("X-User-Id", 1L))
+                .andExpect(status().isOk())
+                .andDo(document("review-deactivate-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("book-id").description("도서 ID"),
+                                parameterWithName("review-id").description("리뷰 ID")
+                        ),
+                        responseFields(withHeader())
+                ));
+    }
+
 }

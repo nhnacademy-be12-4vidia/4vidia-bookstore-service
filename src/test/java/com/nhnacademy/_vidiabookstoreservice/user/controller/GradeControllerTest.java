@@ -5,8 +5,10 @@ import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
 import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -26,13 +28,15 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(GradeController.class)
 class GradeControllerTest extends SupportControllerTest {
 
     @MockitoBean
     private GradeService gradeService;
 
     @Test
-    @DisplayName("[내 등급 조회]")
+    @Order(1)
+    @DisplayName("GET - 등급 조회")
     void getGrade() throws Exception {
         Long userId = 1L;
         GradeResponse response = new GradeResponse("PLATINUM", 5);
@@ -52,7 +56,7 @@ class GradeControllerTest extends SupportControllerTest {
                     .andDo(document("grade-get",
                             preprocessRequest(prettyPrint()),
                             preprocessResponse(prettyPrint()),
-                            requestHeaders(headerWithName("X-User-Id").description("회원 식별 ID")),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             responseFields(withHeader(
                                     fieldWithPath("data.gradeName").description("등급 이름"),
                                     fieldWithPath("data.pointRate").description("포인트 적립률")
@@ -62,9 +66,9 @@ class GradeControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[등급 변경]")
+    @Order(2)
+    @DisplayName("PUT - 등급 변경")
     void updateGrade() throws Exception {
-        // Given
         Long userId = 1L;
         Long gradeId = 3L;
 
@@ -75,19 +79,17 @@ class GradeControllerTest extends SupportControllerTest {
 
             doNothing().when(gradeService).updateGrade(eq(userId), eq(gradeId));
 
-            // When & Then
             mockMvc.perform(put("/users/me/grade/{grade-id}", gradeId)
                             .header("X-User-Id", userId))
                     .andExpect(status().isOk())
                     .andDo(document("grade-update-put",
                             preprocessRequest(prettyPrint()),
                             preprocessResponse(prettyPrint()),
-                            requestHeaders(headerWithName("X-User-Id").description("회원 식별 ID")),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             pathParameters(parameterWithName("grade-id").description("변경할 등급 ID")),
-                            responseFields(withHeader()) // 응답 바디가 비어있어도 ApiResponse 공통 필드 검증
+                            responseFields(withHeader())
                     ));
 
-            // 실제로 서비스가 호출되었는지 검증 (선택사항)
             verify(gradeService, times(1)).updateGrade(eq(userId), eq(gradeId));
         }
     }

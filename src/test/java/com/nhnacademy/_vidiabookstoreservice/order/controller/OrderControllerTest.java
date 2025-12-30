@@ -10,8 +10,10 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.packaging.response.PackagingResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -34,76 +36,16 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(OrderController.class)
 class OrderControllerTest extends SupportControllerTest {
 
     @MockitoBean
     private OrderService orderService;
 
     @Test
-    @DisplayName("[주문 생성]")
-    void createOrder() throws Exception {
-        // Given
-        Long userId = 1L;
-        OrderCreateResponse mockResponse = new OrderCreateResponse(100L);
-
-        OrderCreateRequest.ItemRequestDto item = new OrderCreateRequest.ItemRequestDto(1L, 2, 15000, List.of(10L));
-        OrderCreateRequest request = new OrderCreateRequest(
-                "홍길동", "대왕판교로", "NHN", "13487", "01012341234",
-                "문앞", "1234", LocalDate.now().plusDays(2),
-                30000, 1000, 3000, 5000, 1000,
-                List.of(item), 5L
-        );
-
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            UserContext mockContext = mock(UserContext.class);
-            given(mockContext.getUserId()).willReturn(userId);
-            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
-
-            given(orderService.saveOrder(eq(userId), any(OrderCreateRequest.class))).willReturn(mockResponse);
-
-            // When & Then
-            mockMvc.perform(post("/orders")
-                            .header("X-User-Id", userId)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.data.orderId").value(100L))
-                    .andDo(document("order-create",
-                            preprocessRequest(prettyPrint()),
-                            preprocessResponse(prettyPrint()),
-                            requestHeaders(headerWithName("X-User-Id").description("회원 ID")),
-                            requestFields(
-                                    fieldWithPath("recipientName").description("수령인 이름"),
-                                    fieldWithPath("addressRoadname").description("도로명 주소"),
-                                    fieldWithPath("addressDetail").description("상세 주소"),
-                                    fieldWithPath("zipCode").description("우편번호"),
-                                    fieldWithPath("recipientPhone").description("수령인 연락처"),
-                                    fieldWithPath("deliveryRequest").description("배송 요청사항").optional(),
-                                    fieldWithPath("orderPassword").description("주문 비밀번호(비회원 용)"),
-                                    fieldWithPath("deliveryDate").description("희망 배송일"),
-                                    fieldWithPath("totalBookPrice").description("도서 총 가격"),
-                                    fieldWithPath("packagingFee").description("총 포장비"),
-                                    fieldWithPath("deliveryFee").description("배송비"),
-                                    fieldWithPath("couponDiscount").description("쿠폰 할인 금액"),
-                                    fieldWithPath("pointUsed").description("사용한 포인트"),
-                                    fieldWithPath("orderItems[]").description("주문 도서 목록"),
-                                    fieldWithPath("orderItems[].bookId").description("도서 ID"),
-                                    fieldWithPath("orderItems[].quantity").description("수량"),
-                                    fieldWithPath("orderItems[].salePrice").description("판매가(할인가)"),
-                                    fieldWithPath("orderItems[].packagingOptionIds[]").description("포장 옵션 ID 목록"),
-                                    fieldWithPath("couponId").description("사용된 쿠폰 ID").optional()
-                            ),
-                            responseFields(withHeader(
-                                    fieldWithPath("data.orderId").description("생성된 주문 ID")
-                            ))
-                    ));
-        }
-    }
-
-    @Test
-    @DisplayName("[회원 주문 상세 조회]")
+    @Order(1)
+    @DisplayName("GET - 주문내역 상세조회(회원)")
     void getOrder() throws Exception {
-        // Given
         Long userId = 1L;
         Long orderId = 100L;
 
@@ -126,13 +68,15 @@ class OrderControllerTest extends SupportControllerTest {
 
             given(orderService.getOrderResponse(eq(userId), eq(orderId))).willReturn(mockResponse);
 
-            // When & Then
             mockMvc.perform(get("/orders/{order-id}", orderId)
                             .header("X-User-Id", userId)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.orderId").value(orderId))
-                    .andDo(document("order-get-detail",
+                    .andDo(document("order-detail-get",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             pathParameters(parameterWithName("order-id").description("조회할 주문 ID")),
                             responseFields(withHeader(
                                     fieldWithPath("data.orderId").description("주문 ID"),
@@ -172,24 +116,8 @@ class OrderControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[주문 결제 금액 조회]")
-    void getOrderPayPrice() throws Exception {
-        Long orderId = 100L;
-        given(orderService.getOrderPayPrice(orderId)).willReturn(new OrderAmountResponse(34000));
-
-        mockMvc.perform(get("/orders/{order-id}/amount", orderId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.payPrice").value(34000))
-                .andDo(document("order-get-amount",
-                        pathParameters(parameterWithName("order-id").description("주문 ID")),
-                        responseFields(withHeader(
-                                fieldWithPath("data.payPrice").description("최종 결제 금액")
-                        ))
-                ));
-    }
-
-    @Test
-    @DisplayName("[비회원 주문 조회]")
+    @Order(2)
+    @DisplayName("POST - 주문내역 상세조회(비회원)")
     void getOrder_guest() throws Exception {
         OrderTrackingRequest request = new OrderTrackingRequest(100L, "1234");
         OrderResponse mockResponse = new OrderResponse(
@@ -205,7 +133,9 @@ class OrderControllerTest extends SupportControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.orderId").value(100L))
-                .andDo(document("order-guest-get",
+                .andDo(document("order-guest-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         requestFields(
                                 fieldWithPath("orderId").description("주문 번호"),
                                 fieldWithPath("orderPassword").description("주문 비밀번호")
@@ -234,26 +164,112 @@ class OrderControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[주문 취소]")
+    @Order(3)
+    @DisplayName("GET - 주문 결제금액 조회")
+    void getOrderPayPrice() throws Exception {
+        Long orderId = 100L;
+        given(orderService.getOrderPayPrice(orderId)).willReturn(new OrderAmountResponse(34000));
+
+        mockMvc.perform(get("/orders/{order-id}/amount", orderId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.payPrice").value(34000))
+                .andDo(document("order-amount-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(parameterWithName("order-id").description("주문 ID")),
+                        responseFields(withHeader(
+                                fieldWithPath("data.payPrice").description("최종 결제 금액")
+                        ))
+                ));
+    }
+
+    @Test
+    @Order(4)
+    @DisplayName("POST - 주문 생성")
+    void createOrder() throws Exception {
+        Long userId = 1L;
+        OrderCreateResponse mockResponse = new OrderCreateResponse(100L);
+
+        OrderCreateRequest.ItemRequestDto item = new OrderCreateRequest.ItemRequestDto(1L, 2, 15000, List.of(10L));
+        OrderCreateRequest request = new OrderCreateRequest(
+                "홍길동", "대왕판교로", "NHN", "13487", "01012341234",
+                "문앞", "1234", LocalDate.now().plusDays(2),
+                30000, 1000, 3000, 5000, 1000,
+                List.of(item), 5L
+        );
+
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(orderService.saveOrder(eq(userId), any(OrderCreateRequest.class))).willReturn(mockResponse);
+
+            mockMvc.perform(post("/orders")
+                            .header("X-User-Id", userId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.data.orderId").value(100L))
+                    .andDo(document("order-create-post",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                            requestFields(
+                                    fieldWithPath("recipientName").description("수령인 이름"),
+                                    fieldWithPath("addressRoadname").description("도로명 주소"),
+                                    fieldWithPath("addressDetail").description("상세 주소"),
+                                    fieldWithPath("zipCode").description("우편번호"),
+                                    fieldWithPath("recipientPhone").description("수령인 연락처"),
+                                    fieldWithPath("deliveryRequest").description("배송 요청사항").optional(),
+                                    fieldWithPath("orderPassword").description("주문 비밀번호(비회원 용)"),
+                                    fieldWithPath("deliveryDate").description("희망 배송일"),
+                                    fieldWithPath("totalBookPrice").description("도서 총 가격"),
+                                    fieldWithPath("packagingFee").description("총 포장비"),
+                                    fieldWithPath("deliveryFee").description("배송비"),
+                                    fieldWithPath("couponDiscount").description("쿠폰 할인 금액"),
+                                    fieldWithPath("pointUsed").description("사용한 포인트"),
+                                    fieldWithPath("orderItems[]").description("주문 도서 목록"),
+                                    fieldWithPath("orderItems[].bookId").description("도서 ID"),
+                                    fieldWithPath("orderItems[].quantity").description("수량"),
+                                    fieldWithPath("orderItems[].salePrice").description("판매가(할인가)"),
+                                    fieldWithPath("orderItems[].packagingOptionIds[]").description("포장 옵션 ID 목록"),
+                                    fieldWithPath("couponId").description("사용된 쿠폰 ID").optional()
+                            ),
+                            responseFields(withHeader(
+                                    fieldWithPath("data.orderId").description("생성된 주문 ID")
+                            ))
+                    ));
+        }
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("PUT - 주문 취소")
     void cancelOrder() throws Exception {
         Long orderId = 100L;
 
         mockMvc.perform(put("/orders/{order-id}/cancel", orderId))
-                .andExpect(status().isOk()) // void 반환이므로 200 OK
-                .andDo(document("order-cancel",
+                .andExpect(status().isOk())
+                .andDo(document("order-cancel-put",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         pathParameters(parameterWithName("order-id").description("취소할 주문 ID")),
                         responseFields(withHeader())
                 ));
     }
 
     @Test
-    @DisplayName("[구매 확정]")
+    @Order(6)
+    @DisplayName("PUT - 구매 확정")
     void changeConfirmOrder() throws Exception {
         Long orderId = 100L;
 
         mockMvc.perform(put("/orders/{order-id}/confirm-order", orderId))
                 .andExpect(status().isOk())
-                .andDo(document("order-confirm",
+                .andDo(document("order-confirm-put",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         pathParameters(parameterWithName("order-id").description("확정할 주문 ID")),
                         responseFields(withHeader())
                 ));
