@@ -82,8 +82,8 @@ class AdminBookServiceImplCachingTest {
     @Test
     @DisplayName("캐싱 삭제 확인 - 삭제 후 조회 시 다시 DB 접근")
     void evictIsbnCaches_Test() {
-        String inputIsbn = "979-11-56759270";
-        String normalizedIsbn = "9791156759270";
+        String inputIsbn = "979-11-68120747";
+        String normalizedIsbn = "9791168120747";
 
         Book mockBook = createComplexBook(normalizedIsbn);
         given(bookRepository.findByIsbnWithDetails(normalizedIsbn)).willReturn(Optional.of(mockBook));
