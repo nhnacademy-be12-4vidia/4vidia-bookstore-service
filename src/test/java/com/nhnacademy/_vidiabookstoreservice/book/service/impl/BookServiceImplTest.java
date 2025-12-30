@@ -10,6 +10,7 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChange
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BaseBookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
@@ -19,8 +20,11 @@ import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.*;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
+import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
+import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
+import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,9 +33,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -494,15 +496,196 @@ class BookServiceImplTest {
         Long tagId = 1L;
         Long userId = 1L;
 
-        Book b1 = mock(Book.class);
-        Book b2 = mock(Book.class);
+        Book b1 = mock(Book.class, RETURNS_DEEP_STUBS);
+        Book b2 = mock(Book.class, RETURNS_DEEP_STUBS);
+
+        when(b1.getId()).thenReturn(1L);
+        when(b2.getId()).thenReturn(2L);
+        when(b1.getTitle()).thenReturn("title1");
+        when(b2.getTitle()).thenReturn("title2");
+        when(b1.getIsbn()).thenReturn("isbn-1");
+        when(b2.getIsbn()).thenReturn("isbn-2");
+        when(b1.getPriceStandard()).thenReturn(20000);
+        when(b2.getPriceStandard()).thenReturn(20000);
+        when(b1.getPriceSales()).thenReturn(18000);
+        when(b2.getPriceSales()).thenReturn(18000);
+
+
+        List<Long> bookIdList = List.of(1L, 2L);
 
         Page<Book> bookPage = new PageImpl<>(List.of(b1, b2), pageable, 2);
-        when(bookRepository.findAllByTag(1L, pageable)).thenReturn(bookPage);
+        when(bookRepository.findAllByTag(tagId, pageable)).thenReturn(bookPage);
+        when(likeService.getLikeIdList(userId, bookIdList)).thenReturn(List.of(new UserLikeResponse(1L)));
 
+        //when
+        PageResponse<BaseBookListResponse> result = bookService.getBookListResponseByTagId(tagId, userId, pageable);
 
+        //then
+
+        assertEquals(2, result.content().size());
+        assertTrue(((BookListResponse)result.content().get(0)).isLiked());
+        assertFalse(((BookListResponse)result.content().get(1)).isLiked());
+
+        verify(bookRepository).findAllByTag(tagId, pageable);
+        verify(likeService).getLikeIdList(userId, bookIdList);
 
     }
 
+    @Test
+    void getBookListResponseByTagId_whenUserNotLoggedInAndBooksExists_setsNoLike() {
+        //given
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        Long tagId = 1L;
+
+        Book b1 = mock(Book.class, RETURNS_DEEP_STUBS);
+        Book b2 = mock(Book.class, RETURNS_DEEP_STUBS);
+
+        when(b1.getId()).thenReturn(1L);
+        when(b2.getId()).thenReturn(2L);
+        when(b1.getTitle()).thenReturn("title1");
+        when(b2.getTitle()).thenReturn("title2");
+        when(b1.getIsbn()).thenReturn("isbn-1");
+        when(b2.getIsbn()).thenReturn("isbn-2");
+        when(b1.getPriceStandard()).thenReturn(20000);
+        when(b2.getPriceStandard()).thenReturn(20000);
+        when(b1.getPriceSales()).thenReturn(18000);
+        when(b2.getPriceSales()).thenReturn(18000);
+
+        Page<Book> bookPage = new PageImpl<>(List.of(b1, b2), pageable, 2);
+        when(bookRepository.findAllByTag(tagId, pageable)).thenReturn(bookPage);
+
+        //when
+        PageResponse<BaseBookListResponse> result = bookService.getBookListResponseByTagId(tagId, null, pageable);
+
+        //then
+        assertEquals(2, result.content().size());
+        assertFalse(((BookListResponse)result.content().get(0)).isLiked());
+        assertFalse(((BookListResponse)result.content().get(1)).isLiked());
+
+        verify(bookRepository).findAllByTag(tagId, pageable);
+        verifyNoInteractions(likeService);
+    }
+
+    @Test
+    void getBooksByTag_whenEsOnly_delegatesToSearchService() {
+        //given
+        Long tagId = 1L;
+        Long userId = 1L;
+        String tagName = "tag";
+        boolean asc = true;
+        Pageable pageable = PageRequest.of(0, 10);
+        BookSortKey sortKey = mock(BookSortKey.class);
+        when(sortKey.isEsOnly()).thenReturn(true);
+
+        PageResponse<BaseBookListResponse> expected = mock(PageResponse.class);
+        when(bookSearchService.searchBooksByTagOrderByRating(tagName, asc, pageable, userId)).thenReturn(expected);
+
+        //when
+        PageResponse<BaseBookListResponse> result = bookService.getBooksByTag(tagId, tagName, sortKey, asc, pageable, userId);
+
+        //then
+        assertSame(expected, result);
+        verify(bookSearchService).searchBooksByTagOrderByRating(tagName, asc, pageable, userId);
+        verifyNoInteractions(bookRepository);
+        verifyNoInteractions(likeService);
+    }
+
+    @Test
+    void getBooksByTag_whenPriceSalesSort_buildsSortedPageable() {
+        //given
+        Long tagId = 1L;
+        Long userId = 1L;
+        String tagName = "tag";
+        boolean asc = true;
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(bookRepository.findAllByTag(eq(tagId), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
+
+        //when
+        bookService.getBooksByTag(tagId, tagName, BookSortKey.PRICE_SALES, asc, pageable, userId);
+
+        //then
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(bookRepository).findAllByTag(eq(tagId), captor.capture());
+
+        Pageable passed = captor.getValue();
+        assertEquals(0, passed.getPageNumber());
+        assertEquals(10, passed.getPageSize());
+
+        Sort.Order order = passed.getSort().getOrderFor("priceSales");
+        assertNotNull(order);
+        assertEquals(Sort.Direction.ASC, order.getDirection());
+
+        verifyNoInteractions(bookSearchService);
+    }
+
+    @Test
+    void getBooksByTag_whenDefaultSort_buildsPublishedDateSort() {
+        Long tagId = 1L;
+        Long userId = 1L;
+        String tagName = "tag";
+        boolean asc = false;
+
+        Pageable pageable = PageRequest.of(2, 20);
+
+        when(bookRepository.findAllByTag(eq(tagId), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(), PageRequest.of(2, 20), 0));
+        BookSortKey sortKey = mock(BookSortKey.class);
+        when(sortKey.isEsOnly()).thenReturn(false);
+
+        //when
+        bookService.getBooksByTag(tagId, tagName, sortKey, asc, pageable, userId);
+
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(bookRepository).findAllByTag(eq(tagId), captor.capture());
+
+        Pageable passed = captor.getValue();
+        assertEquals(2, passed.getPageNumber());
+        assertEquals(20, passed.getPageSize());
+
+        Sort.Order order = passed.getSort().getOrderFor("publishedDate");
+        assertNotNull(order);
+        assertEquals(Sort.Direction.DESC, order.getDirection());
+
+        verifyNoInteractions(bookSearchService);
+    }
+
+    @Test
+    void getMainBookList_whenTagIdNotZero_delegatedToCategoryQuery() {
+        //given
+        Long tagId = 1L;
+        Long userId = 1L;
+
+        List<BookListResponse> expected = List.of(mock(BookListResponse.class));
+
+        when(bookRepository.getMainPageCategoryBookList(tagId, userId)).thenReturn(expected);
+
+        //when
+        List<BookListResponse> result = bookService.getMainBookList(tagId, userId);
+
+        //then
+        assertSame(expected, result);
+        verify(bookRepository).getMainPageCategoryBookList(tagId, userId);
+        verify(bookRepository, never()).getMainPageNoCategoryBookList(any());
+    }
+
+    @Test
+    void getMainBookList_whenTagIdZero_delegatedToNoCategoryQuery() {
+        //given
+        Long tagId = 0L;
+        Long userId = 1L;
+
+        List<BookListResponse> expected = List.of(mock(BookListResponse.class));
+
+        when(bookRepository.getMainPageNoCategoryBookList(userId)).thenReturn(expected);
+
+        //when
+        List<BookListResponse> result = bookService.getMainBookList(tagId, userId);
+
+        //then
+        assertSame(expected, result);
+        verify(bookRepository).getMainPageNoCategoryBookList(userId);
+        verify(bookRepository, never()).getMainPageCategoryBookList(anyLong(), anyLong());
+    }
 
 }
