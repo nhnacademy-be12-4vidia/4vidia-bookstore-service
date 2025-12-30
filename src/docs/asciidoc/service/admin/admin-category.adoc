@@ -1,0 +1,66 @@
+// 관리자 도서 R/C/U/D 기능
+
+==== 카테고리 생성
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-category-create-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-category-create-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-category-create-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/admin-category-create-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-category-create-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-category-create-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-category-create-post/response-fields.adoc[]
+
+
+
+
+==== 카테고리 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-category-update-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-category-update-put/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-category-update-put/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/admin-category-update-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-category-update-put/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-category-update-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-category-update-put/response-fields.adoc[]
+
+
+
+
+==== 카테고리 삭제
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-category-delete/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-category-delete/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-category-delete/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-category-delete/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-category-delete/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-category-delete/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-category-delete/response-fields.adoc[]
+
+

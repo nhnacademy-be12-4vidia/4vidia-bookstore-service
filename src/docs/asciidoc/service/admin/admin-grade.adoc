@@ -1,0 +1,62 @@
+// 관리자 등급 R/C/U/D 기능
+
+==== 등급 정책 조회 (전체)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-grade-policies-all-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-grade-policies-all-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-grade-policies-all-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-grade-policies-all-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-grade-policies-all-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-grade-policies-all-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-grade-policies-all-get/response-fields.adoc[]
+
+
+
+==== 등급 정책 조회 (단일)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-grade-policies-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-grade-policies-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-grade-policies-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-grade-policies-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-grade-policies-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-grade-policies-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-grade-policies-get/response-fields.adoc[]
+
+
+
+==== 등급 정책 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-grade-policies-update-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-grade-policies-update-put/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-grade-policies-update-put/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/admin-grade-policies-update-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-grade-policies-update-put/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-grade-policies-update-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-grade-policies-update-put/response-fields.adoc[]
