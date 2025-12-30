@@ -5,12 +5,15 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResp
 import com.nhnacademy._vidiabookstoreservice.user.domain.QLike;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class BookRepositoryImpl implements BookRepositoryCustom{

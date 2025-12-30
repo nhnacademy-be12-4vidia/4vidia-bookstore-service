@@ -3,8 +3,9 @@ package com.nhnacademy._vidiabookstoreservice.book.service;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
-import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface BookImageService {
 

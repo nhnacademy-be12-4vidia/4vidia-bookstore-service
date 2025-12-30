@@ -1,7 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.global.exception.handler;
 
 import com.nhnacademy._vidiabookstoreservice.global.dto.ApiResponse;
-import com.nhnacademy._vidiabookstoreservice.global.exception.*;
+import com.nhnacademy._vidiabookstoreservice.global.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

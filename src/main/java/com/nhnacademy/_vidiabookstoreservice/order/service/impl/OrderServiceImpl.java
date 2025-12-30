@@ -33,7 +33,6 @@ import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatu
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.CouponCalculationResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

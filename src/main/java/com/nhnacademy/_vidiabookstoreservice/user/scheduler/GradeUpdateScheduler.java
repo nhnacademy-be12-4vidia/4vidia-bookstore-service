@@ -1,17 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.user.scheduler;
 
-import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
-import com.nhnacademy._vidiabookstoreservice.user.repository.GradeRepository;
-import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
-
 import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 
 

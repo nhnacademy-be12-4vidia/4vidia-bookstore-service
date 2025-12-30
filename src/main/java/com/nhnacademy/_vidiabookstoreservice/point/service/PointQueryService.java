@@ -4,7 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointHistoryResp
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface PointQueryService {
     int getExpiringPointWithinDays(Long userId, int days);

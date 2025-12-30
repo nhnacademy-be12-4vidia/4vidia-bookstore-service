@@ -1,11 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.book.dto.tag.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

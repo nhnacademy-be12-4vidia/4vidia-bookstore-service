@@ -1,8 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.dto.address.request;
 
-import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
-
+import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

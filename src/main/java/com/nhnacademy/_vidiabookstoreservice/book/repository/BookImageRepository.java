@@ -1,11 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.book.repository;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
-import java.util.List;
-import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Set;
 
 public interface BookImageRepository extends JpaRepository<BookImage, Long> {
 

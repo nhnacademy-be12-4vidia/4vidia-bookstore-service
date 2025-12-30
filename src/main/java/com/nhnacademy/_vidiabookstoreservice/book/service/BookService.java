@@ -1,20 +1,22 @@
 package com.nhnacademy._vidiabookstoreservice.book.service;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.*;
-
-import java.util.List;
-
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BaseBookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface BookService {
 

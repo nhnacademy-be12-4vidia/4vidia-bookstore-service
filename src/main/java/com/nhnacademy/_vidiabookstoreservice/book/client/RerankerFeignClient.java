@@ -1,9 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.book.client;
 
-import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
 
 @FeignClient(name = "reranker-client", url = "http://reranker.java21.net")
 public interface RerankerFeignClient {

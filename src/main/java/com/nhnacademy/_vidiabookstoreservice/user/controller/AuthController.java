@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.global.dto.ApiResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.*;
-import com.nhnacademy._vidiabookstoreservice.user.dto.auth.response.OAuth2UserDto;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeByEmailRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantSendCodeRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.dormant.request.DormantVerifyRequest;

@@ -9,7 +9,6 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.review.event.ReviewRatingE
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.search.BookSearchRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -18,6 +17,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
