@@ -2,12 +2,13 @@ package com.nhnacademy._vidiabookstoreservice.book.ai.rerank;
 
 import com.nhnacademy._vidiabookstoreservice.book.client.RerankerFeignClient;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor

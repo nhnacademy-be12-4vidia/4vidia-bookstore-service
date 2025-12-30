@@ -1,11 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.book.dto.discountpolicy;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.DiscountPolicy;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter

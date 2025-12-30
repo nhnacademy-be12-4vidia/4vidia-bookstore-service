@@ -1,8 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.book.config;
 
-import java.lang.reflect.Method;
-import java.util.concurrent.Executor;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +9,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync

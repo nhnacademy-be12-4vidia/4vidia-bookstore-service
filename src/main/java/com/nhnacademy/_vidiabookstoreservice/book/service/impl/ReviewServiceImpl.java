@@ -22,12 +22,6 @@ import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointPolicyReward
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -36,6 +30,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor

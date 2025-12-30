@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.admin.service;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminIsbnSearchResponse;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 
 public interface AdminBookService {
 

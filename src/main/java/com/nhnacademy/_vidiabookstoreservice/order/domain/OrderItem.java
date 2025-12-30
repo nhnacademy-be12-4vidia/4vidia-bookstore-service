@@ -4,7 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

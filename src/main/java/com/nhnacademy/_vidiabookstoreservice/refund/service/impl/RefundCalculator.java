@@ -1,12 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.refund.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderItemRepository;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundCouponRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.UseCouponResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository;

@@ -1,7 +1,6 @@
 package com.nhnacademy._vidiabookstoreservice.user.dto.auth.response;
 
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
-import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
 import lombok.Getter;
 import lombok.Setter;
 

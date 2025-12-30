@@ -5,10 +5,10 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.response.BookIsbnResponse
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
-import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
-import com.nhnacademy._vidiabookstoreservice.book.service.impl.MinioService;
 import com.nhnacademy._vidiabookstoreservice.book.dto.event.DescriptionImageUploadedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.mq.producer.StorageEventProducer;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.book.service.impl.MinioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.ISBN;

@@ -1,4 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
+
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
@@ -15,7 +16,6 @@ import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

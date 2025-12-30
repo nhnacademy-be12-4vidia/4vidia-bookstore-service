@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.dto.discountpolicy.DiscountPolicyCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.discountpolicy.DiscountPolicyResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.discountpolicy.DiscountPolicyUpdateRequest;
+
 import java.util.List;
 
 public interface DiscountPolicyService {

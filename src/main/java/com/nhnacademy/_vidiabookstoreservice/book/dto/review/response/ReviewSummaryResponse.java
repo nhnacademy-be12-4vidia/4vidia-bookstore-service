@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.book.dto.review.response;
 
-import com.nhnacademy._vidiabookstoreservice.book.domain.BookReviewSummary;
 import lombok.Builder;
 import lombok.Getter;
 

@@ -7,14 +7,12 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.auth.request.CompleteProfi
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.ChangePasswordRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.DeleteUserRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserRequest;
-import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

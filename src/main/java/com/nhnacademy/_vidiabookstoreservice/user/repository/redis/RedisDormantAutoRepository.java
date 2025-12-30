@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.user.repository.redis;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 

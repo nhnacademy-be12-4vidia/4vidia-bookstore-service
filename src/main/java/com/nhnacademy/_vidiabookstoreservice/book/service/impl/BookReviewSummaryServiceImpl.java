@@ -1,11 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
+import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookReviewSummary;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookReviewSummaryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
-import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;

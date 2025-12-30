@@ -1,14 +1,14 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
 
 
-import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Address;
+import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.AddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddressRequest;
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
+import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressDeletedException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.AddressLimitException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.AddressNotFoundException;
-import com.nhnacademy._vidiabookstoreservice.user.exception.DefaultAddressDeletedException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.DefaultAddressNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.AddressRepository;

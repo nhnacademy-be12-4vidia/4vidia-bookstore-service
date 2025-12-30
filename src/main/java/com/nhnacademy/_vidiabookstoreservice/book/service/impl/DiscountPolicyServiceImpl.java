@@ -12,12 +12,12 @@ import com.nhnacademy._vidiabookstoreservice.book.mq.producer.DiscountPolicyProd
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.DiscountPolicyRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.DiscountPolicyService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
