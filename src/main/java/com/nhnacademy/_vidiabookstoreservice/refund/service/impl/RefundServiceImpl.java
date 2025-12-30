@@ -17,7 +17,8 @@ import com.nhnacademy._vidiabookstoreservice.refund.dto.response.OrderItemRespon
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundCountResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryGroupResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
-import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotAvailableException;
+import com.nhnacademy._vidiabookstoreservice.refund.exception.SimpleRefundNotAvailableException;
+import com.nhnacademy._vidiabookstoreservice.refund.exception.already.DamageRefundNotAvailableException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
 import com.nhnacademy._vidiabookstoreservice.refund.service.RefundService;
 import lombok.RequiredArgsConstructor;
@@ -55,9 +56,9 @@ public class RefundServiceImpl implements RefundService {
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        LocalDate deliveryDate = order.getActualDeliveryDate();
+        LocalDate deliveryDate = order.getActualDeliveryDate(); // 실제 배송일 (반품 가능 조건 확인 위해서)
 
-        boolean canReturnByChangeOfMind = false;
+        boolean canReturnByChangeOfMind = false; // 단순 변심 반품 가능 여부, TODO 파손은?
         if (deliveryDate != null) {
             canReturnByChangeOfMind = deliveryDate.plusDays(10).isAfter(LocalDate.now());
         }
@@ -66,7 +67,7 @@ public class RefundServiceImpl implements RefundService {
                 orderItemRepository.findAllByOrderIdWithRefunds(orderId);
 
         List<OrderItemResponse> returnableItems = orderItems.stream()
-                .filter(OrderItem::isReturnable)
+                .filter(OrderItem::isReturnable) // 반품 가능한 아이템만 가져옴
                 .map(OrderItemResponse::from)
                 .toList();
 
@@ -95,7 +96,7 @@ public class RefundServiceImpl implements RefundService {
 
         validateRefundPeriod(order, request.damaged());
 
-        // 반품 신청서 생성
+        // 반품 신청서 생성 (RefundStatus.PROCESS)
         Refund refund = Refund.createRefundRequest(order, request.reason(), request.damaged());
 
         for (Long itemId : request.orderItemIds()) {
@@ -118,15 +119,15 @@ public class RefundServiceImpl implements RefundService {
      * 단순 변심 -> 환불 처리 or 거절
      */
     private void handleSimpleChange(Refund refund) {
-        int totalPoint = 0;
-        int totalCash = 0;
+        int totalPoint = 0; // 사용한 포인트 -> 포인트로
+        int totalCash = 0; // 환불금액 - 사용한 포인트
         boolean deliveryFeeApplied = false; // 배송비 차감 여부 플래그
 
         for(RefundItem item : refund.getRefundItems()){
-            item.accept();
+            item.accept(); // 승인
 
             // 아이템별 환불 금액 계산
-            RefundAmount amount = refundCalculator.calculate(item.getOrderItem(), true, deliveryFeeApplied);
+            RefundAmount amount = refundCalculator.calculate(item.getOrderItem(), deliveryFeeApplied, true);
 
             if (!refund.getDamaged()) {
                 deliveryFeeApplied = true;
@@ -134,7 +135,6 @@ public class RefundServiceImpl implements RefundService {
 
             item.updateRefundPrice(amount.refundCash() + amount.refundPoint());
 
-            // TODO 단순변심은 한 번에 환불처리.
             totalPoint += amount.refundPoint();
             totalCash += amount.refundCash();
         }
@@ -150,15 +150,23 @@ public class RefundServiceImpl implements RefundService {
         );
     }
 
+    /**
+     * 단순 변심 반품 기간 방어 : 10일 (프론트에서 막아둠)
+     * 파손/불량 반품 기간 방어 : 30일
+     */
     private void validateRefundPeriod(Order order, boolean isDamaged) {
-        // TODO 단순변심 10일 지나면 프론트에서 막아놓을 예정.
+        long days = ChronoUnit.DAYS.between(order.getActualDeliveryDate(), LocalDate.now());
         if(!isDamaged){
-            long days = ChronoUnit.DAYS.between(order.getActualDeliveryDate(), LocalDate.now());
             if(days > 10){
-                throw new RefundNotAvailableException();
+                throw new SimpleRefundNotAvailableException();
+            }
+        }else{
+            if(days > 30){
+                throw new DamageRefundNotAvailableException();
             }
         }
     }
+
     @Override
     @Transactional(readOnly = true)
     public RefundCountResponse getMyRefundCounts(Long userId) {
