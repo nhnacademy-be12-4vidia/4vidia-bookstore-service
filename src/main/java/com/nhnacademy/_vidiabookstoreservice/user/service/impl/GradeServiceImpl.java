@@ -4,6 +4,7 @@ import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
+import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradePolicyResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.GradeNotFoundException;
@@ -151,6 +152,33 @@ public class GradeServiceImpl implements GradeService {
         if (netSum >= 100_000) return GradeName.REGULAR;
         return GradeName.WELCOME;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GradePolicyResponse> getGradePolicies() {
+        // GradeName 순서대로(코드 기준)
+        return List.of(
+                policy(GradeName.WELCOME, 0L, 99_999L, "기본 등급"),
+                policy(GradeName.REGULAR, 100_000L, 199_999L, "순수주문금액 10만원 이상"),
+                policy(GradeName.ROYAL, 200_000L, 299_999L, "순수주문금액 20만원 이상"),
+                policy(GradeName.GOLD, 300_000L, 399_999L, "순수주문금액 30만원 이상"),
+                policy(GradeName.PLATINUM, 400_000L, null, "순수주문금액 40만원 이상")
+        );
+    }
+
+    private GradePolicyResponse policy(GradeName name, Long min, Long max, String desc) {
+        Grade grade = gradeRepository.findByGradeName(name);
+        if (grade == null) throw new GradeNotFoundException(name);
+
+        return GradePolicyResponse.builder()
+                .gradeName(name.name())
+                .pointRate(grade.getPointRate()) // ✅ DB에서 가져온 최신 적립률
+                .minNetAmount(min)
+                .maxNetAmount(max)
+                .desc(desc)
+                .build();
+    }
+
 
 
 
