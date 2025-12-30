@@ -131,8 +131,9 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     }
 
 
-
-    // 반품 거절
+    /**
+     * 반품 거절
+     */
     @Override
     public void rejectRefund(Long refundItemId, String rejectDetail) {
         RefundItem refundItem = refundItemRepository.findById(refundItemId)
@@ -146,6 +147,9 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     }
 
 
+    /**
+     * 만약 해당 반품에서 모든 아이템 처리 -> 반품 처리완료
+     */
     private void updateRefundStatusIfCompleted(Refund refund) {
         boolean hasProcessItem =
                 refundItemRepository.existsByRefund_RefundIdAndRefundItemStatus(

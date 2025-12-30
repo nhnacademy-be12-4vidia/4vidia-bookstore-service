@@ -54,6 +54,9 @@ public class RefundController {
         return ResponseEntity.ok(PageResponse.from(refundHistoryResponses));
     }
 
+    /**
+     * 반품 신청 내역 카운트
+     */
     @GetMapping("/users/me/refunds/counts")
     public ResponseEntity<RefundCountResponse> getMyRefundCounts() {
         Long userId = UserContext.get().getUserId();
