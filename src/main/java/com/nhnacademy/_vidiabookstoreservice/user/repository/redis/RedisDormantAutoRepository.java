@@ -13,11 +13,6 @@ public class RedisDormantAutoRepository {
 
     private final StringRedisTemplate humanRedisTemplate;
 
-//    public RedisDormantAutoRepository(
-//            @Qualifier("humanRedisTemplate") StringRedisTemplate redisTemplate
-//    ) {
-//        this.redisTemplate = redisTemplate;
-//    }
     private static final String PREFIX = "dormant:";
     private static final Duration TTL = Duration.ofMinutes(5); // 인증코드 유효시간 5분
 

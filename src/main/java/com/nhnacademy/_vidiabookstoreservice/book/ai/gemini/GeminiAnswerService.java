@@ -258,7 +258,6 @@ public class GeminiAnswerService {
     private String safeBody(HttpStatusCodeException e) {
         try {
             String body = e.getResponseBodyAsString();
-            if (body == null) return "<null>";
             return body.length() > 1500 ? body.substring(0, 1500) + "...<truncated>" : body;
         } catch (Exception exception) {
             return "<unavailable>";

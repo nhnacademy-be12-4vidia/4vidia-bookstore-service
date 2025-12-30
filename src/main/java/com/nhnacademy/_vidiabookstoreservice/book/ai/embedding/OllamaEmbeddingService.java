@@ -25,7 +25,7 @@ public class OllamaEmbeddingService implements EmbeddingService{
             return toFloatArray(embeddingResult.embedding());
         } catch (Exception e) {
             log.error("Ollama 검색 keyword 임베딩 실패 (키워드 검색만 수행합니다): {}" , e.getMessage());
-            return null;
+            return new float[0];
         }
     }
 

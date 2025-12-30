@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 
 @Configuration
@@ -36,9 +35,8 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(4);
         executor.setQueueCapacity(0);
-        executor.setRejectedExecutionHandler((r, exec) -> {
-            log.warn("[AI-EXECUTOR] task rejected. queueSize={}", exec.getQueue().size());
-        });
+        executor.setRejectedExecutionHandler((r, exec) ->
+                log.warn("[AI-EXECUTOR] task rejected. queueSize={}", exec.getQueue().size()));
         executor.setThreadNamePrefix("AI-");
         executor.initialize();
         return executor;
@@ -47,16 +45,11 @@ public class AsyncConfig implements AsyncConfigurer {
     @Nullable
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        return new AsyncUncaughtExceptionHandler() {
-            @Override
-            public void handleUncaughtException(Throwable ex, Method method, Object... params) {
-                log.error("[ASYNC-ERROR] method = {}.{} params = {} msg = {}",
-                        method.getDeclaringClass(),
-                        method.getName(),
-                        params,
-                        ex.getMessage(),
-                        ex);
-            }
-        };
+        return (ex, method, params) -> log.error("[ASYNC-ERROR] method = {}.{} params = {} msg = {}",
+                method.getDeclaringClass(),
+                method.getName(),
+                params,
+                ex.getMessage(),
+                ex);
     }
 }

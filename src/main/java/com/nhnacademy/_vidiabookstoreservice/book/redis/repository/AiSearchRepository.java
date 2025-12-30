@@ -41,11 +41,11 @@ public class AiSearchRepository {
         aiRedisTemplate.expire(key, ttl);
 
         aiRedisTemplate.opsForList().leftPush(RECENT_KEY, e.entryId());
-        aiRedisTemplate.opsForList().trim(RECENT_KEY, 0, recentLimit - 1);
+        aiRedisTemplate.opsForList().trim(RECENT_KEY, 0, recentLimit - 1L);
     }
 
     public List<String> getRecentEntryIdList(int limit) {
-        List<String> idList = aiRedisTemplate.opsForList().range(RECENT_KEY, 0, limit - 1);
+        List<String> idList = aiRedisTemplate.opsForList().range(RECENT_KEY, 0, limit - 1L);
         return idList == null ? List.of() : idList;
     }
 
@@ -56,7 +56,7 @@ public class AiSearchRepository {
         for (String id : entryIdList) {
             String key = ENTRY_PREFIX + id;
             Map<Object, Object> m = aiRedisTemplate.opsForHash().entries(key);
-            if (m == null || m.isEmpty()) continue;
+            if (m.isEmpty()) continue;
 
             String kw = (String) m.get("kw");
             String answer = (String) m.get("answer");
@@ -80,7 +80,7 @@ public class AiSearchRepository {
         String key = ENTRY_PREFIX + entryId;
 
         Map<Object, Object> m = aiRedisTemplate.opsForHash().entries(key);
-        if (m == null || m.isEmpty()) return null;
+        if (m.isEmpty()) return null;
 
         String kw = (String) m.get("kw");
         String answer = (String) m.get("answer");
@@ -94,7 +94,7 @@ public class AiSearchRepository {
         String key = ENTRY_PREFIX + entryId;
 
         Map<Object, Object> m = aiRedisTemplate.opsForHash().entries(key);
-        if (m == null || m.isEmpty()) return null;
+        if (m.isEmpty()) return null;
 
         return (String) m.get("answer");
     }

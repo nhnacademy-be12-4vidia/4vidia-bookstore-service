@@ -97,15 +97,13 @@ class OrderItemServiceImplTest {
     }
 
     @Test
-    @DisplayName("상태 변경 실패: 이미 반품 요청 중인 상품은 구매 확정으로 변경되지 않음")
-    void changeStatusOrderItemByUser_fail_status_mismatch() {
-        Long orderItemId = 2L;
-        OrderItem orderItem = createOrderItem(orderItemId, ConfirmStatus.UNCONFIRMED);
-        given(orderItemRepository.findByOrderItemId(orderItemId)).willReturn(Optional.of(orderItem));
+    @DisplayName("상태 변경 실패: 존재하지 않는 주문아이템")
+    void changeStatusOrderItemByUser_fail_NotFound() {
+        Long orderItemId = 99L;
+        given(orderItemRepository.findByOrderItemId(orderItemId)).willReturn(Optional.empty());
 
-        orderItemService.changeStatusOrderItem_byUser(orderItemId, ConfirmStatus.CONFIRMED);
-
-        assertThat(orderItem.getConfirmStatus()).isEqualTo(ConfirmStatus.CONFIRMED);
+        assertThatThrownBy(() -> orderItemService.changeStatusOrderItem_byUser(orderItemId, ConfirmStatus.CONFIRMED))
+                .isInstanceOf(OrderItemNotFoundException.class);
     }
 
     @Test

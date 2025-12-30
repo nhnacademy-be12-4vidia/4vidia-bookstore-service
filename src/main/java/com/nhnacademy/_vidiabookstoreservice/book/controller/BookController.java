@@ -106,7 +106,6 @@ public class BookController {
         }
 
         ListOperations<String, String> listOps = bestsellerRedisTemplate.opsForList();
-//        List<String> savedTop10 = listOps.range("top10", 0, -1);
         List<String> savedTop10 = listOps.range("view:bestseller:top10", 0, -1);
         if (savedTop10 == null || savedTop10.isEmpty()) {
             return ResponseEntity.ok().body(Collections.emptyList());

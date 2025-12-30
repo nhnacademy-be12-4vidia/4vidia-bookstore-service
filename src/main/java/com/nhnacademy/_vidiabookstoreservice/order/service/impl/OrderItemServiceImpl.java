@@ -70,10 +70,9 @@ public class OrderItemServiceImpl implements OrderItemService {
     public List<OrderItemRequest> getOrderItemRequests(Order order) {
         List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
 
-        List<OrderItemRequest> orderItemRequests = orderItems.stream()
+        return orderItems.stream()
                 .map(OrderItemRequest::fromOrder)
                 .toList();
-        return orderItemRequests;
     }
 
     private static final int AUTO_CONFIRM_DAYS = 30;

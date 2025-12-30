@@ -1,8 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.dto.category.request.CreateCategoryRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.category.request.UpdateCategoryRequest;
@@ -14,14 +11,18 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.ParentCateg
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.DiscountPolicyRepository;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceImplTest {
@@ -228,7 +229,6 @@ class CategoryServiceImplTest {
         List<CategoryListResponse> result = categoryService.getFlatCategoryList();
 
         assertEquals(1, result.size());
-//        assertTrue(result.get(0).categoryName().contains("예술 > 음악"));
     }
 
     @Test

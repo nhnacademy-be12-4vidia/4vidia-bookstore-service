@@ -46,15 +46,6 @@ public class PointQueryController {
 
     // 포인트 전체 내역 조회
 
-//    @GetMapping("/history")
-//    public ResponseEntity<Page<PointHistoryResponse>> getHistory(
-//            @RequestParam(defaultValue = "ALL") String category,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ){
-//        Long userId = UserContext.get().getUserId();
-//        return ResponseEntity.ok(queryService.getHistory(userId, category,page, size));
-//    }
 @GetMapping("/history")
 public ResponseEntity<Page<PointHistoryResponse>> getHistory(
         @RequestParam(defaultValue = "ALL") String category,
@@ -78,8 +69,4 @@ public ResponseEntity<Page<PointHistoryResponse>> getHistory(
 
     return ResponseEntity.ok(queryService.getHistory(userId, category, start, end, page, size));
 }
-
-
-
-
 }

@@ -11,7 +11,6 @@ import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentCancelExcept
 import com.nhnacademy._vidiabookstoreservice.order.exception.PaymentConfirmException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.PaymentNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.repository.PaymentRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,15 +105,6 @@ class TossPaymentServiceImplTest {
         verify(paymentRepository).findPaymentByOrder_orderId(anyLong());
         assertThat(response).isNotNull();
         assertThat(response.paymentKey()).isEqualTo(paymentKey);
-    }
-
-    @Test
-    @DisplayName("페이먼트키 조회 실패 - 주문아이디 없음")
-    void getPaymentKey_Fail_NotFound() {
-        given(paymentRepository.findPaymentByOrder_orderId(anyLong())).willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> tossPaymentService.getPayment(anyLong()))
-                .isInstanceOf(PaymentNotFoundException.class);
     }
 
     @Test

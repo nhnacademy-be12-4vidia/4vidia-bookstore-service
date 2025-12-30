@@ -80,10 +80,8 @@ public class AiWarmupService {
 
         } catch (JsonProcessingException e) {
             log.warn("[AI-WARMUP] json serialize failed. keyword={} msg={}", keywordNormal, e.getMessage(), e);
-            return;
         } catch (Exception e) {
             log.warn("[AI-WARMUP] failed. keyword={} msg={}", keywordNormal, e.getMessage(), e);
-            return;
         }
     }
 
