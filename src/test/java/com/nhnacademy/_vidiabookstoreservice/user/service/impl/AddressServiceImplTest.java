@@ -430,10 +430,4 @@ class AddressServiceImplTest {
         when(a.getAddressId()).thenReturn(id);
         return a;
     }
-
-    private Address addressIdAndAlias(Long id, String alias) {
-        Address a = addressIdOnly(id);
-        when(a.getAlias()).thenReturn(alias);
-        return a;
-    }
 }

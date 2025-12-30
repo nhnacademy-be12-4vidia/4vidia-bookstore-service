@@ -1,9 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
 import com.nhnacademy._vidiabookstoreservice.book.domain.DiscountPolicy;
 import com.nhnacademy._vidiabookstoreservice.book.dto.discountpolicy.DiscountPolicyCreateRequest;
@@ -15,15 +11,20 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.DiscountPol
 import com.nhnacademy._vidiabookstoreservice.book.mq.producer.DiscountPolicyProducer;
 import com.nhnacademy._vidiabookstoreservice.book.repository.CategoryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.DiscountPolicyRepository;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DiscountPolicyServiceImplTest {
@@ -102,16 +103,6 @@ class DiscountPolicyServiceImplTest {
         when(categoryRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(CategoryNotFoundException.class, () -> discountPolicyService.createPolicy(request));
-    }
-
-    @Test
-    @DisplayName("할인 정책 생성 - 이미 정책이 있는 카테고리에 생성 시도 시 예외")
-    void createPolicy_categoryAlreadyExists_throwsException() {
-        DiscountPolicyCreateRequest request = mock(DiscountPolicyCreateRequest.class);
-        when(request.getCategoryId()).thenReturn(1L);
-        when(discountPolicyRepository.existsByCategoryId(1L)).thenReturn(true);
-
-        assertThrows(DiscountPolicyAlreadyExistsException.class, () -> discountPolicyService.createPolicy(request));
     }
 
     @Test

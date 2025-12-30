@@ -74,7 +74,6 @@ public class GradeServiceImpl implements GradeService {
      * 월간 등급 산정 (최근 3개월 순수 주문금액 기준)
      * - 스케줄러/수동 실행 어디서든 호출 가능하도록 서비스로 분리
      */
-//    @Transactional
     public int recalculateMonthlyGrades() {
         ZoneId zone = ZoneId.of("Asia/Seoul");
 
@@ -82,14 +81,6 @@ public class GradeServiceImpl implements GradeService {
         YearMonth ym = YearMonth.now(zone);
         LocalDateTime to = ym.atDay(1).atStartOfDay();
         LocalDateTime from = ym.minusMonths(3).atDay(1).atStartOfDay();
-
-        // 테스트용
-//        LocalDateTime to = LocalDateTime.now(zone);
-//        LocalDateTime from = to.minusMonths(3)
-//                .withDayOfMonth(1)
-//                .toLocalDate()
-//                .atStartOfDay();
-
 
         // 유저별 순수금액 집계 (주문한 유저만 결과가 옴)
         List<UserNetSum> rows = orderRepository.findUserNetSumLast3Months(from, to, PointReason.ORDER_CANCEL_REFUND);
@@ -172,16 +163,10 @@ public class GradeServiceImpl implements GradeService {
 
         return GradePolicyResponse.builder()
                 .gradeName(name.name())
-                .pointRate(grade.getPointRate()) // ✅ DB에서 가져온 최신 적립률
+                .pointRate(grade.getPointRate())
                 .minNetAmount(min)
                 .maxNetAmount(max)
                 .desc(desc)
                 .build();
     }
-
-
-
-
-
-
 }

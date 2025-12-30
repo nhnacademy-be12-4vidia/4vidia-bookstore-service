@@ -65,7 +65,6 @@ public class PointCommandServiceImpl implements PointCommandService {
 
         if(realPrice < 0){
             log.error("순수주문금액은 음수일 수 없음.");
-            // TODO 이건 POINT 오류가 아닌 듯 한데
             throw new PointInvalidException();
         }else if(realPrice == 0){
             return; // 0이면 굳이 적립할 필요도 없음
@@ -187,9 +186,6 @@ public class PointCommandServiceImpl implements PointCommandService {
                 pointDetailRepository.findAvailablePointForUse(userId, now);
 
         // 현재 시점의 정확한 총액 계산
-//        int currentTotal = availableList.stream()
-//                .mapToInt(PointDetail::getRemainingPrice)
-//                .sum();
         int totalPrice = pointDetailRepository.getRemainPoint(userId, LocalDate.now());
         int usePrice = request.price(); // 사용자가 작성한 포인트 사용 금액
         if(totalPrice <0 ){
@@ -234,61 +230,6 @@ public class PointCommandServiceImpl implements PointCommandService {
 
         // 유저 포인트 차감 (이미 위에서 user 객체에 락을 걸었으므로 안전함)
         user.subtractPoint(usePrice);
-
-        // 아래 수정 전 코드
-
-//
-//        int totalPrice = pointDetailRepository.getRemainPoint(userId, LocalDate.now());
-//        int usePrice = request.price(); // 사용자가 작성한 포인트 사용 금액
-//
-//        if(totalPrice < 0){
-//            throw new PointInvalidException();
-//        }
-//
-//        if(usePrice == 0){
-//           return;
-//        }else if(usePrice < 0) {
-//            throw new PointInvalidException();
-//        }else if(usePrice > totalPrice){
-//            throw new PointNotEnoughException();
-//        }
-//
-//        int remainingToUse = usePrice;
-//        int usedTotal = 0;
-//
-//
-//        LocalDate now = LocalDate.now();
-//        List<PointDetail> avaiableList =
-//                pointDetailRepository.findAvailablePointForUse(userId, now);
-//
-//        for(PointDetail detail : avaiableList){
-//            if(remainingToUse == 0) {
-//                break;
-//            }
-//
-//            int available = detail.getRemainingPrice();
-//
-//            if (available >= remainingToUse) {
-//                detail.decrease(remainingToUse);
-//                usedTotal += remainingToUse;
-//                remainingToUse = 0;
-//            } else {
-//                detail.decrease(available);
-//                usedTotal += available;
-//                remainingToUse -= available;
-//            }
-//            pointDetailRepository.save(detail);
-//        }
-//        // 포인트 사용 기록은 한 번만
-//        pointDetailRepository.save(PointDetail.use(
-//                userId,
-//                request.orderId(),
-//                usedTotal
-//        ));
-//
-//        // 유저 포인트 차감
-//        User user = userService.getUserById(userId);
-//        user.subtractPoint(usePrice);
     }
 
     /**
