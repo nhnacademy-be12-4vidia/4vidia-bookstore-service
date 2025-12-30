@@ -33,6 +33,7 @@ public class EmailService {
     }
 
 
+    @Async("taskExecutor")
     public void sendDormantAuthCode(String toEmail, String authCode) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
