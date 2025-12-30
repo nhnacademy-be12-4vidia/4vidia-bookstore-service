@@ -1,0 +1,132 @@
+// 관리자 도서 R/C/U/D 기능
+
+==== ISBN으로 도서 정보 검색
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-book-search-isbn-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-book-search-isbn-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-book-search-isbn-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-book-search-isbn-get/request-fields.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/admin-book-search-isbn-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-book-search-isbn-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-book-search-isbn-get/response-fields.adoc[]
+
+
+
+
+==== ISBN 정보 보강
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-book-augment-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-book-augment-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-book-augment-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-book-augment-get/request-fields.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/admin-book-augment-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-book-augment-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-book-augment-get/response-fields.adoc[]
+
+
+
+
+==== 새 도서 등록
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-book-create-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-book-create-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-book-create-post/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-book-create-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-book-create-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-book-create-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-book-create-post/response-fields.adoc[]
+
+
+
+
+==== 도서 정보 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-book-update-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-book-update-put/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-book-update-put/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-book-update-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-book-update-put/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-book-update-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-book-update-put/response-fields.adoc[]
+
+
+
+
+==== 도서 ISBN 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-book-isbn-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-book-isbn-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-book-isbn-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-book-isbn-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-book-isbn-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-book-isbn-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-book-isbn-get/response-fields.adoc[]
+
+
+
+
+==== 상세 이미지 업로드
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-book-image-upload-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-book-image-upload-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-book-image-upload-post/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-book-image-upload-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-book-image-upload-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-book-image-upload-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-book-image-upload-post/response-fields.adoc[]
+
+

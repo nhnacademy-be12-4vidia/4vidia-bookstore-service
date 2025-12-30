@@ -50,6 +50,9 @@ include::service/refund/refund-api.adoc[]
 == 글로벌(Global) API
 include::service/global/global-api.adoc[]
 
+// 9. Admin 서비스
+== 관리자(Admin) API
+include::service/admin/admin-api.adoc[]
 
 // 9.
 // == 참고

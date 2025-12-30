@@ -1,0 +1,104 @@
+// 관리자 할인정책 R/C/U/D 기능
+
+==== 할인 정책 전체 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-discount-policies-all-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-discount-policies-all-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-discount-policies-all-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-discount-policies-all-get/request-fields.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/admin-discount-policies-all-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-discount-policies-all-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-discount-policies-all-get/response-fields.adoc[]
+
+
+
+==== 할인 정책 상세 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-discount-policy-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-discount-policy-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-discount-policy-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-discount-policy-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-discount-policy-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-discount-policy-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-discount-policy-get/response-fields.adoc[]
+
+
+
+==== 할인 정책 생성
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-discount-policy-create-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/admin-discount-policy-create-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-discount-policy-create-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/admin-discount-policy-create-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-discount-policy-create-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-discount-policy-create-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-discount-policy-create-post/response-fields.adoc[]
+
+
+
+==== 할인 정책 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-discount-policy-update-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-discount-policy-update-put/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-discount-policy-update-put/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/admin-discount-policy-update-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-discount-policy-update-put/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-discount-policy-update-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-discount-policy-update-put/response-fields.adoc[]
+
+
+
+==== 할인 정책 삭제
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/admin-discount-policy-delete/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/admin-discount-policy-delete/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/admin-discount-policy-delete/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/admin-discount-policy-delete/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/admin-discount-policy-delete/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/admin-discount-policy-delete/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/admin-discount-policy-delete/response-fields.adoc[]
