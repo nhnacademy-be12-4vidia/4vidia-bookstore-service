@@ -1,130 +1,47 @@
 // 회원 auth R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-// --------------------------------------------------------------
-// 2. 생성 (POST)
-==== 회원가입
+// 회원가입 ------------------------------
+
+==== 회원가입 요청
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/auth-signup-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-signup-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-signup-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
 include::{snippets}/auth-signup-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-signup-post/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/auth-signup-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH) - 없으므로 생략
-==== 마지막 로그인 시간 업데이트
+.응답 필드 (Response Fields)
+include::{snippets}/auth-signup-post/response-fields.adoc[]
+
+
+
+==== 회원가입 이메일 중복 확인
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/auth-last-login-put/http-request.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/auth-last-login-put/request-fields.adoc[]
-
-.응답 (Response)
-include::{snippets}/auth-last-login-put/http-response.adoc[]
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE) - 없으므로 생략
-// --------------------------------------------------------------
-
-
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 이메일 중복 확인
-:table-number: 0
-
-.요청 (Request)
-include::{snippets}/auth-check-email-get/http-request.adoc[]
+include::{snippets}/auth-email-exists-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-email-exists-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-email-exists-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/auth-email-exists-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
-include::{snippets}/auth-check-email-get/query-parameters.adoc[]
+include::{snippets}/auth-email-exists-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/auth-check-email-get/http-response.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST) - 없으므로 생략
-==== 아이디(이메일) 찾기
-:table-number: 0
+include::{snippets}/auth-email-exists-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-email-exists-get/response-fields.adoc[]
 
-.요청 (Request)
-include::{snippets}/auth-find-id-post/http-request.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/auth-find-id-post/request-fields.adoc[]
-
-.응답 (Response)
-include::{snippets}/auth-find-id-post/http-response.adoc[]
-
-
-
-==== 비밀번호 초기화
-:table-number: 0
-
-.요청 (Request)
-include::{snippets}/auth-reset-password-post/http-request.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/auth-reset-password-post/request-fields.adoc[]
-
-.응답 (Response)
-include::{snippets}/auth-reset-password-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH) - 없으므로 생략
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE) - 없으므로 생략
-// --------------------------------------------------------------
-
-
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 휴면 여부 확인
-:table-number: 0
-
-.요청 (Request)
-include::{snippets}/auth-check-dormant-get/http-request.adoc[]
-.쿼리 파라미터 (Query-Parameters)
-include::{snippets}/auth-check-dormant-get/query-parameters.adoc[]
-
-.응답 (Response)
-include::{snippets}/auth-check-dormant-get/http-response.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST) - 없으므로 생략
-
-==== 휴면 인증코드 전송
-:table-number: 0
-
-.요청 (Request)
-include::{snippets}/auth-dormant-send-post/http-request.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/auth-dormant-send-post/request-fields.adoc[]
-
-.응답 (Response)
-include::{snippets}/auth-dormant-send-post/http-response.adoc[]
-
-
-==== 휴면 인증코드 검증
-:table-number: 0
-
-.요청 (Request)
-include::{snippets}/auth-dormant-verify-post/http-request.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/auth-dormant-verify-post/request-fields.adoc[]
-
-.응답 (Response)
-include::{snippets}/auth-dormant-verify-post/http-response.adoc[]
-
-
-
-==== 휴면 인증코드 이메일 전송
-:table-number: 0
-
-.요청 (Request)
-include::{snippets}/auth-dormant-email-send-post/http-request.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/auth-dormant-email-send-post/request-fields.adoc[]
-
-.응답 (Response)
-include::{snippets}/auth-dormant-email-send-post/http-response.adoc[]
 
 
 
@@ -132,57 +49,194 @@ include::{snippets}/auth-dormant-email-send-post/http-response.adoc[]
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/auth-email-send-code-post/http-request.adoc[]
+include::{snippets}/auth-signup-email-send-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-signup-email-send-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-signup-email-send-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
-include::{snippets}/auth-email-send-code-post/request-fields.adoc[]
-
+include::{snippets}/auth-signup-email-send-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-signup-email-send-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/auth-email-send-code-post/http-response.adoc[]
+include::{snippets}/auth-signup-email-send-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-signup-email-send-post/response-fields.adoc[]
 
 
 ==== 회원가입 이메일 인증코드 검증
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/auth-email-verify-code-post/http-request.adoc[]
+include::{snippets}/auth-signup-email-verify-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-signup-email-verify-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-signup-email-verify-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
-include::{snippets}/auth-email-verify-code-post/request-fields.adoc[]
+include::{snippets}/auth-signup-email-verify-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-signup-email-verify-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/auth-email-verify-code-post/http-response.adoc[]
-
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE) - 없으므로 생략
-// --------------------------------------------------------------
+include::{snippets}/auth-signup-email-verify-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-signup-email-verify-post/response-fields.adoc[]
 
 
 
-// --------------------------------------------------------------
-// 1. 조회 (GET) - 없으므로 생략
-// --------------------------------------------------------------
-// 2. 생성 (POST) - 없으므로 생략
-==== 페이코 계정 찾기/만들기
+
+
+// 로그인 ------------------------------
+
+==== 로그인 마지막 시간 업데이트
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/auth-payco-post/http-request.adoc[]
+include::{snippets}/auth-update-last-login-put/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-update-last-login-put/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-update-last-login-put/request-headers.adoc[]
 .요청 필드 (Request Fields)
-include::{snippets}/auth-payco-post/request-fields.adoc[]
+include::{snippets}/auth-update-last-login-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-update-last-login-put/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/auth-payco-post/http-response.adoc[]
+include::{snippets}/auth-update-last-login-put/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/auth-payco-post/response-fields.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE) - 없으므로 생략
-// --------------------------------------------------------------
+include::{snippets}/auth-update-last-login-put/response-fields.adoc[]
 
 
+
+
+==== 로그인 아이디 찾기(email)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-find-id-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-find-id-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-find-id-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/auth-find-id-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-find-id-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/auth-find-id-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-find-id-post/response-fields.adoc[]
+
+
+
+==== 로그인 비밀번호 초기화
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-reset-password-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-reset-password-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-reset-password-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/auth-reset-password-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-reset-password-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/auth-reset-password-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-reset-password-post/response-fields.adoc[]
+
+
+
+
+// 휴먼 ------------------------------
+
+==== 휴먼 여부 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-check-dormant-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-check-dormant-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-check-dormant-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/auth-check-dormant-get/request-fields.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/auth-check-dormant-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/auth-check-dormant-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-check-dormant-get/response-fields.adoc[]
+
+
+
+==== 휴먼 인증코드 전송(webhook)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-dormant-send-code-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-dormant-send-code-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-dormant-send-code-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/auth-dormant-send-code-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-dormant-send-code-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/auth-dormant-send-code-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-dormant-send-code-post/response-fields.adoc[]
+
+
+==== 휴먼 인증코드 전송(email)
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-dormant-send-code-email-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-dormant-send-code-email-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-dormant-send-code-email-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/auth-dormant-send-code-email-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-dormant-send-code-email-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/auth-dormant-send-code-email-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-dormant-send-code-email-post/response-fields.adoc[]
+
+
+
+==== 휴먼 인증코드 검증
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/auth-dormant-verify-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/auth-dormant-verify-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/auth-dormant-verify-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/auth-dormant-verify-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/auth-dormant-verify-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/auth-dormant-verify-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/auth-dormant-verify-post/response-fields.adoc[]
 
 
 

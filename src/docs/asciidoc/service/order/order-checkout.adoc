@@ -1,33 +1,40 @@
-// 주문 checkout 옵션 R/C/U/D 기능
+// 주문 checkout R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 주문 화면에 보여줄 값 조회(redis)
+==== 주문 체크아웃 조회
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/order-checkout-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/order-checkout-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/order-checkout-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/order-checkout-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
 include::{snippets}/order-checkout-get/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/order-checkout-get/http-response.adoc[]
-.응답 필드 (Response fields)
+.응답 필드 (Response Fields)
 include::{snippets}/order-checkout-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
-==== 주문 전 선택된 아이템 저장(redis)
+
+
+==== 주문 체크아웃 세션 생성
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/order-checkout-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/order-checkout-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/order-checkout-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
 include::{snippets}/order-checkout-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/order-checkout-post/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/order-checkout-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-// --------------------------------------------------------------
+.응답 필드 (Response Fields)
+include::{snippets}/order-checkout-post/response-fields.adoc[]

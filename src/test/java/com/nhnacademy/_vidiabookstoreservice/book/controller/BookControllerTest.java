@@ -15,6 +15,7 @@ import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(BookController.class)
 class BookControllerTest extends SupportControllerTest {
 
     @MockitoBean private BookService bookService;
@@ -51,7 +53,7 @@ class BookControllerTest extends SupportControllerTest {
     private final Long testUserId = 1L;
 
     @Test
-    @DisplayName("[통합 검색 (ES)]")
+    @DisplayName("GET - Elastic 검색")
     void searchBooks() throws Exception {
         Page<BaseBookListResponse> page = new PageImpl<>(List.of(
                 BookListResponse.builder()
@@ -82,11 +84,10 @@ class BookControllerTest extends SupportControllerTest {
                         .param("size", "20")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andDo(document("book-search-get",
+                .andDo(document("book-elastic-search-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
-                        requestHeaders(headerWithName("X-User-Id").description("회원 ID").optional()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         queryParameters(
                                 parameterWithName("keyword").description("검색어"),
                                 parameterWithName("page").description("페이지 번호").optional(),
@@ -117,7 +118,7 @@ class BookControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[AI 검색]")
+    @DisplayName("GET - AI 검색")
     void searchBooksWithLlm() throws Exception {
         Page<BaseBookListResponse> page = new PageImpl<>(List.of());
         PageResponse<BaseBookListResponse> pageResponse = PageResponse.from(page);
@@ -139,7 +140,7 @@ class BookControllerTest extends SupportControllerTest {
                 .andDo(document("book-search-ai-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         queryParameters(
                                 parameterWithName("keyword").description("질문 내용")
                         ),
@@ -157,7 +158,7 @@ class BookControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[태그 기반 검색 (다중)]")
+    @DisplayName("GET - 태그 검색(다중)")
     void searchBooksWithTags() throws Exception {
         Page<BaseBookListResponse> page = new PageImpl<>(List.of());
         PageResponse<BaseBookListResponse> pageResponse = PageResponse.from(page);
@@ -172,7 +173,6 @@ class BookControllerTest extends SupportControllerTest {
                 .andDo(document("book-search-tags-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
                         queryParameters(
                                 parameterWithName("tagIds").description("태그 ID 목록 (콤마 구분)")
                         ),
@@ -188,7 +188,7 @@ class BookControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[특정 태그 기반 검색]")
+    @DisplayName("GET - 태그 검색(단일)")
     void searchBooksWithSpecificTag() throws Exception {
         Page<BaseBookListResponse> page = new PageImpl<>(List.of());
         PageResponse<BaseBookListResponse> pageResponse = PageResponse.from(page);
@@ -205,7 +205,6 @@ class BookControllerTest extends SupportControllerTest {
                 .andDo(document("book-search-specific-tag-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
                         pathParameters(
                                 parameterWithName("tag-id").description("태그 ID")
                         ),
@@ -228,7 +227,7 @@ class BookControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[도서 상세 조회]")
+    @DisplayName("GET - 도서 상세 조회")
     void bookDetails() throws Exception {
         Long bookId = 1L;
         BookDetailResponse mockResponse = BookDetailResponse.builder()
@@ -260,7 +259,6 @@ class BookControllerTest extends SupportControllerTest {
                 .andDo(document("book-detail-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
                         pathParameters(
                                 parameterWithName("bookId").description("도서 ID")
                         ),
@@ -300,7 +298,7 @@ class BookControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[베스트셀러 조회]")
+    @DisplayName("GET - 베스트셀러 조회")
     void getBestSellers() throws Exception {
         ListOperations listOperations = mock(ListOperations.class);
         given(bestsellerRedisTemplate.opsForList()).willReturn(listOperations);
@@ -322,7 +320,7 @@ class BookControllerTest extends SupportControllerTest {
                 .andDo(document("book-bestseller-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         responseFields(withHeader(
                                 fieldWithPath("data[].id").description("도서 ID"),
                                 fieldWithPath("data[].title").description("제목"),
@@ -338,7 +336,7 @@ class BookControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[쿠폰용 간단 도서 검색]")
+    @DisplayName("GET - 도서 검색(simple)")
     void getBookList() throws Exception {
         List<BookListResponse> responses = List.of(
                 BookListResponse.builder().id(1L).title("검색된 책").build()
@@ -353,7 +351,6 @@ class BookControllerTest extends SupportControllerTest {
                 .andDo(document("book-search-simple-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
                         queryParameters(
                                 parameterWithName("keyword").description("검색어")
                         ),
@@ -372,7 +369,7 @@ class BookControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[메인 페이지 도서 목록 조회 (태그별)]")
+    @DisplayName("GET - 도서 목록 조회")
     void getMainBookList() throws Exception {
         List<BookListResponse> responses = List.of(
                 BookListResponse.builder().id(1L).title("메인 책").liked(true).build()
@@ -387,7 +384,6 @@ class BookControllerTest extends SupportControllerTest {
                 .andDo(document("book-main-list-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-
                         queryParameters(
                                 parameterWithName("tagId").description("조회할 태그 ID")
                         ),

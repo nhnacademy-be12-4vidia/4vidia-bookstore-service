@@ -10,8 +10,10 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCheck
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.PackagingOptionResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderCheckoutService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -33,15 +35,16 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(OrderCheckoutController.class)
 class OrderCheckoutControllerTest extends SupportControllerTest {
 
     @MockitoBean
     private OrderCheckoutService orderCheckoutService;
 
     @Test
-    @DisplayName("[주문 화면 조회] 주문에 필요한 정보들을 반환한다")
+    @Order(1)
+    @DisplayName("GET - 주문 체크아웃 조회")
     void getOrderCheckout() throws Exception {
-        // Given
         Long userId = 1L;
         String key = "redis-key";
 
@@ -55,7 +58,6 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
                 List.of(new PackagingOptionResponse(1L, "선물 포장", 1000))
         );
 
-        // UserContext Static Mocking
         try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
             UserContext mockContextInstance = mock(UserContext.class);
             given(mockContextInstance.getUserId()).willReturn(userId);
@@ -64,7 +66,6 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
             given(orderCheckoutService.getOrderCheckoutResponse(eq(userId), eq(key)))
                     .willReturn(mockResponse);
 
-            // When & Then
             mockMvc.perform(get("/orders")
                             .param("key", key)
                             .accept(MediaType.APPLICATION_JSON))
@@ -100,9 +101,9 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[주문 세션 생성] 선택된 아이템을 임시 저장하고 Key를 반환한다")
+    @Order(2)
+    @DisplayName("POST - 주문 체크아웃 세션 생성")
     void createCheckoutSession() throws Exception {
-        // Given
         String generatedKey = "new-redis-key-123";
         OrderCheckoutListRequest request = new OrderCheckoutListRequest(
                 List.of(new OrderCheckoutRequest(101L, 2))
@@ -111,12 +112,11 @@ class OrderCheckoutControllerTest extends SupportControllerTest {
         given(orderCheckoutService.initiateCheckout(anyList()))
                 .willReturn(generatedKey);
 
-        // When & Then
         mockMvc.perform(post("/orders/checkout-temp")
                         .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()) // ApiResponse.success()는 기본 200 OK
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value(generatedKey))
                 .andDo(document("order-checkout-post",
                         preprocessRequest(prettyPrint()),

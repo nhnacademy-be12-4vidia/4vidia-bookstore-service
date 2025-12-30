@@ -7,8 +7,10 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.address.request.CreateAddr
 import com.nhnacademy._vidiabookstoreservice.user.dto.address.response.AddressResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.AddressService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -30,44 +32,16 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(AddressController.class)
 class AddressControllerTest extends SupportControllerTest {
 
     @MockitoBean
     private AddressService addressService;
 
-    @Test
-    @DisplayName("[주소 등록]")
-    void registerAddress() throws Exception {
-        Long userId = 1L;
-        CreateAddressRequest request = new CreateAddressRequest("우리집", "경기도 성남시 ...", "12345", "NHN 6층");
-
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            UserContext mockContext = mock(UserContext.class);
-            given(mockContext.getUserId()).willReturn(userId);
-            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
-
-            mockMvc.perform(post("/users/me/addresses")
-                            .header("X-User-Id", userId)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isCreated())
-                    .andDo(document("address-register",
-                            preprocessRequest(prettyPrint()),
-                            preprocessResponse(prettyPrint()),
-                            requestHeaders(headerWithName("X-User-Id").description("회원 ID")),
-                            requestFields(
-                                    fieldWithPath("alias").description("주소 별칭"),
-                                    fieldWithPath("roadAddress").description("도로명 주소"),
-                                    fieldWithPath("zipCode").description("우편번호"),
-                                    fieldWithPath("addressDetail").description("상세 주소").optional()
-                            ),
-                            responseFields(withHeader())
-                    ));
-        }
-    }
 
     @Test
-    @DisplayName("[주소 단일 조회]")
+    @Order(1)
+    @DisplayName("GET - 주소 단일 조회")
     void getAddress() throws Exception {
         Long userId = 1L;
         Long addressId = 10L;
@@ -85,7 +59,10 @@ class AddressControllerTest extends SupportControllerTest {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.addressId").value(addressId))
-                    .andDo(document("address-get-detail",
+                    .andDo(document("address-detail-get",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             pathParameters(parameterWithName("address-id").description("조회할 주소 ID")),
                             responseFields(withHeader(
                                     fieldWithPath("data.addressId").description("주소 ID"),
@@ -99,7 +76,8 @@ class AddressControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[주소 전체 조회]")
+    @Order(2)
+    @DisplayName("GET - 주소 전체 조회")
     void getAddressList() throws Exception {
         Long userId = 1L;
         AddressResponse addr = new AddressResponse(10L, "집", "도로명", "12345", "상세");
@@ -116,7 +94,10 @@ class AddressControllerTest extends SupportControllerTest {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data[0].alias").value("집"))
-                    .andDo(document("address-get-list",
+                    .andDo(document("address-list-get",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             responseFields(withHeader(
                                     fieldWithPath("data[].addressId").description("주소 ID"),
                                     fieldWithPath("data[].alias").description("별칭"),
@@ -129,36 +110,40 @@ class AddressControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[기본 주소 조회]")
-    void getDefaultAddress() throws Exception {
+    @Order(3)
+    @DisplayName("POST - 주소 등록")
+    void registerAddress() throws Exception {
         Long userId = 1L;
-        AddressResponse response = new AddressResponse(10L, "기본배송지", "도로명", "12345", "상세");
+        CreateAddressRequest request = new CreateAddressRequest("우리집", "경기도 성남시 ...", "12345", "NHN 6층");
 
         try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
             UserContext mockContext = mock(UserContext.class);
             given(mockContext.getUserId()).willReturn(userId);
             mockedUserContext.when(UserContext::get).thenReturn(mockContext);
 
-            given(addressService.getDefaultAddress(userId)).willReturn(response);
-
-            mockMvc.perform(get("/users/me/addresses/default")
-                            .header("X-User-Id", userId))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.alias").value("기본배송지"))
-                    .andDo(document("address-get-default",
-                            responseFields(withHeader(
-                                    fieldWithPath("data.addressId").description("주소 ID"),
-                                    fieldWithPath("data.alias").description("별칭"),
-                                    fieldWithPath("data.roadAddress").description("도로명 주소"),
-                                    fieldWithPath("data.zipCode").description("우편번호"),
-                                    fieldWithPath("data.addressDetail").description("상세 주소")
-                            ))
+            mockMvc.perform(post("/users/me/addresses")
+                            .header("X-User-Id", userId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isCreated())
+                    .andDo(document("address-register-post",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                            requestFields(
+                                    fieldWithPath("alias").description("주소 별칭"),
+                                    fieldWithPath("roadAddress").description("도로명 주소"),
+                                    fieldWithPath("zipCode").description("우편번호"),
+                                    fieldWithPath("addressDetail").description("상세 주소").optional()
+                            ),
+                            responseFields(withHeader())
                     ));
         }
     }
 
     @Test
-    @DisplayName("[주소 수정]")
+    @Order(4)
+    @DisplayName("PUT - 주소 수정")
     void updateAddress() throws Exception {
         Long userId = 1L;
         Long addressId = 10L;
@@ -178,7 +163,10 @@ class AddressControllerTest extends SupportControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.alias").value("수정된 별칭"))
-                    .andDo(document("address-update",
+                    .andDo(document("address-update-put",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             pathParameters(parameterWithName("address-id").description("수정할 주소 ID")),
                             requestFields(
                                     fieldWithPath("alias").description("별칭"),
@@ -198,28 +186,8 @@ class AddressControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[기본 주소 설정 변경]")
-    void updateDefaultAddress() throws Exception {
-        Long userId = 1L;
-        Long addressId = 10L;
-
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            UserContext mockContext = mock(UserContext.class);
-            given(mockContext.getUserId()).willReturn(userId);
-            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
-
-            mockMvc.perform(put("/users/me/addresses/{address-id}/default", addressId)
-                            .header("X-User-Id", userId))
-                    .andExpect(status().isOk())
-                    .andDo(document("address-set-default",
-                            pathParameters(parameterWithName("address-id").description("기본 주소로 설정할 주소 ID")),
-                            responseFields(withHeader())
-                    ));
-        }
-    }
-
-    @Test
-    @DisplayName("[주소 삭제]")
+    @Order(5)
+    @DisplayName("DELETE - 주소 삭제")
     void deleteAddress() throws Exception {
         Long userId = 1L;
         Long addressId = 10L;
@@ -233,9 +201,71 @@ class AddressControllerTest extends SupportControllerTest {
                             .header("X-User-Id", userId))
                     .andExpect(status().isOk())
                     .andDo(document("address-delete",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             pathParameters(parameterWithName("address-id").description("삭제할 주소 ID")),
                             responseFields(withHeader())
                     ));
         }
     }
+
+    @Test
+    @Order(6)
+    @DisplayName("GET - 기본 주소 조회")
+    void getDefaultAddress() throws Exception {
+        Long userId = 1L;
+        AddressResponse response = new AddressResponse(10L, "기본배송지", "도로명", "12345", "상세");
+
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(addressService.getDefaultAddress(userId)).willReturn(response);
+
+            mockMvc.perform(get("/users/me/addresses/default")
+                            .header("X-User-Id", userId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.alias").value("기본배송지"))
+                    .andDo(document("address-default-get",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                            responseFields(withHeader(
+                                    fieldWithPath("data.addressId").description("주소 ID"),
+                                    fieldWithPath("data.alias").description("별칭"),
+                                    fieldWithPath("data.roadAddress").description("도로명 주소"),
+                                    fieldWithPath("data.zipCode").description("우편번호"),
+                                    fieldWithPath("data.addressDetail").description("상세 주소")
+                            ))
+                    ));
+        }
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("PUT - 기본 주소 설정 변경")
+    void updateDefaultAddress() throws Exception {
+        Long userId = 1L;
+        Long addressId = 10L;
+
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            mockMvc.perform(put("/users/me/addresses/{address-id}/default", addressId)
+                            .header("X-User-Id", userId))
+                    .andExpect(status().isOk())
+                    .andDo(document("address-set-default-put",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                            pathParameters(parameterWithName("address-id").description("기본 주소로 설정할 주소 ID")),
+                            responseFields(withHeader())
+                    ));
+        }
+    }
+
 }

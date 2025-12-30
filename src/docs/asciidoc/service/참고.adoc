@@ -1,0 +1,25 @@
+// 1. 일단 아래 코드 전체 복붙 ㄱ
+// 2. 제목 수정 (==== 이부분)
+// 3. 주석 전부 해제
+// 4. {snippets} 뒤에 테스트코드에서 지정한 이름으로 수정
+// 5. 빨간줄 뜨면 지우기
+
+
+==== 제목제목제목
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/수정하기/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/수정하기/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/수정하기/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/수정하기/request-fields.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/수정하기/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/수정하기/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/수정하기/response-fields.adoc[]

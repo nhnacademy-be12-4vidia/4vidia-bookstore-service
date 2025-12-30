@@ -1,74 +1,105 @@
-// 등급 R/C/U/D 기능
+// 회원 좋아요 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 회원 좋아요 리스트 조회(List)
+
+==== 좋아요 리스트 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-likes-get/http-request.adoc[]
+include::{snippets}/like-all-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/like-all-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-likes-get/request-headers.adoc[]
+include::{snippets}/like-all-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/like-all-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/like-all-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-likes-get/http-response.adoc[]
+include::{snippets}/like-all-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/user-likes-get/response-fields.adoc[]
+include::{snippets}/like-all-get/response-fields.adoc[]
 
 
-==== 회원 좋아요 리스트 조회(Pageable)
+==== 좋아요 페이지 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-likes-page-get/http-request.adoc[]
+include::{snippets}/like-page-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/like-page-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-likes-page-get/request-headers.adoc[]
+include::{snippets}/like-page-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/like-page-get/request-fields.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/like-page-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-likes-page-get/http-response.adoc[]
+include::{snippets}/like-page-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/user-likes-page-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
-==== 회원 좋아요 등록
+include::{snippets}/like-page-get/response-fields.adoc[]
+
+
+
+==== 좋아요 등록
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-like-post/http-request.adoc[]
+include::{snippets}/like-add-post/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/user-like-post/path-parameters.adoc[]
+include::{snippets}/like-add-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-like-post/request-headers.adoc[]
+include::{snippets}/like-add-post/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/like-add-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/like-add-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-like-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH) - 없으므로 생략
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-==== 회원 좋아요 삭제
+include::{snippets}/like-add-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/like-add-post/response-fields.adoc[]
+
+
+
+
+==== 좋아요 삭제
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-like-delete/http-request.adoc[]
+include::{snippets}/like-remove-delete/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/user-like-delete/path-parameters.adoc[]
+include::{snippets}/like-remove-delete/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-like-delete/request-headers.adoc[]
+include::{snippets}/like-remove-delete/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/like-remove-delete/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/like-remove-delete/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-like-delete/http-response.adoc[]
+include::{snippets}/like-remove-delete/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/like-remove-delete/response-fields.adoc[]
 
 
 
-==== 회원 좋아요 전체 삭제
+==== 좋아요 전체 삭제
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-likes-delete/http-request.adoc[]
+include::{snippets}/like-remove-all-delete/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/like-remove-all-delete/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-likes-delete/request-headers.adoc[]
+include::{snippets}/like-remove-all-delete/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/like-remove-all-delete/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/like-remove-all-delete/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-likes-delete/http-response.adoc[]
-// --------------------------------------------------------------
+include::{snippets}/like-remove-all-delete/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/like-remove-all-delete/response-fields.adoc[]

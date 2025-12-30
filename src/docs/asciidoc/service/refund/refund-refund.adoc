@@ -1,35 +1,69 @@
 // 반품 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 반품 신청 가능한 도서 리스트 조회
+
+==== 반품 신청 가능한 도서 목록 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/refund-list-get/http-request.adoc[]
+include::{snippets}/refund-available-list-get/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/refund-list-get/path-parameters.adoc[]
+include::{snippets}/refund-available-list-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/refund-available-list-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/refund-available-list-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/refund-available-list-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/refund-list-get/http-response.adoc[]
+include::{snippets}/refund-available-list-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/refund-list-get/response-fields.adoc[]
+include::{snippets}/refund-available-list-get/response-fields.adoc[]
+
+
+
+==== 반품 신청서 작성
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/refund-register-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/refund-register-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/refund-register-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/refund-register-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/refund-register-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/refund-register-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/refund-register-post/response-fields.adoc[]
+
+
+
 
 
 ==== 반품 신청 내역 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/refund-history-get/http-request.adoc[]
+include::{snippets}/refund-my-list-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/refund-my-list-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/refund-history-get/request-headers.adoc[]
+include::{snippets}/refund-my-list-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/refund-my-list-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
-include::{snippets}/refund-history-get/query-parameters.adoc[]
+include::{snippets}/refund-my-list-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/refund-history-get/http-response.adoc[]
+include::{snippets}/refund-my-list-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/refund-history-get/response-fields.adoc[]
+include::{snippets}/refund-my-list-get/response-fields.adoc[]
+
 
 
 
@@ -37,28 +71,18 @@ include::{snippets}/refund-history-get/response-fields.adoc[]
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/refund-counts-get/http-request.adoc[]
+include::{snippets}/refund-my-counts-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/refund-my-counts-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/refund-counts-get/request-headers.adoc[]
+include::{snippets}/refund-my-counts-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/refund-my-counts-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/refund-my-counts-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/refund-counts-get/http-response.adoc[]
+include::{snippets}/refund-my-counts-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/refund-counts-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
-==== 반품 신청서 작성
-:table-number: 0
+include::{snippets}/refund-my-counts-get/response-fields.adoc[]
 
-.요청 (Request)
-include::{snippets}/refund-register-post/http-request.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/refund-register-post/request-fields.adoc[]
-
-.응답 (Response)
-include::{snippets}/refund-register-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-// --------------------------------------------------------------

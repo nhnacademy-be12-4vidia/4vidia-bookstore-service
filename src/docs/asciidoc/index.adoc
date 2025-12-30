@@ -6,6 +6,7 @@
 :toclevels: 3
 :sectlinks:
 :sectnums:
+:sectanchors:
 
 // 1. 공통 사항
 == 개요
@@ -44,6 +45,10 @@ include::service/point/point-api.adoc[]
 // 7. Refund 서비스
 == 반품(Refund) API
 include::service/refund/refund-api.adoc[]
+
+// 8. Global 서비스
+== 글로벌(Global) API
+include::service/global/global-api.adoc[]
 
 
 // 9.

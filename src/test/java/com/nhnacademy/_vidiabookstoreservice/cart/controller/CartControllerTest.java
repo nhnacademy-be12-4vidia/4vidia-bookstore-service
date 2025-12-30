@@ -6,10 +6,11 @@ import com.nhnacademy._vidiabookstoreservice.cart.dto.request.UpdateCartItemRequ
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.BookSummaryResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartBookResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.dto.response.CartResponse;
-import com.nhnacademy._vidiabookstoreservice.cart.dto.response.GuestCartStatusResponse;
 import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -28,13 +29,15 @@ import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(CartController.class)
 class CartControllerTest extends SupportControllerTest {
 
     @MockitoBean
     private CartService cartService;
 
     @Test
-    @DisplayName("장바구니 조회")
+    @Order(1)
+    @DisplayName("GET - 장바구니 조회")
     void getCart() throws Exception {
         BookSummaryResponse book = new BookSummaryResponse(1L, "테스트 도서", 10000, 9000, "image.jpg");
         CartBookResponse item = new CartBookResponse(book, 2);
@@ -47,8 +50,9 @@ class CartControllerTest extends SupportControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("cart-get",
+                        preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-                        requestHeaders(headerWithName("X-User-Id").description("회원 식별 ID").optional()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         responseFields(withHeader(
                                 fieldWithPath("data.userId").description("사용자 ID"),
                                 fieldWithPath("data.items[]").description("장바구니 아이템 목록"),
@@ -63,27 +67,8 @@ class CartControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("비회원 장바구니 상태 확인")
-    void guestCartStatus() throws Exception {
-        given(cartService.countGuestCartItems(anyLong())).willReturn(3);
-
-        mockMvc.perform(get("/cart/guest/status")
-                        .header("X-Guest-Id", "12345"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.hasGuestCart").value(true))
-                .andExpect(jsonPath("$.data.itemCount").value(3))
-                .andDo(document("cart-guest-status",
-                        preprocessResponse(prettyPrint()),
-                        requestHeaders(headerWithName("X-Guest-Id").description("비회원 식별 ID")),
-                        responseFields(withHeader(
-                                fieldWithPath("data.hasGuestCart").description("비회원 장바구니 존재 여부"),
-                                fieldWithPath("data.itemCount").description("장바구니 아이템 개수")
-                        ))
-                ));
-    }
-
-    @Test
-    @DisplayName("장바구니 아이템 추가")
+    @Order(2)
+    @DisplayName("POST - 장바구니 아이템 추가")
     void addItem() throws Exception {
         AddCartItemRequest request = new AddCartItemRequest(1L, 3);
 
@@ -92,7 +77,10 @@ class CartControllerTest extends SupportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andDo(document("cart-item-add",
+                .andDo(document("cart-item-add-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         requestFields(
                                 fieldWithPath("bookId").description("도서 ID"),
                                 fieldWithPath("quantity").description("추가 수량")
@@ -102,7 +90,8 @@ class CartControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("장바구니 아이템 수량 수정")
+    @Order(3)
+    @DisplayName("PUT - 장바구니 아이템 수량 수정")
     void updateCartBook() throws Exception {
         UpdateCartItemRequest request = new UpdateCartItemRequest(5);
 
@@ -111,7 +100,10 @@ class CartControllerTest extends SupportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andDo(document("cart-item-update",
+                .andDo(document("cart-item-update-put",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         pathParameters(parameterWithName("book-id").description("도서 ID")),
                         requestFields(fieldWithPath("quantity").description("변경할 수량")),
                         responseFields(withHeader())
@@ -119,42 +111,48 @@ class CartControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("장바구니 전체 삭제 (회원용)")
+    @Order(4)
+    @DisplayName("DELETE - 장바구니 전체 삭제 (회원)")
     void deleteCart() throws Exception {
         mockMvc.perform(delete("/cart")
                         .header("X-User-Id", "1"))
                 .andExpect(status().isOk())
-                .andDo(document("cart-delete-all",
-                        requestHeaders(headerWithName("X-User-Id").description("회원 ID")),
+                .andDo(document("cart-all-delete",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         responseFields(withHeader())
                 ));
     }
 
     @Test
-    @DisplayName("장바구니 특정 도서 삭제")
+    @Order(5)
+    @DisplayName("DELETE - 장바구니 아이템 삭제 (단일)")
     void deleteItem() throws Exception {
         mockMvc.perform(delete("/cart/items/{book-id}", 1L)
                         .header("X-User-Id", "1"))
                 .andExpect(status().isOk())
                 .andDo(document("cart-item-delete",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         pathParameters(parameterWithName("book-id").description("삭제할 도서 ID")),
                         responseFields(withHeader())
                 ));
     }
 
     @Test
-    @DisplayName("장바구니 선택 아이템 삭제")
+    @Order(6)
+    @DisplayName("DELETE - 장바구니 아이템 삭제 (다중)")
     void deleteSelectItems() throws Exception {
         mockMvc.perform(delete("/cart/items?itemIds=1&itemIds=2&itemIds=3")
                         .header("X-User-Id", "1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andDo(document("cart-items-delete-selected",
+                .andDo(document("cart-items-selected-delete",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-                        requestHeaders(
-                                headerWithName("X-User-Id").description("회원 식별 ID (또는 X-Guest-Id)").optional()
-                        ),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         queryParameters(
                                 parameterWithName("itemIds").description("삭제할 도서 ID 리스트 (예: itemIds=1&itemIds=2)")
                         ),
@@ -163,51 +161,85 @@ class CartControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("비회원 장바구니를 회원 장바구니로 병합")
+    @Order(7)
+    @DisplayName("GET - 장바구니 상태 확인 (비회원)")
+    void guestCartStatus() throws Exception {
+        given(cartService.countGuestCartItems(anyLong())).willReturn(3);
+
+        mockMvc.perform(get("/cart/guest/status")
+                        .header("X-Guest-Id", "12345"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.hasGuestCart").value(true))
+                .andExpect(jsonPath("$.data.itemCount").value(3))
+                .andDo(document("cart-guest-status-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-Guest-Id").description("비회원 고유 ID")),
+                        responseFields(withHeader(
+                                fieldWithPath("data.hasGuestCart").description("비회원 장바구니 존재 여부"),
+                                fieldWithPath("data.itemCount").description("장바구니 아이템 개수")
+                        ))
+                ));
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("POST - 장바구니 병합 (비회원 -> 회원)")
     void mergeGuestToMember() throws Exception {
         mockMvc.perform(post("/cart/merge-guest")
                         .header("X-User-Id", "1")
                         .header("X-Guest-Id", "12345"))
                 .andExpect(status().isOk())
-                .andDo(document("cart-merge",
+                .andDo(document("cart-merge- post",
                         requestHeaders(
-                                headerWithName("X-User-Id").description("회원 ID"),
-                                headerWithName("X-Guest-Id").description("비회원 ID")
+                                headerWithName("X-User-Id").description("회원 고유 ID"),
+                                headerWithName("X-Guest-Id").description("비회원 고유 ID")
                         ),
                         responseFields(withHeader())
                 ));
     }
 
     @Test
-    @DisplayName("로그아웃 시 Redis 데이터를 DB로 동기화")
-    void logoutSync() throws Exception {
-        mockMvc.perform(post("/cart/logout-sync")
-                        .header("X-User-Id", "1"))
-                .andExpect(status().isOk())
-                .andDo(document("cart-logout-sync",
-                        responseFields(withHeader())
-                ));
-    }
-
-    @Test
-    @DisplayName("로그인 시 DB 데이터를 Redis로 동기화")
-    void loginSync() throws Exception {
-        mockMvc.perform(post("/cart/login-sync")
-                        .header("X-User-Id", "1"))
-                .andExpect(status().isOk())
-                .andDo(document("cart-login-sync",
-                        responseFields(withHeader())
-                ));
-    }
-
-    @Test
-    @DisplayName("비회원 장바구니만 삭제")
+    @Order(9)
+    @DisplayName("DELETE - 장바구니 삭제 (비회원)")
     void clearGuestCart() throws Exception {
         mockMvc.perform(delete("/cart/guest")
                         .header("X-Guest-Id", "12345"))
                 .andExpect(status().isOk())
-                .andDo(document("cart-guest-clear",
+                .andDo(document("cart-guest-clear-delete",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         requestHeaders(headerWithName("X-Guest-Id").description("비회원 ID")),
+                        responseFields(withHeader())
+                ));
+    }
+
+    @Test
+    @Order(10)
+    @DisplayName("POST - 로그인 시 동기화 (DB -> Redis)")
+    void loginSync() throws Exception {
+        mockMvc.perform(post("/cart/login-sync")
+                        .header("X-User-Id", "1"))
+                .andExpect(status().isOk())
+                .andDo(document("cart-login-sync-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                        responseFields(withHeader())
+                ));
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("POST - 로그아웃 시 동기화 (Redis -> DB)")
+    void logoutSync() throws Exception {
+        mockMvc.perform(post("/cart/logout-sync")
+                        .header("X-User-Id", "1"))
+                .andExpect(status().isOk())
+                .andDo(document("cart-logout-sync-post",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                         responseFields(withHeader())
                 ));
     }

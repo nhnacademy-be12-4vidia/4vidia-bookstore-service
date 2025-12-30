@@ -8,8 +8,10 @@ import com.nhnacademy._vidiabookstoreservice.point.dto.response.PointTotalRespon
 import com.nhnacademy._vidiabookstoreservice.point.service.PointQueryService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,10 +36,8 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(PointQueryController.class)
 class PointQueryControllerTest extends SupportControllerTest {
-
-    @MockitoBean
-    private PointQueryService queryService;
 
     @MockitoBean
     private PointQueryService pointQueryService;
@@ -46,7 +46,8 @@ class PointQueryControllerTest extends SupportControllerTest {
     private UserService userService;
 
     @Test
-    @DisplayName("[보유 포인트 조회]")
+    @Order(1)
+    @DisplayName("GET - 보유 포인트 조회")
     void getRemainPoint() throws Exception {
         Long userId = 1L;
         int remainPoint = 5000;
@@ -73,7 +74,8 @@ class PointQueryControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[소멸 예정 포인트 조회]")
+    @Order(2)
+    @DisplayName("GET - 소멸 예정 포인트 조회")
     void getExpireSoon() throws Exception {
         Long userId = 1L;
         int expirePoint = 1000;
@@ -104,7 +106,8 @@ class PointQueryControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[포인트 전체 내역 조회]")
+    @Order(3)
+    @DisplayName("GET - 포인트 전체 내역 조회")
     void getHistory() throws Exception {
         Long userId = 1L;
         PointHistoryResponse history = new PointHistoryResponse(
@@ -117,7 +120,7 @@ class PointQueryControllerTest extends SupportControllerTest {
             given(mockContext.getUserId()).willReturn(userId);
             mockedUserContext.when(UserContext::get).thenReturn(mockContext);
 
-            given(queryService.getHistory(eq(userId), anyString(), any(), any(), anyInt(), anyInt()))
+            given(pointQueryService.getHistory(eq(userId), anyString(), any(), any(), anyInt(), anyInt()))
                     .willReturn(pageResponse);
 
             mockMvc.perform(get("/users/me/points/history")
@@ -148,7 +151,11 @@ class PointQueryControllerTest extends SupportControllerTest {
 
                                     fieldWithPath("data.pageable.pageNumber").description("현재 페이지 번호"),
                                     fieldWithPath("data.pageable.pageSize").description("페이지 크기"),
-                                    fieldWithPath("data.pageable.sort").description("정렬 정보 (배열)"),
+
+                                    fieldWithPath("data.pageable.sort.empty").description("정렬 정보 빈 여부"),
+                                    fieldWithPath("data.pageable.sort.sorted").description("정렬 여부"),
+                                    fieldWithPath("data.pageable.sort.unsorted").description("미정렬 여부"),
+
                                     fieldWithPath("data.pageable.offset").description("해당 페이지의 시작 오프셋"),
                                     fieldWithPath("data.pageable.paged").description("페이징 정보 포함 여부"),
                                     fieldWithPath("data.pageable.unpaged").description("페이징 정보 미포함 여부"),
@@ -158,7 +165,11 @@ class PointQueryControllerTest extends SupportControllerTest {
                                     fieldWithPath("data.totalElements").description("전체 데이터 수"),
                                     fieldWithPath("data.size").description("페이지당 데이터 수"),
                                     fieldWithPath("data.number").description("현재 페이지 번호"),
-                                    fieldWithPath("data.sort").description("정렬 정보 (배열)"),
+
+                                    fieldWithPath("data.sort.empty").description("정렬 정보 빈 여부"),
+                                    fieldWithPath("data.sort.sorted").description("정렬 여부"),
+                                    fieldWithPath("data.sort.unsorted").description("미정렬 여부"),
+
                                     fieldWithPath("data.first").description("첫 페이지 여부"),
                                     fieldWithPath("data.numberOfElements").description("현재 페이지의 엘리먼트 수"),
                                     fieldWithPath("data.empty").description("결과가 비어있는지 여부")
