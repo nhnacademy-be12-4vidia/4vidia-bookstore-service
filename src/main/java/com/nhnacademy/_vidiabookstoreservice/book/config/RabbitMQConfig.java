@@ -5,13 +5,20 @@ import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@AutoConfigureOrder(0)
+@AutoConfigureOrder()
 @Configuration
 public class RabbitMQConfig {
 
     public static final String EXCHANGE = "discount.exchange";
     public static final String QUEUE = "discount.policy.reprice.queue";
     public static final String ROUTING_KEY = "discount.policy.changed";
+
+    public static final String STORAGE_EXCHANGE = "storage.exchange";
+
+    @Bean
+    public TopicExchange storageExchange() {
+        return new TopicExchange(STORAGE_EXCHANGE);
+    }
 
     @Bean
     public TopicExchange discountExchange() {
