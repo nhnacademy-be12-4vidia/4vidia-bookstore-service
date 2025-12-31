@@ -69,78 +69,70 @@ jobs:
           script_stop: true
           script: |
             set -e
-            
             echo "$GH_TOKEN" | docker login ghcr.io -u baejongto --password-stdin
             cd ~
             
+            # 1번 2번 이미지 가져오기
             echo "Pulling latest images..."
             docker compose pull 4vidia-bookstore-service-1 4vidia-bookstore-service-2
             
+            # 1번 서버 OUT_OF_SERVICE으로 바꿔서 접근 못하게 하고 시간 기다린후 죽음
             echo "Setting GREEN container DOWN in Eureka..."
             curl -X PUT \
             "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-1/status?value=OUT_OF_SERVICE" || true
-            
-            # echo "Waiting for Gateway cache refresh (30s)..."
             sleep 30  # 게이트웨이가 명단 갱신할 시간 벌어주기
             
-            # 2. GREEN (1번) 배포 & 재시작
+            # 1번 서버 다시 배포하기
             echo "Starting 4vidia-bookstore-service-1 (GREEN)..."
             docker compose up -d 4vidia-bookstore-service-1
             
-            sleep 30
-            
+            # 1번 헬스 체크를 하여 성공적으로 UP즉 배포 되었을때 2번 트래픽 로직 시작
             echo "Waiting for GREEN health check..."
             HEALTH_CHECK_COUNT=0
-            while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
-            if curl -s http://localhost:10461/actuator/health | grep -q '"status":"UP"'; then
-            echo "4vidia-bookstore-service-1 (GREEN) is UP."
-            break
-            
-            echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
-            sleep 10
-            fi
-            HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
+              while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
+              if curl -s http://localhost:10471/actuator/health | grep -q '"status":"UP"'; then
+                echo "4vidia-bookstore-service-1 (GREEN) is UP."
+                break
+              fi
+              echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
+              sleep 10
+              HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
             done
-            
             if [ $HEALTH_CHECK_COUNT -eq 12 ]; then
-            echo "GREEN container failed. Aborting deployment."
-            exit 1
+              echo "GREEN container failed. Aborting deployment."
+              exit 1
             fi
-                        
-            # BLUE (bookstore-service-2) 트래픽 드레인
+            
+            # 2번 서버 OUT_OF_SERVICE으로 바꿔서 접근 못하게 하고 시간 기다린후 죽음
             echo "Setting BLUE container DOWN in Eureka..."
             curl -X PUT \
             "http://${ADMIN_ID}:${ADMIN_PASSWORD}@localhost:10465/eureka/v2/apps/4VIDIA-BOOKSTORE-SERVICE/4vidia-bookstore-service-2/status?value=OUT_OF_SERVICE" || true
-            
             sleep 30
             
-            # BLUE 재기동
-            echo "Stopping 4vidia-bookstore-service-2 (BLUE)..."
-            docker compose stop 4vidia-bookstore-service-2
-            sleep 30
+            # 2번 서버 띄우기
+            #echo "Stopping 4vidia-bookstore-service-2 (BLUE)..."
+            #docker compose stop 4vidia-bookstore-service-2
             
             echo "Starting 4vidia-bookstore-service-2 (BLUE)..."
             docker compose up -d 4vidia-bookstore-service-2
             
-            sleep 30
-            
+            # 2번 헬스 체크를 하여 성공적으로 UP즉 배포 되었을때 이미지 정리와 성공 출력
             echo "Waiting for BLUE health check..."
             HEALTH_CHECK_COUNT=0
             while [ $HEALTH_CHECK_COUNT -lt 12 ]; do
-            if curl -s http://localhost:10462/actuator/health | grep -q '"status":"UP"'; then
-            echo "4vidia-bookstore-service-2 (BLUE) is UP."
-            break
-            fi
-            
-            echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
-            sleep 10
-            HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
+              if curl -s http://localhost:10472/actuator/health | grep -q '"status":"UP"'; then
+                echo "4vidia-bookstore-service-2 (BLUE) is UP."
+                break
+              fi
+              echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
+              sleep 10
+              HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
             done
-            
             if [ $HEALTH_CHECK_COUNT -eq 12 ]; then
-            echo "BLUE container failed."
-            exit 1
+              echo "BLUE container failed."
+              exit 1
             fi
+            
             echo "Cleaning up unused Docker images..."
             docker image prune -f
             
