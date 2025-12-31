@@ -1,33 +1,40 @@
-// 도서 카테고리 R/C/U/D 기능
+// 카테고리 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 카테고리 전체 목록 조회
+==== 카테고리 목록 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/book-category-list-get/http-request.adoc[]
+include::{snippets}/category-list-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/category-list-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/category-list-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/category-list-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/category-list-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/book-category-list-get/http-response.adoc[]
+include::{snippets}/category-list-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/book-category-list-get/response-fields.adoc[]
+include::{snippets}/category-list-get/response-fields.adoc[]
 
 
-==== 카테고리 플랫 목록 조회
+==== 카테고리 목록 조회 (flat)
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/book-category-flat-list-get/http-request.adoc[]
+include::{snippets}/category-flat-list-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/category-flat-list-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/category-flat-list-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/category-flat-list-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/category-flat-list-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/book-category-flat-list-get/http-response.adoc[]
+include::{snippets}/category-flat-list-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/book-category-flat-list-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-// --------------------------------------------------------------
+include::{snippets}/category-flat-list-get/response-fields.adoc[]

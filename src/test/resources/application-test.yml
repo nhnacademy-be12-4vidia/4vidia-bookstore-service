@@ -150,3 +150,10 @@ image:
 
 server:
   port: 8084
+
+management:
+  endpoints:
+    enabled-by-default: false
+  health:
+    defaults:
+      enabled: false

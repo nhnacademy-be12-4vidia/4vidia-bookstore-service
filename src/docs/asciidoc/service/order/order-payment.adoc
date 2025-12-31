@@ -1,38 +1,43 @@
 // 결제 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
 ==== 결제 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/order-payment-get/http-request.adoc[]
-.Path Parameters
-include::{snippets}/order-payment-get/path-parameters.adoc[]
+include::{snippets}/payment-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/payment-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/payment-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/payment-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/payment-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/order-payment-get/http-response.adoc[]
+include::{snippets}/payment-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/order-payment-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
+include::{snippets}/payment-get/response-fields.adoc[]
+
+
 ==== 결제 확정/저장 (회원)
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/order-payment-confirm-post/http-request.adoc[]
+include::{snippets}/payment-confirm-member-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/payment-confirm-member-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/order-payment-confirm-post/request-headers.adoc[]
-.요청 필드 (Request fields)
-include::{snippets}/order-payment-confirm-post/request-fields.adoc[]
+include::{snippets}/payment-confirm-member-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/payment-confirm-member-post/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
-include::{snippets}/order-payment-confirm-post/query-parameters.adoc[]
-
+include::{snippets}/payment-confirm-member-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/order-payment-confirm-post/http-response.adoc[]
+include::{snippets}/payment-confirm-member-post/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/order-payment-confirm-post/response-fields.adoc[]
+include::{snippets}/payment-confirm-member-post/response-fields.adoc[]
 
 
 
@@ -40,32 +45,38 @@ include::{snippets}/order-payment-confirm-post/response-fields.adoc[]
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/order-payment-confirm-guest-post/http-request.adoc[]
+include::{snippets}/payment-confirm-guest-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/payment-confirm-guest-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/order-payment-confirm-guest-post/request-headers.adoc[]
-.요청 필드 (Request fields)
-include::{snippets}/order-payment-confirm-guest-post/request-fields.adoc[]
+include::{snippets}/payment-confirm-guest-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/payment-confirm-guest-post/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
-include::{snippets}/order-payment-confirm-guest-post/query-parameters.adoc[]
+include::{snippets}/payment-confirm-guest-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/order-payment-confirm-guest-post/http-response.adoc[]
+include::{snippets}/payment-confirm-guest-post/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/order-payment-confirm-guest-post/response-fields.adoc[]
+include::{snippets}/payment-confirm-guest-post/response-fields.adoc[]
+
 
 
 ==== 프론트 결제 처리 중 실패
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/order-payment-fail-rollback-post/http-request.adoc[]
+include::{snippets}/payment-rollback-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/payment-rollback-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/payment-rollback-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
-include::{snippets}/order-payment-fail-rollback-post/request-fields.adoc[]
+include::{snippets}/payment-rollback-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/payment-rollback-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/order-payment-fail-rollback-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-// --------------------------------------------------------------
+include::{snippets}/payment-rollback-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/payment-rollback-post/response-fields.adoc[]

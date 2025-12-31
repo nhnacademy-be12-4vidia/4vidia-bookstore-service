@@ -1,16 +1,12 @@
 package com.nhnacademy._vidiabookstoreservice.order.controller;
 
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
-import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCancelRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
-import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentFailRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaymentResponse;
 import com.nhnacademy._vidiabookstoreservice.order.service.OrderService;
 import com.nhnacademy._vidiabookstoreservice.order.service.PaymentService;
-import com.nhnacademy._vidiabookstoreservice.order.service.impl.TossPaymentServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

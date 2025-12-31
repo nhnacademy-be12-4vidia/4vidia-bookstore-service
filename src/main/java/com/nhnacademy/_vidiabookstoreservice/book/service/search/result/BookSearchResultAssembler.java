@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.search.result;
 
-import co.elastic.clients.elasticsearch.xpack.usage.Base;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BaseBookListResponse;
@@ -11,15 +10,15 @@ import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiCacheRes
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.UserLikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor

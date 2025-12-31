@@ -1,77 +1,104 @@
 // 주문 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 주문 내역 상세보기
+==== 주문 내역 상세보기(회원)
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/order-find-get/http-request.adoc[]
+include::{snippets}/order-detail-get/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/order-find-get/path-parameters.adoc[]
+include::{snippets}/order-detail-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/order-find-get/request-headers.adoc[]
+include::{snippets}/order-detail-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/order-detail-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/order-detail-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/order-find-get/http-response.adoc[]
+include::{snippets}/order-detail-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/order-find-get/response-fields.adoc[]
+include::{snippets}/order-detail-get/response-fields.adoc[]
 
 
-==== 주문 내역 상세보기 (비회원)
+==== 주문 내역 상세보기(비회원)
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/order-find-guest-post/http-request.adoc[]
+include::{snippets}/order-guest-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/order-guest-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/order-guest-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
-include::{snippets}/order-find-guest-post/request-fields.adoc[]
+include::{snippets}/order-guest-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/order-guest-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/order-find-guest-post/http-response.adoc[]
+include::{snippets}/order-guest-post/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/order-find-guest-post/response-fields.adoc[]
+include::{snippets}/order-guest-post/response-fields.adoc[]
 
 
-==== 주문 결제 금액 조회
+==== 주문 결제금액 조회
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/order-amount-get/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
 include::{snippets}/order-amount-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/order-amount-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/order-amount-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/order-amount-get/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/order-amount-get/http-response.adoc[]
 .응답 필드 (Response Fields)
 include::{snippets}/order-amount-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
+
+
 ==== 주문 생성
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/order-create-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/order-create-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/order-create-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
 include::{snippets}/order-create-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/order-create-post/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/order-create-post/http-response.adoc[]
 .응답 필드 (Response Fields)
 include::{snippets}/order-create-post/response-fields.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-==== 주문 취소 (배송 전)
+
+
+
+==== 주문 취소
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/order-cancel-put/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
 include::{snippets}/order-cancel-put/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/order-cancel-put/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/order-cancel-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/order-cancel-put/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/order-cancel-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/order-cancel-put/response-fields.adoc[]
 
 
 ==== 구매 확정
@@ -81,9 +108,14 @@ include::{snippets}/order-cancel-put/http-response.adoc[]
 include::{snippets}/order-confirm-put/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
 include::{snippets}/order-confirm-put/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/order-confirm-put/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/order-confirm-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/order-confirm-put/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/order-confirm-put/http-response.adoc[]
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-// --------------------------------------------------------------
+.응답 필드 (Response Fields)
+include::{snippets}/order-confirm-put/response-fields.adoc[]

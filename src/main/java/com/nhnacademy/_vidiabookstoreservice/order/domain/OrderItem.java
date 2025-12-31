@@ -4,7 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -59,7 +58,7 @@ public class OrderItem {
 
     /**
      * 반품 가능 여부 판단
-     * 조건: 구매 미확정이거나, 가장 최근 반품 신청이 거절된 경우
+     * 반품 가능 조건 : 구매 미확정이거나, 가장 최근 반품 신청 결과가 거절인 경우
      */
     public boolean isReturnable() {
         if (this.confirmStatus == ConfirmStatus.CONFIRMED) {

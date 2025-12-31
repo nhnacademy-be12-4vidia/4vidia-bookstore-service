@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
@@ -43,15 +46,6 @@ public class PointQueryController {
 
     // 포인트 전체 내역 조회
 
-//    @GetMapping("/history")
-//    public ResponseEntity<Page<PointHistoryResponse>> getHistory(
-//            @RequestParam(defaultValue = "ALL") String category,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ){
-//        Long userId = UserContext.get().getUserId();
-//        return ResponseEntity.ok(queryService.getHistory(userId, category,page, size));
-//    }
 @GetMapping("/history")
 public ResponseEntity<Page<PointHistoryResponse>> getHistory(
         @RequestParam(defaultValue = "ALL") String category,
@@ -75,8 +69,4 @@ public ResponseEntity<Page<PointHistoryResponse>> getHistory(
 
     return ResponseEntity.ok(queryService.getHistory(userId, category, start, end, page, size));
 }
-
-
-
-
 }

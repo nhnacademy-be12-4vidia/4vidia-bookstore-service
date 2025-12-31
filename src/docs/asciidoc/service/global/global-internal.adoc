@@ -1,0 +1,63 @@
+// global R/C/U/D 기능
+
+
+==== 내부 사용자 이메일 조회
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/internal-user-by-email-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/internal-user-by-email-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/internal-user-by-email-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/internal-user-by-email-get/request-fields.adoc[]
+.쿼리 파라미터 (Query-Parameters)
+include::{snippets}/internal-user-by-email-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/internal-user-by-email-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/internal-user-by-email-get/response-fields.adoc[]
+
+
+
+==== 페이코 계정 조회/생성
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/internal-payco-find-or-create-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/internal-payco-find-or-create-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/internal-payco-find-or-create-post/request-headers.adoc[]
+.요청 필드 (Request Fields)
+include::{snippets}/internal-payco-find-or-create-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/internal-payco-find-or-create-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/internal-payco-find-or-create-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/internal-payco-find-or-create-post/response-fields.adoc[]
+
+
+
+==== 유저 존재 여부 확인
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/internal-user-exists-get/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/internal-user-exists-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/internal-user-exists-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/internal-user-exists-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/internal-user-exists-get/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/internal-user-exists-get/http-response.adoc[]
+// .응답 필드 (Response Fields)
+// include::{snippets}/internal-user-exists-get/response-fields.adoc[]

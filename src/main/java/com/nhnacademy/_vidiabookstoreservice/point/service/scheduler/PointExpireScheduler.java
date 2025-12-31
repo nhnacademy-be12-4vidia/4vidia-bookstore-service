@@ -5,7 +5,6 @@ import com.nhnacademy._vidiabookstoreservice.point.domain.PointDetail;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.point.repository.PointDetailRepository;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
-import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

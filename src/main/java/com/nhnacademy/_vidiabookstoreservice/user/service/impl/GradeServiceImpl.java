@@ -1,9 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.user.service.impl;
+
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
 import com.nhnacademy._vidiabookstoreservice.point.domain.enums.PointReason;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
+import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradePolicyResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.UserNetSum;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.GradeNotFoundException;
@@ -14,7 +16,6 @@ import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -73,7 +74,6 @@ public class GradeServiceImpl implements GradeService {
      * 월간 등급 산정 (최근 3개월 순수 주문금액 기준)
      * - 스케줄러/수동 실행 어디서든 호출 가능하도록 서비스로 분리
      */
-//    @Transactional
     public int recalculateMonthlyGrades() {
         ZoneId zone = ZoneId.of("Asia/Seoul");
 
@@ -81,14 +81,6 @@ public class GradeServiceImpl implements GradeService {
         YearMonth ym = YearMonth.now(zone);
         LocalDateTime to = ym.atDay(1).atStartOfDay();
         LocalDateTime from = ym.minusMonths(3).atDay(1).atStartOfDay();
-
-        // 테스트용
-//        LocalDateTime to = LocalDateTime.now(zone);
-//        LocalDateTime from = to.minusMonths(3)
-//                .withDayOfMonth(1)
-//                .toLocalDate()
-//                .atStartOfDay();
-
 
         // 유저별 순수금액 집계 (주문한 유저만 결과가 옴)
         List<UserNetSum> rows = orderRepository.findUserNetSumLast3Months(from, to, PointReason.ORDER_CANCEL_REFUND);
@@ -152,8 +144,29 @@ public class GradeServiceImpl implements GradeService {
         return GradeName.WELCOME;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<GradePolicyResponse> getGradePolicies() {
+        // GradeName 순서대로(코드 기준)
+        return List.of(
+                policy(GradeName.WELCOME, 0L, 99_999L, "기본 등급"),
+                policy(GradeName.REGULAR, 100_000L, 199_999L, "순수주문금액 10만원 이상"),
+                policy(GradeName.ROYAL, 200_000L, 299_999L, "순수주문금액 20만원 이상"),
+                policy(GradeName.GOLD, 300_000L, 399_999L, "순수주문금액 30만원 이상"),
+                policy(GradeName.PLATINUM, 400_000L, null, "순수주문금액 40만원 이상")
+        );
+    }
 
+    private GradePolicyResponse policy(GradeName name, Long min, Long max, String desc) {
+        Grade grade = gradeRepository.findByGradeName(name);
+        if (grade == null) throw new GradeNotFoundException(name);
 
-
-
+        return GradePolicyResponse.builder()
+                .gradeName(name.name())
+                .pointRate(grade.getPointRate())
+                .minNetAmount(min)
+                .maxNetAmount(max)
+                .desc(desc)
+                .build();
+    }
 }

@@ -18,9 +18,9 @@ public class UserDormantScheduler {
     private final AuthService authService;
 
     /**
-     * 매일 새벽 3시 실행
+     * 매일 새벽 00:10에  실행
      */
-    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 10 0 * * *", zone = "Asia/Seoul")
     public void markDormantUsers() {
         ZoneId zone = ZoneId.of("Asia/Seoul");
         LocalDateTime threeMonthAgo = LocalDateTime.now(zone).minusMonths(3);

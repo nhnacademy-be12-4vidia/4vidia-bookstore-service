@@ -1,6 +1,5 @@
 package com.nhnacademy._vidiabookstoreservice.refund.service;
 
-import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundCountResponse;
@@ -8,8 +7,6 @@ import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundHistoryGr
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 public interface RefundService {
     RefundResponse getRefundList(long orderId);

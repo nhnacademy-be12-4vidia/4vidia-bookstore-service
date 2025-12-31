@@ -4,7 +4,6 @@ import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.domain.ReviewImage;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record AdminReviewResponse(

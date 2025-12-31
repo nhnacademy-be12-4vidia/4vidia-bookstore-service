@@ -1,21 +1,25 @@
 // 도서 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 통합 검색 (ES)
+// todo : 순서가..?
+
+==== Elastic 검색
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/book-search-get/http-request.adoc[]
+include::{snippets}/book-elastic-search-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/book-elastic-search-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/book-search-get/request-headers.adoc[]
+include::{snippets}/book-elastic-search-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-elastic-search-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
-include::{snippets}/book-search-get/query-parameters.adoc[]
+include::{snippets}/book-elastic-search-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/book-search-get/http-response.adoc[]
+include::{snippets}/book-elastic-search-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/book-search-get/response-fields.adoc[]
+include::{snippets}/book-elastic-search-get/response-fields.adoc[]
 
 
 
@@ -24,6 +28,12 @@ include::{snippets}/book-search-get/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/book-search-ai-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/book-search-ai-get/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/book-search-ai-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-search-ai-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
 include::{snippets}/book-search-ai-get/query-parameters.adoc[]
 
@@ -34,11 +44,17 @@ include::{snippets}/book-search-ai-get/response-fields.adoc[]
 
 
 
-==== 태그 기반 검색 (다중)
+==== 태그 검색(다중)
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/book-search-tags-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/book-search-tags-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/book-search-tags-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-search-tags-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
 include::{snippets}/book-search-tags-get/query-parameters.adoc[]
 
@@ -50,13 +66,17 @@ include::{snippets}/book-search-tags-get/response-fields.adoc[]
 
 
 
-==== 특정 태그 기반 검색
+==== 태그 검색(단일)
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/book-search-specific-tag-get/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
 include::{snippets}/book-search-specific-tag-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/book-search-specific-tag-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-search-specific-tag-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
 include::{snippets}/book-search-specific-tag-get/query-parameters.adoc[]
 
@@ -74,6 +94,12 @@ include::{snippets}/book-search-specific-tag-get/response-fields.adoc[]
 include::{snippets}/book-detail-get/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
 include::{snippets}/book-detail-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/book-detail-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-detail-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/book-detail-get/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/book-detail-get/http-response.adoc[]
@@ -87,6 +113,14 @@ include::{snippets}/book-detail-get/response-fields.adoc[]
 
 .요청 (Request)
 include::{snippets}/book-bestseller-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/book-bestseller-get/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/book-bestseller-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-bestseller-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/book-bestseller-get/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/book-bestseller-get/http-response.adoc[]
@@ -94,12 +128,17 @@ include::{snippets}/book-bestseller-get/http-response.adoc[]
 include::{snippets}/book-bestseller-get/response-fields.adoc[]
 
 
-
-==== 쿠폰용 간단 도서 검색
+==== 도서 검색(simple)
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/book-search-simple-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/book-search-simple-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/book-search-simple-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-search-simple-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
 include::{snippets}/book-search-simple-get/query-parameters.adoc[]
 
@@ -109,11 +148,18 @@ include::{snippets}/book-search-simple-get/http-response.adoc[]
 include::{snippets}/book-search-simple-get/response-fields.adoc[]
 
 
-==== 메인 페이지 도서 목록 조회 (태그별)
+
+==== 도서 목록 조회
 :table-number: 0
 
 .요청 (Request)
 include::{snippets}/book-main-list-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/book-main-list-get/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/book-main-list-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-main-list-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
 include::{snippets}/book-main-list-get/query-parameters.adoc[]
 
@@ -121,10 +167,3 @@ include::{snippets}/book-main-list-get/query-parameters.adoc[]
 include::{snippets}/book-main-list-get/http-response.adoc[]
 .응답 필드 (Response Fields)
 include::{snippets}/book-main-list-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-// --------------------------------------------------------------

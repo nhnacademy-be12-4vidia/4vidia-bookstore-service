@@ -1,16 +1,17 @@
 package com.nhnacademy._vidiabookstoreservice.refund.domain;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.converter.RefundItemStatusConverter;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.converter.RefundStatusConverter;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.converters.RefundItemStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundPriceInvalidException;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.already.RefundAlreadyApprovedException;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.already.RefundAlreadyRejectedException;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.*;
-import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter

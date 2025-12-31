@@ -1,7 +1,6 @@
-package com.nhnacademy._vidiabookstoreservice.refund.domain.converter;
+package com.nhnacademy._vidiabookstoreservice.refund.domain.converters;
 
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

@@ -4,31 +4,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.book.config.GeminiProperties;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
-import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
-import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiContent;
-import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiGenerationConfig;
-import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiPart;
-import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiResponse;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
+import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -271,7 +258,6 @@ public class GeminiAnswerService {
     private String safeBody(HttpStatusCodeException e) {
         try {
             String body = e.getResponseBodyAsString();
-            if (body == null) return "<null>";
             return body.length() > 1500 ? body.substring(0, 1500) + "...<truncated>" : body;
         } catch (Exception exception) {
             return "<unavailable>";

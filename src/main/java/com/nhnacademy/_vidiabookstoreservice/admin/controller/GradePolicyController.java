@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.request.GradePolicyUpdateRequest;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.GradePolicyResponse;
-import com.nhnacademy._vidiabookstoreservice.admin.dto.response.PointPolicyResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.GradePolicyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

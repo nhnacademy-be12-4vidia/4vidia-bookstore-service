@@ -1,12 +1,4 @@
 // Global 도메인별 기능 통합 파일
 
-=== {기능1} 관리
-// include::global-{기능}.adoc[]
-
-=== {기능2} 관리
-// include::global-{기능}.adoc[]
-
-=== {기능3} 관리
-// include::global-{기능}.adoc[]
-
-// ...
+=== `내부 관리`
+include::global-internal.adoc[]

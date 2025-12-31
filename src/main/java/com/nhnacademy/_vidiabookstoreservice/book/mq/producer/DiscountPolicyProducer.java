@@ -26,6 +26,6 @@ public class DiscountPolicyProducer {
             event
         );
         
-        log.info("할인 정책 변경 이벤트 발송: categoryId={}, eventType={}", categoryId, eventType);
+        log.info("[Producer] 할인 정책 변경 이벤트 발송: categoryId={}, eventType={}", categoryId, eventType);
     }
 }

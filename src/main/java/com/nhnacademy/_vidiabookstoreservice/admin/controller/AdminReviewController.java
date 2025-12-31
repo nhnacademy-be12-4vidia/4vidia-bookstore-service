@@ -1,12 +1,10 @@
 package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
 
-
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminReviewResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.impl.AdminReviewServiceImpl;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLDecoder;

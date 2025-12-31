@@ -20,7 +20,8 @@ public enum RefundErrorCode implements ErrorCodeProvider {
     REFUND_STATUS_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "R302", "반품 상태가 올바르지 않습니다."),
 
     // UNPROCESSABLE_ENTITY(422) -> NOT_ENOUGH (422)-> 입력 값/요청은 합리적, 단지 현재 상태가 부족
-    REFUND_NOT_AVAILABLE(HttpStatus.UNPROCESSABLE_ENTITY, "R303", "단순 변심 반품은 배송 완료 후 10일 이내만 가능합니다.")
+    SIMPLE_REFUND_NOT_AVAILABLE(HttpStatus.UNPROCESSABLE_ENTITY, "R303", "단순 변심 반품은 배송 완료 후 10일 이내만 가능합니다."),
+    DAMAGE_REFUND_NOT_AVAILABLE(HttpStatus.UNPROCESSABLE_ENTITY, "R304", "파손/불량 반품은 배송 완료 후 30일 이내만 가능합니다.")
     ;
 
     private final HttpStatus status;

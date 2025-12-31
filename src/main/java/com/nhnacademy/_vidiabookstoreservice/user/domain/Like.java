@@ -2,7 +2,10 @@ package com.nhnacademy._vidiabookstoreservice.user.domain;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(

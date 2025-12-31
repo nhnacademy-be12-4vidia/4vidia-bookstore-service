@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.user.repository.redis;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -14,11 +13,6 @@ public class RedisDormantAutoRepository {
 
     private final StringRedisTemplate humanRedisTemplate;
 
-//    public RedisDormantAutoRepository(
-//            @Qualifier("humanRedisTemplate") StringRedisTemplate redisTemplate
-//    ) {
-//        this.redisTemplate = redisTemplate;
-//    }
     private static final String PREFIX = "dormant:";
     private static final Duration TTL = Duration.ofMinutes(5); // 인증코드 유효시간 5분
 

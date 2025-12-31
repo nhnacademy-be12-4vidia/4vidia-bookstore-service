@@ -15,8 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 public class RefundController {
@@ -56,6 +54,9 @@ public class RefundController {
         return ResponseEntity.ok(PageResponse.from(refundHistoryResponses));
     }
 
+    /**
+     * 반품 신청 내역 카운트
+     */
     @GetMapping("/users/me/refunds/counts")
     public ResponseEntity<RefundCountResponse> getMyRefundCounts() {
         Long userId = UserContext.get().getUserId();

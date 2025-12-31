@@ -132,18 +132,6 @@ public class User extends BaseEntity {
         this.status = userStatus;
     }
 
-//    public void updateUserInfo(String name, String phone, LocalDate birthDate) {
-//        if(name !=null && !name.trim().isEmpty()){
-//            this.name = name;
-//        }
-//        if(phone !=null && !phone.trim().isEmpty()){
-//            this.phone = phone;
-//        }
-//        if(birthDate !=null && !birthDate.toString().isEmpty()){
-//            this.birthDate = birthDate;
-//        }
-//    }
-
     // 휴먼상태인지 확인 (마지막 로그인이 3개월 전이면 )
     public boolean isDormant(){
         if(lastLoginAt == null){

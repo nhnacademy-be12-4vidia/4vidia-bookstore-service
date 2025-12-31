@@ -231,4 +231,29 @@ class PointQueryServiceImplTest {
                 .findByUserIdAndCreatedAtBetween(eq(userId), any(), any(), any(Pageable.class));
         assertTrue(result.isEmpty());
     }
+    @Test
+    @DisplayName("포인트 내역 조회: from > to면 스왑해서 조회한다")
+    void getHistory_swapsWhenFromAfterTo() {
+        Long userId = 1L;
+        LocalDate from = LocalDate.of(2025, 12, 31);
+        LocalDate to = LocalDate.of(2025, 12, 1);
+
+        when(pointDetailRepository.findByUserIdAndCreatedAtBetween(eq(userId), any(), any(), any(Pageable.class)))
+                .thenReturn(Page.empty());
+
+        ArgumentCaptor<LocalDateTime> fromCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+        ArgumentCaptor<LocalDateTime> toCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
+
+        pointQueryService.getHistory(userId, "ALL", from, to, 0, 10);
+
+        verify(pointDetailRepository).findByUserIdAndCreatedAtBetween(
+                eq(userId), fromCaptor.capture(), toCaptor.capture(), any(Pageable.class)
+        );
+
+        // 스왑 후 start=12/01 00:00, endExclusive=12/31+1 00:00
+        assertEquals(LocalDate.of(2025, 12, 1).atStartOfDay(), fromCaptor.getValue());
+        assertEquals(LocalDate.of(2026, 1, 1).atStartOfDay(), toCaptor.getValue());
+    }
+
+
 }

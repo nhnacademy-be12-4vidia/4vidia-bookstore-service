@@ -11,18 +11,17 @@ import com.nhnacademy._vidiabookstoreservice.user.dto.user.request.UpdateUserReq
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.OrderUserResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserInfoResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.user.response.UserProfileResponse;
-import com.nhnacademy._vidiabookstoreservice.user.exception.*;
+import com.nhnacademy._vidiabookstoreservice.user.exception.IncorrectPasswordException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.PasswordMisMatchException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.invalid.SameAsOldPasswordException;
 import com.nhnacademy._vidiabookstoreservice.user.exception.notfound.UserNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.user.repository.UserRepository;
 import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -185,7 +184,10 @@ public class UserServiceImpl implements UserService {
     public void updateLastLoginAt(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
-
+        // 휴면회원 아닐때만 상태 업데이트
+        if(user.getStatus() != UserStatus.ACTIVE){
+            return;
+        }
         user.setLastLoginAt(LocalDateTime.now());
     }
 

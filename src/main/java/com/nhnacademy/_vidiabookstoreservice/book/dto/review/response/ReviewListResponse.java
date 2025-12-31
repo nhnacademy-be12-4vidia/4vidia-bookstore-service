@@ -2,10 +2,11 @@ package com.nhnacademy._vidiabookstoreservice.book.dto.review.response;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
 import com.nhnacademy._vidiabookstoreservice.book.domain.ReviewImage;
-import java.time.LocalDate;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder

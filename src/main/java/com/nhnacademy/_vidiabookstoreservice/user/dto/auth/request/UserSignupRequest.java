@@ -1,10 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.dto.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
@@ -34,7 +31,7 @@ public record UserSignupRequest(
         String phone,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        @Past
+        @PastOrPresent
         LocalDate birthDate
 ) {
 

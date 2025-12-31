@@ -14,27 +14,37 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
     Page<Refund> findAllByRefundStatus(RefundStatus status, Pageable pageable);
 
-    // TODO 변경 예정 (일단 기능 구현부터)
-    @Query("select distinct r from Refund r " +
-            "join fetch r.refundItems ri " +
-            "join fetch ri.orderItem oi " +
-            "join fetch oi.book " +
-            "join fetch r.order " +
-            "where r.order.user.userId = :userId " +
-            "and (:status is null or r.refundStatus = :status) " +
-            "order by r.createdAt desc")
-    Page<Refund> findAllByUserIdAndStatusWithDetails(
+    @Query(value = """
+            select r
+            from Refund r
+            join fetch r.order o
+            where o.user.userId = :userId
+            and (:status is null or r.refundStatus = :status)
+            order by r.createdAt desc
+        """,
+            countQuery = """
+            select count(r)
+            from Refund r
+            join r.order o
+            where o.user.userId = :userId
+            and (:status is null or r.refundStatus = :status)
+    """)
+    Page<Refund> findMyRefunds(
             @Param("userId") Long userId,
             @Param("status") RefundStatus status,
             Pageable pageable
     );
 
-
-    // 전체 반품 개수
-    long countByOrder_User_UserId(Long userId);
-
-    // 상태별 반품 개수
-    long countByOrder_User_UserIdAndRefundStatus(Long userId, RefundStatus status);
+    /**
+     * 상태별 카운트를 한 번의 쿼리로 가져오기 (성능 최적화)
+     */
+    @Query("""
+            select r.refundStatus, count(r)
+            from Refund r
+            where r.order.user.userId = :userId
+            group by r.refundStatus
+        """)
+    List<Object[]> countByUserGroupByStatus(@Param("userId") Long userId);
 
 
 }

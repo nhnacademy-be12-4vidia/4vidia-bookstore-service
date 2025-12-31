@@ -1,11 +1,14 @@
 package com.nhnacademy._vidiabookstoreservice.user.controller;
 
 import com.nhnacademy._vidiabookstoreservice.global.common.UserContext;
+import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradePolicyResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.grade.response.GradeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.GradeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -31,6 +34,11 @@ public class GradeController {
         Long userId = UserContext.get().getUserId();
 
         gradeService.updateGrade(userId, gradeId);
+    }
+
+    @GetMapping("/policies")
+    public ResponseEntity<List<GradePolicyResponse>> getGradePolicies() {
+        return ResponseEntity.ok(gradeService.getGradePolicies());
     }
 
 }

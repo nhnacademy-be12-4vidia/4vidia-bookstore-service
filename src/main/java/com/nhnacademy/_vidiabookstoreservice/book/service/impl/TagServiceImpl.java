@@ -6,10 +6,11 @@ import com.nhnacademy._vidiabookstoreservice.book.exception.already.TagNameAlrea
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.TagNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.TagRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.TagService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor

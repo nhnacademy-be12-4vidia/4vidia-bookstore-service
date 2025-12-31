@@ -34,25 +34,19 @@ public class RefundCalculator {
         log.info("환불 금액 계산 시작, 주문 아이템 아이디 : {}", item.getOrderItemId());
         Order order = item.getOrder();
 
-        int refundAmount;
-        if (order.getCouponDiscount() == 0) { // 쿠폰 사용 x (할인 안 받았음)
-            refundAmount = item.getSalePrice() * item.getQuantity();
-        } else { // 쿠폰 사용 o
-            refundAmount = calculateCouponRefund(item, order);
+        int itemRefundPrice = item.getSalePrice() * item.getQuantity(); // 기본 환불 금액
+
+        if (order.getCouponDiscount() > 0) { // 쿠폰 사용
+            itemRefundPrice = calculateCouponRefund(item, order, itemRefundPrice);
         }
 
-        if (subtractDeliveryFee && !isAlreadySubtracted) {
-            refundAmount -= REFUND_DELIVERY_FEE;
-        }
-
-        refundAmount = Math.max(refundAmount, 0);
-
+        int refundPoint;
+        // 마지막 반품 여부 판단
         boolean isLastRefund = orderItemRepository.findByOrder_orderId(order.getOrderId()).stream()
                 // RefundItem이 없는(아직 환불 안된) OrderItem 필터
                 .filter(orderItem -> !refundItemRepository.existsByOrderItem_OrderItemId(orderItem.getOrderItemId()))
                 .count() == 1;
 
-        int refundPoint;
         // 마지막 반품 : 남은 포인트 모두 반환
         if (isLastRefund) {
             log.info("마지막 반품 : 남은 포인트 모두 반환, 주문아이디 : {}", order.getOrderId());
@@ -63,111 +57,120 @@ public class RefundCalculator {
                     );
             refundPoint = Math.max(order.getPointUsed() - alreadyRefundedPoint, 0);
         } else {
-            int denominator = order.getTotalBookPrice() - order.getCouponDiscount();
-            refundPoint = (denominator > 0)
-                    ? (int) ((long) order.getPointUsed() * refundAmount / denominator)
+            int paidBookPrice = order.getTotalBookPrice() - order.getCouponDiscount();
+            // 공식 : 전체 포인트 사용액 * (현재 상품 도서금액 / 전체 상품 결제금액)
+            refundPoint = (paidBookPrice > 0)
+                    ? (int) ((long) order.getPointUsed() * itemRefundPrice / paidBookPrice)
                     : 0;
         }
 
-        int refundCash = Math.max(refundAmount - refundPoint, 0);
+        if (subtractDeliveryFee && !isAlreadySubtracted) { // 배송비 차감
+            itemRefundPrice -= REFUND_DELIVERY_FEE;
+        }
 
-        return new RefundAmount(refundPoint, refundCash);
+        itemRefundPrice = Math.max(itemRefundPrice - refundPoint, 0);
+
+        return new RefundAmount(refundPoint, itemRefundPrice);
     }
 
     /**
      * 쿠폰 할인 금액 계산
+     * 1. ALL : 모든 도서 대상 (최소 주문 금액)
+     * 2. CATEGORY : 카테고리 대상
+     * 3. BOOK : 특정 도서 대상
      */
-    private int calculateCouponRefund(OrderItem item, Order order) {
+    private int calculateCouponRefund(OrderItem item, Order order, int itemPrice) {
         UseCouponResponse coupon =
                 couponClient.getUseCouponDetail(new RefundCouponRequest(order.getOrderId()));
 
-        int refundAmount = item.getSalePrice() * item.getQuantity(); // 해당 아이템이 쿠폰 대상이 아닐 경우 기본 환불 금액
+        return switch (coupon.discountTargetType()) {
 
-        switch (coupon.discountTargetType()) { // 쿠폰을 썼는데
-            case "ALL" -> { // 모든 도서 대상 (가격 대비)
-                refundAmount = calculateMinPriceCouponRefund(item, order, coupon.minOrderAmount());
-            }
+            case "ALL" -> calculateAllCouponRefund(order, itemPrice, coupon.minOrderAmount());
 
-            case "CATEGORY" -> { // 카테고리 대상
+            case "CATEGORY" -> {
                 if (coupon.categoryKdcId() != null &&
                         coupon.categoryKdcId().equals(item.getBook().getCategory().getKdcCode())) {
-                    refundAmount = calculateCategoryCouponDiscount(item, order, coupon.categoryKdcId(), coupon.minOrderAmount()); // 카테고리 쿠폰 : 무조건 최소주문금액 존재
+                    yield calculateCategoryCouponRefund(order, itemPrice, coupon);
                 }
+                yield itemPrice;
             }
 
-            case "BOOK" -> { // 특정 도서 대상
-                log.info("도서 쿠폰 사용 : 쿠폰 할인 금액 계산 시작 : 도서 아이디 : {}", coupon.bookId());
+            case "BOOK" -> {
                 if (coupon.bookId() != null &&
-                        coupon.bookId().equals(item.getBook().getId())) { // 쿠폰 조건에 해당하는 도서면
-                    refundAmount -= order.getCouponDiscount(); // 해당 도서 정가 - 할인 제외한 금액 환불
+                        coupon.bookId().equals(item.getBook().getId())) {
+                    yield Math.max(itemPrice - order.getCouponDiscount(), 0);
                 }
+                yield itemPrice;
             }
-        }
 
-        return Math.max(refundAmount, 0);
+            default -> itemPrice;
+        };
     }
 
-    // 카테고리 쿠폰 할인 + 최소 주문 금액 있음
-    private int calculateCategoryCouponDiscount(OrderItem item, Order order, String categoryKdcId, int minOrderAmount) {
-        log.info("카테고리 쿠폰 사용 : 쿠폰 할인 금액 계산 시작 : 카테고리 아이디: {}", categoryKdcId);
+    /**
+     * ALL 쿠폰 (최소 주문 금액)
+     */
+    private int calculateAllCouponRefund(
+            Order order,
+            int itemPrice,
+            int minOrderAmount
+    ) {
+        int alreadyRefundedPrice =
+                refundItemRepository.sumRefundedPriceByOrder(order.getOrderId());
 
-        int itemPrice = item.getSalePrice() * item.getQuantity(); // 반품 신청 도서 값
+        int remainingBookPrice =
+                order.getTotalBookPrice() - alreadyRefundedPrice - itemPrice;
 
+        if (remainingBookPrice < minOrderAmount) {
+            return calculateRefundWhenCouponBreaks(order, itemPrice);
+        }
+
+        int paidBookPrice = order.getTotalBookPrice() - order.getCouponDiscount();
+        return (int) ((long) paidBookPrice * itemPrice / order.getTotalBookPrice());
+    }
+
+    /**
+     * 카테고리 쿠폰 할인 + 최소 주문 금액 있음
+     */
+    private int calculateCategoryCouponRefund(
+            Order order,
+            int itemPrice,
+            UseCouponResponse coupon
+    ) {
+        // 해당 카테고리의 전체 원가 합계
         int totalCategoryPrice =
                 orderItemRepository.sumCategoryItemPrice(
                         order.getOrderId(),
-                        categoryKdcId
-                ); // 카테고리 도서 금액 합
-
-        int totalCategoryRefundedPrice =
+                        coupon.categoryKdcId()
+                );
+        // 해당 카테고리에서 이미 환불된 원가
+        int refundedCategoryPrice =
                 refundItemRepository.sumCategoryRefundedPriceByOrderAndCategory(
                         order.getOrderId(),
-                        categoryKdcId
+                        coupon.categoryKdcId()
                 );
 
-        if(totalCategoryPrice - totalCategoryRefundedPrice - itemPrice < minOrderAmount){ // 쿠폰 깨짐
-            int payPrice =
-                    order.getTotalBookPrice()
-                            + order.getPackagingFee()
-                            - order.getCouponDiscount()
-                            + order.getDeliveryFee();
+        int remainingCategoryPrice = totalCategoryPrice - refundedCategoryPrice - itemPrice;
 
-            return payPrice
-                    - order.getPackagingFee()
-                    - (order.getTotalBookPrice() - itemPrice);
+        if (remainingCategoryPrice < coupon.minOrderAmount()) {
+            return calculateRefundWhenCouponBreaks(order, itemPrice);
         }
 
-        // 쿠폰 유지 → 실결제 기준 비율 환불
         int paidBookPrice = order.getTotalBookPrice() - order.getCouponDiscount();
-
         return (int) ((long) paidBookPrice * itemPrice / totalCategoryPrice);
     }
 
-
-
     /**
-     *  쿠폰에 최소 주문 금액이 존재할때, 쿠폰 깨짐 여부 판단
+     * 쿠폰 조건 미달 시 환불 금액 계산 (혜택 회수 로직)
      */
-    private int calculateMinPriceCouponRefund(OrderItem item, Order order, int couponUseMinPrice) {
-        log.info("ALL 쿠폰 사용 : 쿠폰 할인 금액 계산 시작 : 주문 아이템 아이디 : {}", item.getOrderItemId());
+    private int calculateRefundWhenCouponBreaks(Order order, int itemPrice) {
+        int totalPaidAmount = order.getTotalBookPrice() - order.getCouponDiscount();
+        int alreadyRefundedPrice = refundItemRepository.sumRefundedPriceByOrder(order.getOrderId());
 
-        int currentRequestPrice = item.getSalePrice() * item.getQuantity(); // 반품 신청 도서 금액
-        int alreadyRefundedPrice = refundItemRepository.sumRefundedPriceByOrder(order.getOrderId()); // 이미 환불받은 가격
-        int remainingBookPrice =  order.getTotalBookPrice() - alreadyRefundedPrice - currentRequestPrice; // 반품 후 남는 금액
+        // 환불 후 남은 전체 상품의 정가 합
+        int remainingTotalBookPrice = order.getTotalBookPrice() - alreadyRefundedPrice - itemPrice;
 
-        if (remainingBookPrice < couponUseMinPrice) {
-            int totalPaid =
-                    order.getTotalBookPrice()
-                            + order.getPackagingFee()
-                            - order.getCouponDiscount()
-                            + order.getDeliveryFee();
-
-            return totalPaid - alreadyRefundedPrice - remainingBookPrice;
-        }
-
-        // 쿠폰 유지 → 실결제 기준 비율 환불
-        int paidBookPrice = order.getTotalBookPrice() - order.getCouponDiscount();
-        return (int) ((long) paidBookPrice * currentRequestPrice / order.getTotalBookPrice());
+        return Math.max(totalPaidAmount - remainingTotalBookPrice, 0);
     }
 }
 

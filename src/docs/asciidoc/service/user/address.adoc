@@ -1,116 +1,147 @@
 // 회원 주소 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 회원 주소 단일 조회
+==== 주소 단일 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-address-get/http-request.adoc[]
+include::{snippets}/address-detail-get/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/user-address-get/path-parameters.adoc[]
+include::{snippets}/address-detail-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-address-get/request-headers.adoc[]
+include::{snippets}/address-detail-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/address-detail-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/address-detail-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-address-get/http-response.adoc[]
+include::{snippets}/address-detail-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/user-address-get/response-fields.adoc[]
+include::{snippets}/address-detail-get/response-fields.adoc[]
 
 
-==== 회원 주소 전체 조회
+==== 주소 전체 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-addresses-get/http-request.adoc[]
+include::{snippets}/address-list-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/address-list-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-addresses-get/request-headers.adoc[]
+include::{snippets}/address-list-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/address-list-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/address-list-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-addresses-get/http-response.adoc[]
+include::{snippets}/address-list-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/user-addresses-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
-==== 회원 주소 등록
+include::{snippets}/address-list-get/response-fields.adoc[]
+
+
+==== 주소 등록
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-address-post/http-request.adoc[]
+include::{snippets}/address-register-post/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/address-register-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-address-post/request-headers.adoc[]
+include::{snippets}/address-register-post/request-headers.adoc[]
 .요청 필드 (Request Fields)
-include::{snippets}/user-address-post/request-fields.adoc[]
+include::{snippets}/address-register-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/address-register-post/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-address-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-==== 회원 주소 수정
+include::{snippets}/address-register-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/address-register-post/response-fields.adoc[]
+
+
+
+==== 주소 수정
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-address-put/http-request.adoc[]
+include::{snippets}/address-update-put/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/user-address-put/path-parameters.adoc[]
+include::{snippets}/address-update-put/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-address-put/request-headers.adoc[]
+include::{snippets}/address-update-put/request-headers.adoc[]
 .요청 필드 (Request Fields)
-include::{snippets}/user-address-put/request-fields.adoc[]
+include::{snippets}/address-update-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/address-update-put/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-address-put/http-response.adoc[]
+include::{snippets}/address-update-put/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/user-address-put/response-fields.adoc[]
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-==== 회원 주소 삭제
+include::{snippets}/address-update-put/response-fields.adoc[]
+
+
+
+==== 주소 삭제
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-address-delete/http-request.adoc[]
+include::{snippets}/address-delete/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/user-address-delete/path-parameters.adoc[]
+include::{snippets}/address-delete/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-address-delete/request-headers.adoc[]
+include::{snippets}/address-delete/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/address-delete/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/address-delete/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-address-delete/http-response.adoc[]
-// --------------------------------------------------------------
-
-
-
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 회원 기본 주소 조회
-:table-number: 0
-
-.요청 (Request)
-include::{snippets}/user-address-default-get/http-request.adoc[]
-.요청 헤더 (Request Headers)
-include::{snippets}/user-address-default-get/request-headers.adoc[]
-
-.응답 (Response)
-include::{snippets}/user-address-default-get/http-response.adoc[]
+include::{snippets}/address-delete/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/user-address-default-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST) - 없으므로 생략
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-==== 회원 기본 주소 변경
+include::{snippets}/address-delete/response-fields.adoc[]
+
+
+
+
+
+==== 기본 주소 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-address-default-put/http-request.adoc[]
-.요청 파라미터 (Path Parameters)
-include::{snippets}/user-address-default-put/path-parameters.adoc[]
+include::{snippets}/address-default-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/address-default-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-address-default-put/request-headers.adoc[]
+include::{snippets}/address-default-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/address-default-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/address-default-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-address-default-put/http-response.adoc[]
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE) - 없으므로 생략
-// --------------------------------------------------------------
+include::{snippets}/address-default-get/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/address-default-get/response-fields.adoc[]
 
+
+
+
+==== 기본 주소 변경
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/address-set-default-put/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/address-set-default-put/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/address-set-default-put/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/address-set-default-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/address-set-default-put/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/address-set-default-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/address-set-default-put/response-fields.adoc[]

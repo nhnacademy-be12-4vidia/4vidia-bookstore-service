@@ -1,34 +1,27 @@
 package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminBookService;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Author;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
-import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Publisher;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Tag;
+import com.nhnacademy._vidiabookstoreservice.book.domain.*;
 import com.nhnacademy._vidiabookstoreservice.book.domain.enums.ImageType;
 import com.nhnacademy._vidiabookstoreservice.book.dto.author.request.AuthorRequest;
-import com.nhnacademy._vidiabookstoreservice.book.service.*;
-import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookStockChangeRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.request.BookUpdateRequest;
-import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.*;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BaseBookListResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookDetailResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookIdResponse;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.exception.already.BookAlreadyExistsException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.invalid.BookAuthorRequiredException;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookRepository;
 import com.nhnacademy._vidiabookstoreservice.book.repository.ReviewRepository;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import com.nhnacademy._vidiabookstoreservice.book.service.*;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.BookSearchService;
+import com.nhnacademy._vidiabookstoreservice.book.utils.BookSortKey;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.BookOrderResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
@@ -45,6 +38,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -263,8 +259,6 @@ public class BookServiceImpl implements BookService {
     public List<BookOrderResponse> getOrderBookByBookIds(List<Long> bookIds) {
         List<Book> bookList = bookRepository.findAllByIdIn(bookIds);
 
-        //TODO 해당책에 discount policy 다시 체크해서 판매가 반환
-        //TODO 카테고리 아이디 뒤져서 해당 policy 가져와서 적용하는 서비스 불러와서 확인
         return bookList.stream()
                 .map(BookOrderResponse::from)
                 .toList();

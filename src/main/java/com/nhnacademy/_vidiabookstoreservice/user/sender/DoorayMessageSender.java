@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Component
 public class DoorayMessageSender {
 
@@ -40,11 +42,11 @@ public class DoorayMessageSender {
             httpPost.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
 
             try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-                System.out.println("Dooray Response Code: " + response.getCode());
+                log.info("Dooray Response Code: {}", response.getCode());
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
         }
     }
 

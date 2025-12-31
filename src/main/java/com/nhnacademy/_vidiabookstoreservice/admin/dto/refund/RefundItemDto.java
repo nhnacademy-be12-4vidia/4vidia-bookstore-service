@@ -1,8 +1,8 @@
 package com.nhnacademy._vidiabookstoreservice.admin.dto.refund;
 
+import com.nhnacademy._vidiabookstoreservice.book.domain.BookImage;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 
 public record RefundItemDto(
         Long refundItemId,
@@ -17,8 +17,7 @@ public record RefundItemDto(
                 refundItem.getRefundItemId(),
                 refundItem.getRefundItemStatus(),
                 refundItem.getOrderItem().getBook().getTitle(),
-                // TODO 책 정보 가져오는거 수정
-                refundItem.getOrderItem().getBook().getBookImageList().stream().findFirst().map(bookImage -> bookImage.getImageUrl()).orElse("null"),
+                refundItem.getOrderItem().getBook().getBookImageList().stream().findFirst().map(BookImage::getImageUrl).orElse("null"),
                 refundItem.getOrderItem().getQuantity(),
                 refundItem.getOrderItem().getSalePrice()
         );

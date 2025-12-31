@@ -28,7 +28,6 @@ import com.nhnacademy._vidiabookstoreservice.user.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +47,6 @@ public class AuthServiceImpl implements AuthService {
     private final GradeRepository gradeRepository;
     private final EmailService mailService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-//    private final CouponClient couponClient;
     private final PointCommandService pointCommandService;
     private final ApplicationEventPublisher eventPublisher;
     private final RedisSignupEmailAuthRepository  signupEmailAuthRepository;
@@ -59,7 +57,6 @@ public class AuthServiceImpl implements AuthService {
      * 회원가입
      */
     @Override
-//    @Transactional // 이거 없으면 롤백이 안됩니다요 (근데 지금 생일쿠폰 호출 오류나서 transaction 있으면 회원가입 안됨.. 쿠폰 호출 주석처리 하세요.. )
     public Long register(UserSignupRequest request) {
 
         // 이미 가입된 이메일인지
@@ -102,7 +99,6 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
-        //TODO 생일 달인지 체크해서 맞으면? 생일쿠폰 요청
         return user.getUserId();
     }
 
@@ -188,7 +184,6 @@ public class AuthServiceImpl implements AuthService {
         return false; // 휴먼 ㄴㄴ
     }
 
-    @Transactional
     public int convertDormantUsers(LocalDateTime day) {
         List<User> targets =
                 userRepository.findActiveUsersToDormant(UserStatus.ACTIVE, day);

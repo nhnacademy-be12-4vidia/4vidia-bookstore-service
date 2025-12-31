@@ -1,7 +1,11 @@
 package com.nhnacademy._vidiabookstoreservice.order.service.impl;
 
-import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.domain.Category;
+import com.nhnacademy._vidiabookstoreservice.book.domain.*;
+import com.nhnacademy._vidiabookstoreservice.book.service.BookService;
+import com.nhnacademy._vidiabookstoreservice.book.service.DiscountPolicyService;
+import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
+import com.nhnacademy._vidiabookstoreservice.cart.service.CartService;
+import com.nhnacademy._vidiabookstoreservice.global.client.CouponClient;
 import com.nhnacademy._vidiabookstoreservice.order.domain.*;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.ConfirmStatus;
 import com.nhnacademy._vidiabookstoreservice.order.domain.enums.DeliveryStatus;
@@ -11,10 +15,7 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.CouponUseRe
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderItemRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.order.request.OrderTrackingRequest;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.CouponCalculationResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderAmountResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderCreateResponse;
-import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.OrderResponse;
+import com.nhnacademy._vidiabookstoreservice.order.dto.order.response.*;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentConfirmRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.request.PaymentCreateRequest;
 import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.PaymentCancelResponse;
@@ -23,17 +24,32 @@ import com.nhnacademy._vidiabookstoreservice.order.dto.payment.response.TossPaym
 import com.nhnacademy._vidiabookstoreservice.order.exception.*;
 import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.OrderNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.order.exception.notfound.PaymentNotFoundException;
+import com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProducer;
 import com.nhnacademy._vidiabookstoreservice.order.repository.OrderRepository;
+import com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService;
+import com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService;
+import com.nhnacademy._vidiabookstoreservice.order.service.PackagingService;
+import com.nhnacademy._vidiabookstoreservice.order.service.PaymentService;
 import com.nhnacademy._vidiabookstoreservice.point.dto.request.PointUseRequest;
+import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
+import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
+import com.nhnacademy._vidiabookstoreservice.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -57,20 +73,24 @@ class OrderServiceImplTest {
     @InjectMocks
     OrderServiceImpl orderService;
 
-    @Mock private com.nhnacademy._vidiabookstoreservice.user.service.UserService userService;
-    @Mock private com.nhnacademy._vidiabookstoreservice.book.service.BookService bookService;
-    @Mock private com.nhnacademy._vidiabookstoreservice.order.service.OrderItemService orderItemService;
-    @Mock private com.nhnacademy._vidiabookstoreservice.order.service.PaymentService paymentService;
-    @Mock private com.nhnacademy._vidiabookstoreservice.order.service.PackagingOptionService packagingOptionService;
-    @Mock private com.nhnacademy._vidiabookstoreservice.order.service.PackagingService packagingService;
-    @Mock private com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService pointCommandService;
-    @Mock private com.nhnacademy._vidiabookstoreservice.global.client.CouponClient couponClient;
-    @Mock private org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
-    @Mock private com.nhnacademy._vidiabookstoreservice.order.mq.producer.OrderMessageProducer orderMessageProducer;
-    @Mock private com.nhnacademy._vidiabookstoreservice.cart.service.CartService cartService;
-    @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
-    @Mock private com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository refundItemRepository;
-    @Mock private com.nhnacademy._vidiabookstoreservice.book.service.DiscountPolicyService discountPolicyService;
+    @Mock private UserService userService;
+    @Mock private BookService bookService;
+    @Mock private ReviewService reviewService;
+    @Mock private OrderItemService orderItemService;
+    @Mock private PaymentService paymentService;
+    @Mock private PackagingOptionService packagingOptionService;
+    @Mock private PackagingService packagingService;
+    @Mock private PointCommandService pointCommandService;
+    @Mock private CouponClient couponClient;
+    @Mock private RabbitTemplate rabbitTemplate;
+    @Mock private OrderMessageProducer orderMessageProducer;
+    @Mock private CartService cartService;
+    @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private RefundItemRepository refundItemRepository;
+    @Mock private DiscountPolicyService discountPolicyService;
+
+    @Spy
+    private OrderItemViewStatusResolver resolver = new OrderItemViewStatusResolver();
 
     @Test
     @DisplayName("모든 검증 통과 후 주문 저장 성공")
@@ -453,28 +473,65 @@ class OrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("주문 목록 조회 성공: 목록 반환")
+    @DisplayName("사용자 주문 목록 조회")
     void getOrdersByUserId_Success() {
-//        Long userId = 1L;
-//
-//        Order mockOrder = createSafeMockOrder(10L, userId);
-//
-//        given(orderRepository.findAllByUser_UserId(userId)).willReturn(List.of(mockOrder));
-//
-//        given(reviewService.getReviewedOrderItemIdList(any())).willReturn(Collections.emptyList());
-//        given(refundItemRepository.findByOrderItem_OrderItemId(any())).willReturn(Collections.emptyList());
-//        given(resolver.resolve(any(), any())).willReturn(OrderItemViewStatus.UNCONFIRMED);
-//
-//        List<OrderPreviewResponse> result = orderService.getOrdersByUserId(userId);
-//
-//        assertThat(result).hasSize(1);
-//        assertThat(result.get(0).orderItems().get(0).bookId()).isEqualTo(100L);
-//        assertThat(result.get(0).orderItems().get(0).bookTitle()).isEqualTo("테스트 책");
-//        assertThat(result.get(0).orderItems().get(0).salePrice()).isEqualTo(10000);
-//        assertThat(result.get(0).userId()).isEqualTo(userId);
-//
-//        verify(orderRepository).findAllByUser_UserId(userId);
-//        verify(reviewService).getReviewedOrderItemIdList(any());
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Order order = mock(Order.class);
+        OrderItem orderItem = mock(OrderItem.class);
+        Long orderItemId = 100L;
+
+        lenient().when(order.getOrderId()).thenReturn(10L);
+        User mockUser = mock(User.class);
+        lenient().when(mockUser.getUserId()).thenReturn(userId);
+        when(order.getUser()).thenReturn(mockUser);
+        when(order.getOrderItems()).thenReturn(List.of(orderItem));
+
+        when(orderItem.getOrderItemId()).thenReturn(orderItemId);
+        setupMockBook(orderItem);
+
+        Page<Order> orderPage = new PageImpl<>(List.of(order), pageable, 1);
+        when(orderRepository.findAllByUser_UserId(anyLong(), any())).thenReturn(orderPage);
+
+        when(reviewService.getReviewedOrderItemIdList(anyList())).thenReturn(List.of(orderItemId));
+
+        RefundItem oldRefund = mock(RefundItem.class);
+        when(oldRefund.getRefundItemId()).thenReturn(1L);
+        when(oldRefund.getOrderItem()).thenReturn(orderItem);
+
+        RefundItem latestRefund = mock(RefundItem.class);
+        when(latestRefund.getRefundItemId()).thenReturn(2L);
+        when(latestRefund.getOrderItem()).thenReturn(orderItem);
+        when(latestRefund.getRefundItemStatus()).thenReturn(RefundItemStatus.APPROVED);
+
+        when(refundItemRepository.findByOrderItem_OrderItemId(anyList()))
+                .thenReturn(List.of(oldRefund, latestRefund));
+
+        Page<OrderPreviewResponse> result = orderService.getOrdersByUserId(userId, "ALL", pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        OrderPreviewResponse.OrderBookResponse itemResponse = result.getContent().get(0).orderItems().get(0);
+
+        assertThat(itemResponse.orderItemViewStatus()).isEqualTo(OrderItemViewStatus.REFUNDED);
+        assertThat(itemResponse.isReviewed()).isTrue();
+
+        verify(resolver).resolve(eq(orderItem), argThat(opt -> opt.isPresent() && opt.get().getRefundItemId() == 2L));
+    }
+
+    private void setupMockBook(OrderItem orderItem) {
+        Book book = mock(Book.class);
+        lenient().when(book.getId()).thenReturn(1L);
+        lenient().when(book.getTitle()).thenReturn("테스트 도서");
+
+        Author author = mock(Author.class);
+        lenient().when(author.getName()).thenReturn("작가");
+        BookAuthor ba = mock(BookAuthor.class);
+        lenient().when(ba.getAuthor()).thenReturn(author);
+
+        lenient().when(book.getBookAuthorList()).thenReturn(List.of(ba));
+        lenient().when(book.getBookImageList()).thenReturn(Collections.emptyList());
+        when(orderItem.getBook()).thenReturn(book);
     }
 
     @Test

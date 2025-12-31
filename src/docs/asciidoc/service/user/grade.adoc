@@ -1,35 +1,41 @@
 // 회원 등급 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 회원 등급 조회
+==== 등급 조회
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-grade-get/http-request.adoc[]
+include::{snippets}/grade-get/http-request.adoc[]
+// .요청 파라미터 (Path Parameters)
+// include::{snippets}/grade-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-grade-get/request-headers.adoc[]
+include::{snippets}/grade-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/grade-get/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/grade-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-grade-get/http-response.adoc[]
+include::{snippets}/grade-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/user-grade-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST) - 없으므로 생략
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-==== 회원 등급 변경
+include::{snippets}/grade-get/response-fields.adoc[]
+
+
+
+==== 등급 수정
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/user-grade-put/http-request.adoc[]
+include::{snippets}/grade-update-put/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/user-grade-put/path-parameters.adoc[]
+include::{snippets}/grade-update-put/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/user-grade-put/request-headers.adoc[]
+include::{snippets}/grade-update-put/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/grade-update-put/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/grade-update-put/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/user-grade-put/http-response.adoc[]
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE) - 없으므로 생략
-// --------------------------------------------------------------
+include::{snippets}/grade-update-put/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/grade-update-put/response-fields.adoc[]

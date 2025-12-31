@@ -4,21 +4,21 @@ import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.AdminRefundListRes
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundDetailResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.refund.RefundItemDto;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminRefundService;
+import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
+import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
 import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
+import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundItem;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundItemStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundItemUpdateRequest;
+import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundStatusInvalidException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundItemRepository;
-import com.nhnacademy._vidiabookstoreservice.refund.service.impl.RefundCalculator;
-import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.order.domain.OrderItem;
-import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
-import com.nhnacademy._vidiabookstoreservice.refund.exception.RefundNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.refund.repository.RefundRepository;
+import com.nhnacademy._vidiabookstoreservice.refund.service.impl.RefundCalculator;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +49,6 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     @Transactional(readOnly = true)
     public Page<AdminRefundListResponse> listByRefundStatus(RefundStatus refundStatus, String keyword, Pageable pageable) {
         Page<Refund> refunds;
-        // TODO 단순 변심은 따로 탭을 만들까??
         if (refundStatus == null) {
             refunds = refundRepository.findAll(pageable);
         } else {
@@ -131,8 +130,9 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     }
 
 
-
-    // 반품 거절
+    /**
+     * 반품 거절
+     */
     @Override
     public void rejectRefund(Long refundItemId, String rejectDetail) {
         RefundItem refundItem = refundItemRepository.findById(refundItemId)
@@ -146,6 +146,9 @@ public class AdminRefundServiceImpl implements AdminRefundService {
     }
 
 
+    /**
+     * 만약 해당 반품에서 모든 아이템 처리 -> 반품 처리완료
+     */
     private void updateRefundStatusIfCompleted(Refund refund) {
         boolean hasProcessItem =
                 refundItemRepository.existsByRefund_RefundIdAndRefundItemStatus(

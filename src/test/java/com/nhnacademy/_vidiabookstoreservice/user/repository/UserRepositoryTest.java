@@ -1,6 +1,7 @@
 package com.nhnacademy._vidiabookstoreservice.user.repository;
 
 import com.nhnacademy._vidiabookstoreservice.book.config.QueryDslConfig;
+import com.nhnacademy._vidiabookstoreservice.global.config.JpaAuditConfig;
 import com.nhnacademy._vidiabookstoreservice.user.domain.Grade;
 import com.nhnacademy._vidiabookstoreservice.user.domain.User;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.GradeName;
@@ -29,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 //@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 중요: 실제 DB 사용 설정
  @ActiveProfiles("test") // 필요 시 application-dev.yml 설정을 로드하려면 주석 해제
 @org.springframework.transaction.annotation.Transactional
-@Import(QueryDslConfig.class)
+@Import({QueryDslConfig.class, JpaAuditConfig.class})
 class UserRepositoryTest {
 
     @Autowired

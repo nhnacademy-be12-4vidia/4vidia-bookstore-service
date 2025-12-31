@@ -1,11 +1,14 @@
 package com.nhnacademy._vidiabookstoreservice.refund.domain;
 
 import com.nhnacademy._vidiabookstoreservice.order.domain.Order;
-import com.nhnacademy._vidiabookstoreservice.refund.domain.converter.RefundStatusConverter;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.converters.RefundStatusConverter;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.already.RefundAlreadyApprovedException;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,6 +53,9 @@ public class Refund { // 반품 신청서
         this.refundStatus = refundStatus;
     }
 
+    /**
+     * 반품 신청서 작성 시 호출
+     */
     public static Refund createRefundRequest(Order order, String reason, Boolean damaged){
         return Refund.builder()
                 .order(order)

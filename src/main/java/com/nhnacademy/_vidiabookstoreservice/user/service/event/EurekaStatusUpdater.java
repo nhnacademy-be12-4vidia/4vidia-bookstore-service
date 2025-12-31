@@ -2,10 +2,12 @@ package com.nhnacademy._vidiabookstoreservice.user.service.event;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class EurekaStatusUpdater {
 
@@ -17,9 +19,9 @@ public class EurekaStatusUpdater {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() throws InterruptedException {
-        System.out.println("초기화 시작...");
+        log.info("초기화 시작...");
         Thread.sleep(30000); // 초기화 작업 예: 30초
         applicationInfoManager.setInstanceStatus(InstanceStatus.UP);
-        System.out.println("초기화 완료, Eureka 상태 UP");
+        log.info("초기화 완료, Eureka 상태 UP");
     }
 }

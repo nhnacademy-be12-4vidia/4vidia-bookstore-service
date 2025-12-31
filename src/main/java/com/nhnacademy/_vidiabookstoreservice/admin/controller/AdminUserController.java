@@ -3,17 +3,14 @@ package com.nhnacademy._vidiabookstoreservice.admin.controller;
 
 import com.nhnacademy._vidiabookstoreservice.admin.dto.AdminUserSearchCondition;
 import com.nhnacademy._vidiabookstoreservice.admin.dto.request.UpdateUserStatusRequest;
-
 import com.nhnacademy._vidiabookstoreservice.admin.dto.response.AdminUserResponse;
 import com.nhnacademy._vidiabookstoreservice.admin.service.AdminUserService;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.user.domain.enums.UserStatus;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLDecoder;

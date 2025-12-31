@@ -1,15 +1,14 @@
 package com.nhnacademy._vidiabookstoreservice.book.document;
 
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
-import com.nhnacademy._vidiabookstoreservice.book.domain.BookAuthor;
 import jakarta.persistence.Id;
-
-import java.time.LocalDate;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.elasticsearch.annotations.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Document(indexName = "4vidia-books")
 @Getter

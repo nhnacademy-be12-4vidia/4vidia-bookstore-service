@@ -97,7 +97,7 @@ public class RedisCartRepository {
         Long newVal = cartRedisTemplate.opsForHash()
                 .increment(cartKey(owner), String.valueOf(bookId), delta);
 
-        if (newVal != null && newVal <= 0) {
+        if (newVal <= 0) {
             cartRedisTemplate.opsForHash().delete(cartKey(owner), String.valueOf(bookId));
         }
         refreshTtlIfDataKeyExists(owner);
@@ -130,7 +130,7 @@ public class RedisCartRepository {
 
     public boolean isEmpty(CartOwner owner) {
         Long size = cartRedisTemplate.opsForHash().size(cartKey(owner));
-        return size == null || size == 0;
+        return size == 0;
     }
 
 }

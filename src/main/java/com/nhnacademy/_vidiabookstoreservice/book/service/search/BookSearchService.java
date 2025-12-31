@@ -5,28 +5,23 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy._vidiabookstoreservice.book.ai.AiWarmupService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.cache.AiCacheHitService;
+import com.nhnacademy._vidiabookstoreservice.book.ai.embedding.EmbeddingService;
 import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
+import com.nhnacademy._vidiabookstoreservice.book.ai.rerank.BookDocumentReranker;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BaseBookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookListResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.response.BookSearchListResponse;
-
 import com.nhnacademy._vidiabookstoreservice.book.dto.gemini.GeminiBookSuggestion;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchWithTagRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiBookSearchResponse;
-import com.nhnacademy._vidiabookstoreservice.book.ai.embedding.EmbeddingService;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.AiCacheResponse;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.response.SearchBooksResponse;
 import com.nhnacademy._vidiabookstoreservice.book.redis.repository.AiSearchRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.es.BookDocumentSearchClient;
-import com.nhnacademy._vidiabookstoreservice.book.ai.rerank.BookDocumentReranker;
 import com.nhnacademy._vidiabookstoreservice.book.service.search.result.BookSearchResultAssembler;
 import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,6 +30,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

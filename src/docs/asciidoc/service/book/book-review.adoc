@@ -1,25 +1,27 @@
-// 도서 리뷰 R/C/U/D 기능
+// 리뷰 R/C/U/D 기능
 
-// --------------------------------------------------------------
-// 1. 조회 (GET)
-==== 리뷰 목록 조회 - 요약 포함
+==== 리뷰 목록 조회 (요약포함)
 :table-number: 0
 
 .요청 (Request)
-include::{snippets}/book-review-get/http-request.adoc[]
+include::{snippets}/review-list-with-summary-get/http-request.adoc[]
 .요청 파라미터 (Path Parameters)
-include::{snippets}/book-review-get/path-parameters.adoc[]
+include::{snippets}/review-list-with-summary-get/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
-include::{snippets}/book-review-get/request-headers.adoc[]
+include::{snippets}/review-list-with-summary-get/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/review-list-with-summary-get/request-fields.adoc[]
 .쿼리 파라미터 (Query-Parameters)
-include::{snippets}/book-review-get/query-parameters.adoc[]
+include::{snippets}/review-list-with-summary-get/query-parameters.adoc[]
 
 .응답 (Response)
-include::{snippets}/book-review-get/http-response.adoc[]
+include::{snippets}/review-list-with-summary-get/http-response.adoc[]
 .응답 필드 (Response Fields)
-include::{snippets}/book-review-get/response-fields.adoc[]
-// --------------------------------------------------------------
-// 2. 생성 (POST)
+include::{snippets}/review-list-with-summary-get/response-fields.adoc[]
+
+
+
+
 ==== 리뷰 생성
 :table-number: 0
 
@@ -29,13 +31,54 @@ include::{snippets}/book-review-post/http-request.adoc[]
 include::{snippets}/book-review-post/path-parameters.adoc[]
 .요청 헤더 (Request Headers)
 include::{snippets}/book-review-post/request-headers.adoc[]
-.요청 필드 (Request Fields)
-include::{snippets}/book-review-post/request-fields.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/book-review-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/book-review-post/query-parameters.adoc[]
 
 .응답 (Response)
 include::{snippets}/book-review-post/http-response.adoc[]
-// --------------------------------------------------------------
-// 3. 수정 (PUT/PATCH)
-// --------------------------------------------------------------
-// 4. 삭제 (DELETE)
-// --------------------------------------------------------------
+.응답 필드 (Response Fields)
+include::{snippets}/book-review-post/response-fields.adoc[]
+
+
+
+
+==== 리뷰 수정
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/review-edit-post/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/review-edit-post/path-parameters.adoc[]
+.요청 헤더 (Request Headers)
+include::{snippets}/review-edit-post/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/review-edit-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/review-edit-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/review-edit-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/review-edit-post/response-fields.adoc[]
+
+
+==== 리뷰 삭제
+:table-number: 0
+
+.요청 (Request)
+include::{snippets}/review-deactivate-post/http-request.adoc[]
+.요청 파라미터 (Path Parameters)
+include::{snippets}/review-deactivate-post/path-parameters.adoc[]
+// .요청 헤더 (Request Headers)
+// include::{snippets}/review-deactivate-post/request-headers.adoc[]
+// .요청 필드 (Request Fields)
+// include::{snippets}/review-deactivate-post/request-fields.adoc[]
+// .쿼리 파라미터 (Query-Parameters)
+// include::{snippets}/review-deactivate-post/query-parameters.adoc[]
+
+.응답 (Response)
+include::{snippets}/review-deactivate-post/http-response.adoc[]
+.응답 필드 (Response Fields)
+include::{snippets}/review-deactivate-post/response-fields.adoc[]

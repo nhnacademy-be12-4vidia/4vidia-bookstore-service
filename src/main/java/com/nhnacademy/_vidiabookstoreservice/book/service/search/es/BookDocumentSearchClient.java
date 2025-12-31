@@ -2,7 +2,6 @@ package com.nhnacademy._vidiabookstoreservice.book.service.search.es;
 
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
-
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchWithTagRequest;
 

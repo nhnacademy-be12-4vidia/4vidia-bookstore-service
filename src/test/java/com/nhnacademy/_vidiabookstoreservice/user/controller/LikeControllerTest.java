@@ -6,10 +6,10 @@ import com.nhnacademy._vidiabookstoreservice.global.dto.PageResponse;
 import com.nhnacademy._vidiabookstoreservice.user.dto.like.response.LikeResponse;
 import com.nhnacademy._vidiabookstoreservice.user.service.LikeService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,13 +31,51 @@ import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(LikeController.class)
 class LikeControllerTest extends SupportControllerTest {
 
     @MockitoBean
     private LikeService likeService;
 
     @Test
-    @DisplayName("[좋아요 페이징 조회]")
+    @Order(1)
+    @DisplayName("GET - 좋아요 전체 조회")
+    void getLikeList() throws Exception {
+        // Given
+        Long userId = 1L;
+        LikeResponse response = new LikeResponse(100L, "전체 도서", "저자", 10000, 9000, "IN_STOCK", "/img/all.png");
+
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            UserContext mockContext = mock(UserContext.class);
+            given(mockContext.getUserId()).willReturn(userId);
+            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
+
+            given(likeService.getLikes(userId)).willReturn(List.of(response));
+
+            mockMvc.perform(get("/users/me/likes/all")
+                            .header("X-User-Id", userId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data[0].bookTitle").value("전체 도서"))
+                    .andDo(document("like-all-get",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
+                            responseFields(withHeader(
+                                    fieldWithPath("data[].bookId").description("도서 ID"),
+                                    fieldWithPath("data[].bookTitle").description("도서 제목"),
+                                    fieldWithPath("data[].authorName").description("저자 이름"),
+                                    fieldWithPath("data[].priceStandard").description("정가"),
+                                    fieldWithPath("data[].priceSales").description("판매가"),
+                                    fieldWithPath("data[].stockStatus").description("재고 상태"),
+                                    fieldWithPath("data[].bookImage").description("도서 이미지 URL")
+                            ))
+                    ));
+        }
+    }
+
+    @Order(2)
+    @Test
+    @DisplayName("GET - 좋아요 페이징 조회")
     void getLikeListPage() throws Exception {
         // Given
         Long userId = 1L;
@@ -59,10 +97,10 @@ class LikeControllerTest extends SupportControllerTest {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.content[0].bookTitle").value("테스트 도서"))
-                    .andDo(document("like-get-page",
+                    .andDo(document("like-page-get",
                             preprocessRequest(prettyPrint()),
                             preprocessResponse(prettyPrint()),
-                            requestHeaders(headerWithName("X-User-Id").description("회원 식별 ID")),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             queryParameters(
                                     parameterWithName("page").description("페이지 번호").optional(),
                                     parameterWithName("size").description("페이지 크기").optional()
@@ -86,39 +124,8 @@ class LikeControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[좋아요 전체 조회]")
-    void getLikeList() throws Exception {
-        // Given
-        Long userId = 1L;
-        LikeResponse response = new LikeResponse(100L, "전체 도서", "저자", 10000, 9000, "IN_STOCK", "/img/all.png");
-
-        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
-            UserContext mockContext = mock(UserContext.class);
-            given(mockContext.getUserId()).willReturn(userId);
-            mockedUserContext.when(UserContext::get).thenReturn(mockContext);
-
-            given(likeService.getLikes(userId)).willReturn(List.of(response));
-
-            mockMvc.perform(get("/users/me/likes/all")
-                            .header("X-User-Id", userId))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data[0].bookTitle").value("전체 도서"))
-                    .andDo(document("like-get-all",
-                            responseFields(withHeader(
-                                    fieldWithPath("data[].bookId").description("도서 ID"),
-                                    fieldWithPath("data[].bookTitle").description("도서 제목"),
-                                    fieldWithPath("data[].authorName").description("저자 이름"),
-                                    fieldWithPath("data[].priceStandard").description("정가"),
-                                    fieldWithPath("data[].priceSales").description("판매가"),
-                                    fieldWithPath("data[].stockStatus").description("재고 상태"),
-                                    fieldWithPath("data[].bookImage").description("도서 이미지 URL")
-                            ))
-                    ));
-        }
-    }
-
-    @Test
-    @DisplayName("[좋아요 등록]")
+    @Order(3)
+    @DisplayName("POST - 좋아요 등록")
     void addLike() throws Exception {
         Long userId = 1L;
         Long bookId = 100L;
@@ -134,6 +141,9 @@ class LikeControllerTest extends SupportControllerTest {
                             .header("X-User-Id", userId))
                     .andExpect(status().isCreated())
                     .andDo(document("like-add-post",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             pathParameters(parameterWithName("book-id").description("좋아요 등록할 도서 ID")),
                             responseFields(withHeader())
                     ));
@@ -141,7 +151,8 @@ class LikeControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[좋아요 삭제]")
+    @Order(4)
+    @DisplayName("DELETE - 좋아요 삭제")
     void removeLike() throws Exception {
         Long userId = 1L;
         Long bookId = 100L;
@@ -157,6 +168,9 @@ class LikeControllerTest extends SupportControllerTest {
                             .header("X-User-Id", userId))
                     .andExpect(status().isOk())
                     .andDo(document("like-remove-delete",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             pathParameters(parameterWithName("book-id").description("좋아요 삭제할 도서 ID")),
                             responseFields(withHeader())
                     ));
@@ -164,7 +178,8 @@ class LikeControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("[좋아요 전체 삭제]")
+    @Order(5)
+    @DisplayName("DELETE - 좋아요 전체 삭제")
     void removeAllLike() throws Exception {
         Long userId = 1L;
         LikeResponse response = new LikeResponse(100L, "삭제용", "저자", 1000, 900, "IN_STOCK", "/img.png");
@@ -181,6 +196,9 @@ class LikeControllerTest extends SupportControllerTest {
                             .header("X-User-Id", userId))
                     .andExpect(status().isOk())
                     .andDo(document("like-remove-all-delete",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint()),
+                            requestHeaders(headerWithName("X-User-Id").description("회원 고유 ID")),
                             responseFields(withHeader())
                     ));
         }
