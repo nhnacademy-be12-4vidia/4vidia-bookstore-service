@@ -51,10 +51,10 @@ spring:
     type: org.apache.commons.dbcp2.BasicDataSource
 
     dbcp2:
-      initial-size: 5
+      initial-size: 20
       max-total: 50
-      max-idle: 10
-      min-idle: 5
+      max-idle: 20
+      min-idle: 20
       test-on-borrow: true
       validation-query: SELECT 1
       max-wait: 3000ms
@@ -146,7 +146,7 @@ image:
 eureka:
   client:
     service-url:
-      defaultZone: http://${ADMIN_ID}:${ADMIN_PASSWORD}@4vidia-discovery-1:8080/eureka/
+      defaultZone: http://${ADMIN_ID}:${ADMIN_PASSWORD}@4vidia-discovery-1:8080/eureka/, http://${ADMIN_ID}:${ADMIN_PASSWORD}@4vidia-discovery-2:8080/eureka/
     # 유레카 서버에서 서비스 목록을 새로고침하는 주기 (기본 30초 -> 5초)
     register-with-eureka: true
     fetch-registry: true
