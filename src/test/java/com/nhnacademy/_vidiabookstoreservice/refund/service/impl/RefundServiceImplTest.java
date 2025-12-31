@@ -15,6 +15,7 @@ import com.nhnacademy._vidiabookstoreservice.point.domain.PointRefundCommand;
 import com.nhnacademy._vidiabookstoreservice.point.service.PointCommandService;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.Refund;
 import com.nhnacademy._vidiabookstoreservice.refund.domain.RefundAmount;
+import com.nhnacademy._vidiabookstoreservice.refund.domain.enums.RefundStatus;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.request.RefundRequest;
 import com.nhnacademy._vidiabookstoreservice.refund.dto.response.RefundResponse;
 import com.nhnacademy._vidiabookstoreservice.refund.exception.SimpleRefundNotAvailableException;
@@ -156,19 +157,23 @@ class RefundServiceImplTest {
     }
 
     @Test
-    @DisplayName("3. 내 반품 개수 조회")
+    @DisplayName("3. 내 반품 개수 조회 - 성공 (Group By 쿼리 활용)")
     void getMyRefundCounts_Success() {
         Long userId = 1L;
-        when(refundRepository.countByOrder_User_UserId(userId)).thenReturn(10L);
-        when(refundRepository.countByOrder_User_UserIdAndRefundStatus(eq(userId), any())).thenReturn(5L);
+
+        Object[] row1 = {RefundStatus.PROCESS, 5L};
+        Object[] row2 = {RefundStatus.APPROVED, 3L};
+        List<Object[]> mockResults = List.of(row1, row2);
+
+        when(refundRepository.countByUserGroupByStatus(userId)).thenReturn(mockResults);
 
         var response = refundService.getMyRefundCounts(userId);
 
-        assertThat(response.total()).isEqualTo(10L);
+        // 총합: 5 (PROCESS) + 3 (APPROVED) = 8
+        assertThat(response.total()).isEqualTo(8L);
         assertThat(response.process()).isEqualTo(5L);
-        assertThat(response.approved()).isEqualTo(5L);
+        assertThat(response.approved()).isEqualTo(3L);
 
-        verify(refundRepository, times(1)).countByOrder_User_UserId(userId);
-        verify(refundRepository, times(2)).countByOrder_User_UserIdAndRefundStatus(eq(userId), any());
+        verify(refundRepository, times(1)).countByUserGroupByStatus(userId);
     }
 }

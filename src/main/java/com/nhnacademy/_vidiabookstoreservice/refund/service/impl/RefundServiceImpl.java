@@ -80,9 +80,7 @@ public class RefundServiceImpl implements RefundService {
     @Override
     @Transactional(readOnly = true)
     public Page<RefundHistoryGroupResponse> getMyRefunds(Long userId, RefundStatus status, Pageable pageable) {
-
-        Page<Refund> refunds = refundRepository.findAllByUserIdAndStatusWithDetails(userId, status, pageable);
-
+        Page<Refund> refunds = refundRepository.findMyRefunds(userId, status, pageable);
         return refunds.map(RefundHistoryGroupResponse::from);
     }
 
@@ -96,23 +94,17 @@ public class RefundServiceImpl implements RefundService {
 
         validateRefundPeriod(order, request.damaged());
 
-        // 반품 신청서 생성 (RefundStatus.PROCESS)
         Refund refund = Refund.createRefundRequest(order, request.reason(), request.damaged());
 
-        for (Long itemId : request.orderItemIds()) {
-            OrderItem orderItem = orderItemRepository.findById(itemId)
-                    .orElseThrow(() -> new OrderItemNotFoundException(itemId));
-
-            RefundItem refundItem = RefundItem.createRefundItem(orderItem);
-            refund.addRefundItem(refundItem);
+        List<OrderItem> items = orderItemRepository.findAllById(request.orderItemIds());
+        for (OrderItem item : items) {
+            refund.addRefundItem(RefundItem.createRefundItem(item));
         }
 
-        if (request.damaged()) {
-            log.info("파손 반품 접수 : Refund ID: {}", refund.getRefundId());
-        }else{
+        if (!request.damaged()) {
             handleSimpleChange(refund);
         }
-        refundRepository.save(refund); // 신청서 저장
+        refundRepository.save(refund);
     }
 
     /**
@@ -170,9 +162,19 @@ public class RefundServiceImpl implements RefundService {
     @Override
     @Transactional(readOnly = true)
     public RefundCountResponse getMyRefundCounts(Long userId) {
-        long total = refundRepository.countByOrder_User_UserId(userId);
-        long process = refundRepository.countByOrder_User_UserIdAndRefundStatus(userId, RefundStatus.PROCESS);
-        long approved = refundRepository.countByOrder_User_UserIdAndRefundStatus(userId, RefundStatus.APPROVED);
+        List<Object[]> results = refundRepository.countByUserGroupByStatus(userId);
+
+        long total = 0;
+        long process = 0;
+        long approved = 0;
+
+        for (Object[] row : results) {
+            RefundStatus status = (RefundStatus) row[0];
+            long count = (long) row[1];
+            total += count;
+            if (status == RefundStatus.PROCESS) process = count;
+            else if (status == RefundStatus.APPROVED) approved = count;
+        }
 
         return new RefundCountResponse(total, process, approved);
     }
