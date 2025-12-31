@@ -151,11 +151,11 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     registry-fetch-interval-seconds: 5
-  instance:
-    initial-status: STARTING      # 초기 상태 STARTING
-    prefer-ip-address: true       # IP 주소 기준 등록
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
+#  instance:
+#    initial-status: STARTING      # 초기 상태 STARTING
+#    prefer-ip-address: true       # IP 주소 기준 등록
+#    lease-renewal-interval-in-seconds: 10
+#    lease-expiration-duration-in-seconds: 30
 
 google:
   api:
