@@ -110,9 +110,6 @@ jobs:
             sleep 30
             
             # 2번 서버 띄우기
-            #echo "Stopping 4vidia-bookstore-service-2 (BLUE)..."
-            #docker compose stop 4vidia-bookstore-service-2
-            
             echo "Starting 4vidia-bookstore-service-2 (BLUE)..."
             docker compose up -d 4vidia-bookstore-service-2
             
