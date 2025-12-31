@@ -157,7 +157,10 @@ public class OrderServiceImpl implements OrderService {
 
 
         Order order = getOrder(orderId);
-
+        // 주문 상태 안보고 왜 결제성공시킴?
+        if (!order.getOrderStatus().equals(OrderStatus.PENDING)) {
+            throw new OrderFailedException("주문 상태 이상");
+        }
         try {
             TossPaymentResponse tossPaymentResponse = paymentService.confirmPayment(confirmRequest.paymentKey(), confirmRequest.orderId(), confirmRequest.amount());
 
