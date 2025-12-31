@@ -51,10 +51,10 @@ spring:
     type: org.apache.commons.dbcp2.BasicDataSource
 
     dbcp2:
-      initial-size: 5
-      max-total: 25
-      max-idle: 10
-      min-idle: 5
+      initial-size: 20
+      max-total: 50
+      max-idle: 20
+      min-idle: 20
       test-on-borrow: true
       validation-query: SELECT 1
       max-wait: 3000ms
