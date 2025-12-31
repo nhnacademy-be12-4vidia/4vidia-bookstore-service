@@ -95,10 +95,10 @@ jobs:
             if curl -s http://localhost:10461/actuator/health | grep -q '"status":"UP"'; then
             echo "4vidia-bookstore-service-1 (GREEN) is UP."
             break
-            fi
             
             echo "Health check attempt $((HEALTH_CHECK_COUNT+1)) failed. Retrying in 10s..."
             sleep 10
+            fi
             HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT+1))
             done
             
