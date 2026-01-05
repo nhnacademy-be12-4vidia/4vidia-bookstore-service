@@ -1,6 +1,6 @@
 // 마이 주문리스트 R/C/U/D 기능
 
-==== 주문 페이지 조회
+=== 주문 페이지 조회
 :table-number: 0
 
 .요청 (Request)
@@ -21,7 +21,7 @@ include::{snippets}/my-order-info-get/response-fields.adoc[]
 
 
 // 주문 화면에 필요한..
-==== 주문 정보 조회
+=== 주문 정보 조회
 :table-number: 0
 
 .요청 (Request)
@@ -41,7 +41,7 @@ include::{snippets}/my-order-preview-get/http-response.adoc[]
 include::{snippets}/my-order-preview-get/response-fields.adoc[]
 
 
-==== 주문 배송상태별 카운트 조회
+=== 주문 배송상태별 카운트 조회
 :table-number: 0
 
 .요청 (Request)

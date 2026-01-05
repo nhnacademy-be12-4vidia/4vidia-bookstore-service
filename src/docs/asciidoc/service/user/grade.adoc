@@ -1,6 +1,6 @@
 // 회원 등급 R/C/U/D 기능
 
-==== 등급 조회
+=== 등급 조회
 :table-number: 0
 
 .요청 (Request)
@@ -21,7 +21,7 @@ include::{snippets}/grade-get/response-fields.adoc[]
 
 
 
-==== 등급 수정
+=== 등급 수정
 :table-number: 0
 
 .요청 (Request)

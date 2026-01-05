@@ -31,6 +31,7 @@ public class LikeController {
 
     /**
      * 좋아요 리스트 조회
+     * todo all 말고, 다른걸로...
      */
     @GetMapping("/all")
     public ResponseEntity<List<LikeResponse>> getLikeList(){
@@ -41,6 +42,7 @@ public class LikeController {
 
     /**
      * 좋아요 등록
+     *  todo 북 쪽에서 하는건 어떤지?
      */
     @PostMapping("/{book-id}")
     public ResponseEntity<Void> addLike(@PathVariable("book-id") Long bookId) {

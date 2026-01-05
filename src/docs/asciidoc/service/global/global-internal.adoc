@@ -1,7 +1,7 @@
 // global R/C/U/D 기능
 
 
-==== 내부 사용자 이메일 조회
+=== 내부 사용자 이메일 조회
 :table-number: 0
 
 .요청 (Request)
@@ -22,7 +22,7 @@ include::{snippets}/internal-user-by-email-get/response-fields.adoc[]
 
 
 
-==== 페이코 계정 조회/생성
+=== 페이코 계정 조회/생성
 :table-number: 0
 
 .요청 (Request)
@@ -43,7 +43,7 @@ include::{snippets}/internal-payco-find-or-create-post/response-fields.adoc[]
 
 
 
-==== 유저 존재 여부 확인
+=== 유저 존재 여부 확인
 :table-number: 0
 
 .요청 (Request)

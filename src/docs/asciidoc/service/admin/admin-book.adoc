@@ -1,6 +1,6 @@
 // 관리자 도서 R/C/U/D 기능
 
-==== ISBN으로 도서 정보 검색
+=== ISBN으로 도서 정보 검색
 :table-number: 0
 
 .요청 (Request)
@@ -22,7 +22,7 @@ include::{snippets}/admin-book-search-isbn-get/response-fields.adoc[]
 
 
 
-==== ISBN 정보 보강
+=== ISBN 정보 보강
 :table-number: 0
 
 .요청 (Request)
@@ -44,7 +44,7 @@ include::{snippets}/admin-book-augment-get/response-fields.adoc[]
 
 
 
-==== 새 도서 등록
+=== 새 도서 등록
 :table-number: 0
 
 .요청 (Request)
@@ -66,7 +66,7 @@ include::{snippets}/admin-book-create-post/response-fields.adoc[]
 
 
 
-==== 도서 정보 수정
+=== 도서 정보 수정
 :table-number: 0
 
 .요청 (Request)
@@ -88,7 +88,7 @@ include::{snippets}/admin-book-update-put/response-fields.adoc[]
 
 
 
-==== 도서 ISBN 조회
+=== 도서 ISBN 조회
 :table-number: 0
 
 .요청 (Request)
@@ -110,7 +110,7 @@ include::{snippets}/admin-book-isbn-get/response-fields.adoc[]
 
 
 
-==== 상세 이미지 업로드
+=== 상세 이미지 업로드
 :table-number: 0
 
 .요청 (Request)

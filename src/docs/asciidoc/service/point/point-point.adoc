@@ -1,6 +1,6 @@
 // 포인트 R/C/U/D 기능
 
-==== 보유 포인트 조회
+=== 보유 포인트 조회
 :table-number: 0
 
 .요청 (Request)
@@ -21,7 +21,7 @@ include::{snippets}/point-remain-get/response-fields.adoc[]
 
 
 
-==== 소멸 예정 포인트 조회
+=== 소멸 예정 포인트 조회
 :table-number: 0
 
 .요청 (Request)
@@ -41,7 +41,7 @@ include::{snippets}/point-expire-soon-get/http-response.adoc[]
 include::{snippets}/point-expire-soon-get/response-fields.adoc[]
 
 
-==== 포인트 전체 내역 조회
+=== 포인트 전체 내역 조회
 :table-number: 0
 
 .요청 (Request)

@@ -1,6 +1,6 @@
 // 회원 주소 R/C/U/D 기능
 
-==== 주소 단일 조회
+=== 주소 단일 조회
 :table-number: 0
 
 .요청 (Request)
@@ -20,7 +20,7 @@ include::{snippets}/address-detail-get/http-response.adoc[]
 include::{snippets}/address-detail-get/response-fields.adoc[]
 
 
-==== 주소 전체 조회
+=== 주소 전체 조회
 :table-number: 0
 
 .요청 (Request)
@@ -40,7 +40,7 @@ include::{snippets}/address-list-get/http-response.adoc[]
 include::{snippets}/address-list-get/response-fields.adoc[]
 
 
-==== 주소 등록
+=== 주소 등록
 :table-number: 0
 
 .요청 (Request)
@@ -61,7 +61,7 @@ include::{snippets}/address-register-post/response-fields.adoc[]
 
 
 
-==== 주소 수정
+=== 주소 수정
 :table-number: 0
 
 .요청 (Request)
@@ -82,7 +82,7 @@ include::{snippets}/address-update-put/response-fields.adoc[]
 
 
 
-==== 주소 삭제
+=== 주소 삭제
 :table-number: 0
 
 .요청 (Request)
@@ -105,7 +105,7 @@ include::{snippets}/address-delete/response-fields.adoc[]
 
 
 
-==== 기본 주소 조회
+=== 기본 주소 조회
 :table-number: 0
 
 .요청 (Request)
@@ -127,7 +127,7 @@ include::{snippets}/address-default-get/response-fields.adoc[]
 
 
 
-==== 기본 주소 변경
+=== 기본 주소 변경
 :table-number: 0
 
 .요청 (Request)

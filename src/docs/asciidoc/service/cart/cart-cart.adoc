@@ -1,6 +1,6 @@
 // 장바구니 R/C/U/D 기능
 
-==== 장바구니 조회
+=== 장바구니 조회
 :table-number: 0
 
 .요청 (Request)
@@ -22,7 +22,7 @@ include::{snippets}/cart-get/response-fields.adoc[]
 
 
 
-==== 장바구니 아이템 추가
+=== 장바구니 아이템 추가
 :table-number: 0
 
 .요청 (Request)
@@ -43,7 +43,7 @@ include::{snippets}/cart-item-add-post/response-fields.adoc[]
 
 
 
-==== 장바구니 아이템 수량 수정
+=== 장바구니 아이템 수량 수정
 :table-number: 0
 
 .요청 (Request)
@@ -64,7 +64,7 @@ include::{snippets}/cart-item-update-put/response-fields.adoc[]
 
 
 
-==== 장바구니 전체 삭제 (회원)
+=== 장바구니 전체 삭제 (회원)
 :table-number: 0
 
 .요청 (Request)
@@ -86,7 +86,7 @@ include::{snippets}/cart-all-delete/response-fields.adoc[]
 
 
 
-==== 장바구니 아이템 삭제 (단일)
+=== 장바구니 아이템 삭제 (단일)
 :table-number: 0
 
 .요청 (Request)
@@ -108,7 +108,7 @@ include::{snippets}/cart-item-delete/response-fields.adoc[]
 
 
 
-==== 장바구니 아이템 삭제 (다중)
+=== 장바구니 아이템 삭제 (다중)
 :table-number: 0
 
 .요청 (Request)
@@ -130,7 +130,7 @@ include::{snippets}/cart-items-selected-delete/response-fields.adoc[]
 
 
 
-==== 장바구니 상태 확인 (비회원)
+=== 장바구니 상태 확인 (비회원)
 :table-number: 0
 
 .요청 (Request)
@@ -151,7 +151,7 @@ include::{snippets}/cart-guest-status-get/response-fields.adoc[]
 
 
 
-==== 장바구니 병합 (비회원 -> 회원)
+=== 장바구니 병합 (비회원 -> 회원)
 :table-number: 0
 
 .요청 (Request)
@@ -173,7 +173,7 @@ include::{snippets}/cart-merge- post/response-fields.adoc[]
 
 
 
-==== 장바구니 삭제 (비회원)
+=== 장바구니 삭제 (비회원)
 :table-number: 0
 
 .요청 (Request)
@@ -194,7 +194,7 @@ include::{snippets}/cart-guest-clear-delete/response-fields.adoc[]
 
 
 
-==== 로그인 시 동기화 (DB -> Redis)
+=== 로그인 시 동기화 (DB -> Redis)
 :table-number: 0
 
 .요청 (Request)
@@ -216,7 +216,7 @@ include::{snippets}/cart-login-sync-post/response-fields.adoc[]
 
 
 
-==== 로그아웃 시 동기화 (Redis -> DB)
+=== 로그아웃 시 동기화 (Redis -> DB)
 :table-number: 0
 
 .요청 (Request)

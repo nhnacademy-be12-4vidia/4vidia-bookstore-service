@@ -21,7 +21,7 @@ public class BestSellerScheduler {
     private static final String KEY_BESTSELLER_VIEW_CACHE = "view:bestseller:top10";
     private static final String KEY_YESTERDAY_BACKUP = "backup:bestseller:yesterday";
 
-    /**
+    /** todo : 카페인캐시????? 스프링캐시??? 적용해보기??
      * 1시간마다 랭킹 갱신
      */
 //    @Scheduled(cron = "0 * * * * *")

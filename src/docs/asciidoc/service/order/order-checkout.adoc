@@ -1,6 +1,6 @@
 // 주문 checkout R/C/U/D 기능
 
-==== 주문 체크아웃 조회
+=== 주문 체크아웃 조회
 :table-number: 0
 
 .요청 (Request)
@@ -20,7 +20,7 @@ include::{snippets}/order-checkout-get/http-response.adoc[]
 include::{snippets}/order-checkout-get/response-fields.adoc[]
 
 
-==== 주문 체크아웃 세션 생성
+=== 주문 체크아웃 세션 생성
 :table-number: 0
 
 .요청 (Request)

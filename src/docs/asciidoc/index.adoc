@@ -8,54 +8,249 @@
 :sectnums:
 :sectanchors:
 
-// 1. 공통 사항
-== 개요
+== 💡 개요
+이 문서는 **4VIDIA** 온라인 서점의 마이크로서비스 아키텍처(MSA) 기반 API 명세서입니다.
+
+각 서비스는 독립적인 기능을 수행하며, 아래 카드를 통해 상세 API 엔드포인트와 입출력 예시를 확인할 수 있습니다.
+
+== 📑 기능별 Rest API Docs
+
+++++
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    :root {
+        --primary-color: #0366d6;
+        --bg-color: #f6f8fa;
+        --card-bg: #ffffff;
+        --text-main: #24292e;
+        --text-sub: #586069;
+    }
+
+    .api-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .api-card {
+        background: var(--card-bg);
+        border: 1px solid #e1e4e8;
+        border-radius: 12px;
+        padding: 24px;
+        text-decoration: none !important;
+        color: var(--text-main) !important;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        height: 260px; /* 상세 설명 대응을 위해 높이 조정 */
+    }
+
+    .api-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 4px;
+        background: var(--primary-color);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .api-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        border-color: var(--primary-color);
+    }
+
+    .api-card:hover::before {
+        opacity: 1;
+    }
+
+    .api-card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .api-card-header i {
+        font-size: 1.6rem;
+        width: 35px;
+        text-align: center;
+        margin-right: 12px;
+        color: var(--primary-color);
+    }
+
+    .api-card h3 {
+        margin: 0 !important;
+        font-size: 1.25rem;
+        border-bottom: none !important;
+        font-weight: 700;
+    }
+
+    .api-card p {
+        font-size: 0.88rem;
+        color: var(--text-sub);
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+
+    .api-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 12px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: #f1f8ff;
+        color: var(--primary-color);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .go-link {
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+</style>
+
+<div class="api-grid">
+    <a href="all-api/user-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-user-gear"></i>
+                <h3>회원 & 인증 (User)</h3>
+            </div>
+            <p>🔐 이메일 인증 기반 회원가입, 휴면 계정 관리(Webhook), 등급 및 주소록 관리, 좋아요 목록 및 마이페이지 주문 요약을 제공합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Account & MyPage</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/book-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+                <h3>도서 & 검색 (Book)</h3>
+            </div>
+            <p>🔎 Elastic/AI 기반 고도화 검색, 태그 필터링, 실시간 베스트셀러 및 계층형 카테고리와 리뷰(생성/수정/삭제)를 관리합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Elastic & AI Search</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/order-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <h3>주문 & 결제 (Order)</h3>
+            </div>
+            <p>💳 회원/비회원 주문 결제 프로세스, 체크아웃 세션 관리, 포장 옵션 및 구매 확정/취소 등 주문의 전체 라이프사이클을 담당합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Checkout & Payment</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/cart-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-cart-arrow-down"></i>
+                <h3>장바구니 (Cart)</h3>
+            </div>
+            <p>🛒 비회원-회원 장바구니 병합, Redis와 DB 간 실시간 동기화(로그인/아웃 시) 및 수량 관리 기능을 제공합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Redis Sync</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/point-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-coins"></i>
+                <h3>포인트 (Point)</h3>
+            </div>
+            <p>💰 사용자의 가용 포인트 조회, 소멸 예정 포인트 알림 및 전체 적립/차감 내역에 대한 상세 정보를 조회합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Loyalty Points</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/refund-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-box-open"></i>
+                <h3>반품 관리 (Refund)</h3>
+            </div>
+            <p>🔄 반품 가능 목록 필터링, 신청서 작성 및 진행 상태(카운트) 조회를 통해 사후 처리를 관리합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Return Process</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/global-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-network-wired"></i>
+                <h3>내부 & 공통 (Global)</h3>
+            </div>
+            <p>🌐 서비스 간 내부 통신용 사용자 조회, PAYCO 계정 연동 및 시스템 전반의 유효성 검증 기능을 제공합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Internal API</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/admin-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-user-shield"></i>
+                <h3>관리자 (Admin)</h3>
+            </div>
+            <p>🛠️ 회원 상태 통제, 도서 정보 보강(ISBN/이미지 업로드), 배송/반품 승인 및 포인트·등급·할인 정책을 통합 관리합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Backoffice & Policy</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+
+    <a href="all-api/coupon-api.html" class="api-card">
+        <div>
+            <div class="api-card-header">
+                <i class="fa-solid fa-ticket-simple"></i>
+                <h3>쿠폰 (Coupon)</h3>
+            </div>
+            <p>🎫 내 쿠폰 및 만료 임박 목록 조회, 주문 시 사용 가능 여부 검증, 활성 쿠폰 정책 확인 및 관리자용 유저별 쿠폰 관리 기능을 제공합니다.</p>
+        </div>
+        <div class="api-footer">
+            <span class="badge">Promotion Service</span>
+            <span class="go-link">자세히 보기 →</span>
+        </div>
+    </a>
+</div>
+
+++++
+
+== 🛠️ HTTP 상태코드
 include::common/http-status.adoc[]
-
-////
-[팀원 가이드: API 문서 작업 순서]
-1. ControllerTest 테스트코드 작성 -> .andDo(document("{스니펫이름}", ...)) -> 테스트 실행 (Pass 필수)
-2. target/generated-snippets/{스니펫이름} 폴더 생성 확인
-3. 해당 도메인 폴더(service/{도메인})로 이동하여 .adoc 파일 작성 (아래 include 구조 참고)
-    - 각 기능별로 .adoc 파일 만들어서 r-c-u-d 순서로 보이게 스니펫 배치 ex) grade.adoc 참고
-    - 도메인-api.adoc에 완성한 기능.adoc 참조 추가
-4. html 생성 확인
-////
-
-// 2. User 서비스
-== 회원(User) API
-include::service/user/user-api.adoc[]
-
-// 3. Book 서비스
-== 도서(Book) API
-include::service/book/book-api.adoc[]
-
-// 4. Order 서비스
-== 주문(Order) API
-include::service/order/order-api.adoc[]
-
-// 5. Cart 서비스
-== 장바구니(Cart) API
-include::service/cart/cart-api.adoc[]
-
-// 6. Point 서비스
-== 포인트(Point) API
-include::service/point/point-api.adoc[]
-
-// 7. Refund 서비스
-== 반품(Refund) API
-include::service/refund/refund-api.adoc[]
-
-// 8. Global 서비스
-== 글로벌(Global) API
-include::service/global/global-api.adoc[]
-
-// 9. Admin 서비스
-== 관리자(Admin) API
-include::service/admin/admin-api.adoc[]
-
-// 9.
-// == 참고
-// * 모든 API는 `Content-Type: application/json` 헤더를 사용합니다.
-// * 인증이 필요한 API는 `Authorization: Bearer {token}` 헤더를 필수로 포함해야 합니다.
-// * 날짜/시간 형식: ISO 8601 (ex: 2025-12-13T17:35:00Z)
