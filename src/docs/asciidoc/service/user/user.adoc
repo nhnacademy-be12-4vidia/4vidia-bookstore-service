@@ -1,6 +1,6 @@
 // 회원 R/C/U/D 기능
 
-==== 존재 여부 조회
+=== 존재 여부 조회
 :table-number: 0
 
 .요청 (Request)
@@ -20,7 +20,7 @@ include::{snippets}/user-exists-get/http-response.adoc[]
 include::{snippets}/user-exists-get/response-fields.adoc[]
 
 
-==== 권한 조회
+=== 권한 조회
 :table-number: 0
 
 .요청 (Request)
@@ -41,7 +41,7 @@ include::{snippets}/user-role-get/response-fields.adoc[]
 
 
 
-==== 이름 조회
+=== 이름 조회
 :table-number: 0
 
 .요청 (Request)
@@ -61,7 +61,7 @@ include::{snippets}/user-name-get/http-response.adoc[]
 include::{snippets}/user-name-get/response-fields.adoc[]
 
 
-==== 프로필 조회
+=== 프로필 조회
 :table-number: 0
 
 .요청 (Request)
@@ -83,7 +83,7 @@ include::{snippets}/user-profile-get/response-fields.adoc[]
 
 
 
-==== 프로필 수정
+=== 프로필 수정
 :table-number: 0
 
 .요청 (Request)
@@ -106,7 +106,7 @@ include::{snippets}/user-update-profile-put/response-fields.adoc[]
 
 
 
-==== 비밀번호 수정
+=== 비밀번호 수정
 :table-number: 0
 
 .요청 (Request)
@@ -128,7 +128,7 @@ include::{snippets}/user-change-password-put/response-fields.adoc[]
 
 
 
-==== 회원 조회(PK)
+=== 회원 조회(PK)
 :table-number: 0
 
 .요청 (Request)
@@ -148,7 +148,7 @@ include::{snippets}/user-by-id-get/http-response.adoc[]
 include::{snippets}/user-by-id-get/response-fields.adoc[]
 
 
-==== 회원 조회(Email)
+=== 회원 조회(Email)
 :table-number: 0
 
 .요청 (Request)
@@ -172,7 +172,7 @@ include::{snippets}/user-by-email-get/response-fields.adoc[]
 
 
 
-==== 필수 정보 수정(PAYCO)
+=== 필수 정보 수정(PAYCO)
 :table-number: 0
 
 .요청 (Request)
@@ -193,7 +193,7 @@ include::{snippets}/user-complete-profile-put/response-fields.adoc[]
 
 
 
-==== 회원 탈퇴
+=== 회원 탈퇴
 :table-number: 0
 
 .요청 (Request)

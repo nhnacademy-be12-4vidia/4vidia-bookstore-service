@@ -1,6 +1,6 @@
 // 주문 R/C/U/D 기능
 
-==== 주문 내역 상세보기(회원)
+=== 주문 내역 상세보기(회원)
 :table-number: 0
 
 .요청 (Request)
@@ -20,7 +20,7 @@ include::{snippets}/order-detail-get/http-response.adoc[]
 include::{snippets}/order-detail-get/response-fields.adoc[]
 
 
-==== 주문 내역 상세보기(비회원)
+=== 주문 내역 상세보기(비회원)
 :table-number: 0
 
 .요청 (Request)
@@ -40,7 +40,7 @@ include::{snippets}/order-guest-post/http-response.adoc[]
 include::{snippets}/order-guest-post/response-fields.adoc[]
 
 
-==== 주문 결제금액 조회
+=== 주문 결제금액 조회
 :table-number: 0
 
 .요청 (Request)
@@ -60,7 +60,7 @@ include::{snippets}/order-amount-get/http-response.adoc[]
 include::{snippets}/order-amount-get/response-fields.adoc[]
 
 
-==== 주문 생성
+=== 주문 생성
 :table-number: 0
 
 .요청 (Request)
@@ -81,7 +81,7 @@ include::{snippets}/order-create-post/response-fields.adoc[]
 
 
 
-==== 주문 취소
+=== 주문 취소
 :table-number: 0
 
 .요청 (Request)
@@ -101,7 +101,7 @@ include::{snippets}/order-cancel-put/http-response.adoc[]
 include::{snippets}/order-cancel-put/response-fields.adoc[]
 
 
-==== 구매 확정
+=== 구매 확정
 :table-number: 0
 
 .요청 (Request)

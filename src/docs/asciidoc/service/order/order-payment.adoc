@@ -1,6 +1,6 @@
 // 결제 R/C/U/D 기능
 
-==== 결제 조회
+=== 결제 조회
 :table-number: 0
 
 .요청 (Request)
@@ -20,7 +20,7 @@ include::{snippets}/payment-get/http-response.adoc[]
 include::{snippets}/payment-get/response-fields.adoc[]
 
 
-==== 결제 확정/저장 (회원)
+=== 결제 확정/저장 (회원)
 :table-number: 0
 
 .요청 (Request)
@@ -41,7 +41,7 @@ include::{snippets}/payment-confirm-member-post/response-fields.adoc[]
 
 
 
-==== 결제 확정/저장 (비회원)
+=== 결제 확정/저장 (비회원)
 :table-number: 0
 
 .요청 (Request)
@@ -62,7 +62,7 @@ include::{snippets}/payment-confirm-guest-post/response-fields.adoc[]
 
 
 
-==== 프론트 결제 처리 중 실패
+=== 프론트 결제 처리 중 실패
 :table-number: 0
 
 .요청 (Request)

@@ -1,6 +1,6 @@
 // 관리자 도서 R/C/U/D 기능
 
-==== 카테고리 생성
+=== 카테고리 생성
 :table-number: 0
 
 .요청 (Request)
@@ -22,7 +22,7 @@ include::{snippets}/admin-category-create-post/response-fields.adoc[]
 
 
 
-==== 카테고리 수정
+=== 카테고리 수정
 :table-number: 0
 
 .요청 (Request)
@@ -44,7 +44,7 @@ include::{snippets}/admin-category-update-put/response-fields.adoc[]
 
 
 
-==== 카테고리 삭제
+=== 카테고리 삭제
 :table-number: 0
 
 .요청 (Request)

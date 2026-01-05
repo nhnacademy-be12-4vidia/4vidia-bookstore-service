@@ -2,7 +2,7 @@
 
 // 회원가입 ------------------------------
 
-==== 회원가입 요청
+=== 회원가입 요청
 :table-number: 0
 
 .요청 (Request)
@@ -23,7 +23,7 @@ include::{snippets}/auth-signup-post/response-fields.adoc[]
 
 
 
-==== 회원가입 이메일 중복 확인
+=== 회원가입 이메일 중복 확인
 :table-number: 0
 
 .요청 (Request)
@@ -45,7 +45,7 @@ include::{snippets}/auth-email-exists-get/response-fields.adoc[]
 
 
 
-==== 회원가입 이메일 인증코드 전송
+=== 회원가입 이메일 인증코드 전송
 :table-number: 0
 
 .요청 (Request)
@@ -65,7 +65,7 @@ include::{snippets}/auth-signup-email-send-post/http-response.adoc[]
 include::{snippets}/auth-signup-email-send-post/response-fields.adoc[]
 
 
-==== 회원가입 이메일 인증코드 검증
+=== 회원가입 이메일 인증코드 검증
 :table-number: 0
 
 .요청 (Request)
@@ -90,7 +90,7 @@ include::{snippets}/auth-signup-email-verify-post/response-fields.adoc[]
 
 // 로그인 ------------------------------
 
-==== 로그인 마지막 시간 업데이트
+=== 로그인 마지막 시간 업데이트
 :table-number: 0
 
 .요청 (Request)
@@ -112,7 +112,7 @@ include::{snippets}/auth-update-last-login-put/response-fields.adoc[]
 
 
 
-==== 로그인 아이디 찾기(email)
+=== 로그인 아이디 찾기(email)
 :table-number: 0
 
 .요청 (Request)
@@ -133,7 +133,7 @@ include::{snippets}/auth-find-id-post/response-fields.adoc[]
 
 
 
-==== 로그인 비밀번호 초기화
+=== 로그인 비밀번호 초기화
 :table-number: 0
 
 .요청 (Request)
@@ -157,7 +157,7 @@ include::{snippets}/auth-reset-password-post/response-fields.adoc[]
 
 // 휴먼 ------------------------------
 
-==== 휴먼 여부 조회
+=== 휴먼 여부 조회
 :table-number: 0
 
 .요청 (Request)
@@ -178,7 +178,7 @@ include::{snippets}/auth-check-dormant-get/response-fields.adoc[]
 
 
 
-==== 휴먼 인증코드 전송(webhook)
+=== 휴먼 인증코드 전송(webhook)
 :table-number: 0
 
 .요청 (Request)
@@ -198,7 +198,7 @@ include::{snippets}/auth-dormant-send-code-post/http-response.adoc[]
 include::{snippets}/auth-dormant-send-code-post/response-fields.adoc[]
 
 
-==== 휴먼 인증코드 전송(email)
+=== 휴먼 인증코드 전송(email)
 :table-number: 0
 
 .요청 (Request)
@@ -219,7 +219,7 @@ include::{snippets}/auth-dormant-send-code-email-post/response-fields.adoc[]
 
 
 
-==== 휴먼 인증코드 검증
+=== 휴먼 인증코드 검증
 :table-number: 0
 
 .요청 (Request)

@@ -1,13 +1,22 @@
 // Order 도메인별 기능 통합 파일
+= 주문(Order) API
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectnums:
+:sectanchors:
 
-=== `주문 관리`
+== `주문 관리`
 include::order-order.adoc[]
 
-=== `결제 관리`
+== `결제 관리`
 include::order-payment.adoc[]
 
-=== `포장 관리`
+== `포장 관리`
 include::order-packaging-option.adoc[]
 
-=== `주문 체크아웃 관리`
+== `주문 체크아웃 관리`
 include::order-checkout.adoc[]

@@ -1,7 +1,7 @@
 // 회원 좋아요 R/C/U/D 기능
 
 
-==== 좋아요 리스트 조회
+=== 좋아요 리스트 조회
 :table-number: 0
 
 .요청 (Request)
@@ -21,7 +21,7 @@ include::{snippets}/like-all-get/http-response.adoc[]
 include::{snippets}/like-all-get/response-fields.adoc[]
 
 
-==== 좋아요 페이지 조회
+=== 좋아요 페이지 조회
 :table-number: 0
 
 .요청 (Request)
@@ -42,7 +42,7 @@ include::{snippets}/like-page-get/response-fields.adoc[]
 
 
 
-==== 좋아요 등록
+=== 좋아요 등록
 :table-number: 0
 
 .요청 (Request)
@@ -64,7 +64,7 @@ include::{snippets}/like-add-post/response-fields.adoc[]
 
 
 
-==== 좋아요 삭제
+=== 좋아요 삭제
 :table-number: 0
 
 .요청 (Request)
@@ -85,7 +85,7 @@ include::{snippets}/like-remove-delete/response-fields.adoc[]
 
 
 
-==== 좋아요 전체 삭제
+=== 좋아요 전체 삭제
 :table-number: 0
 
 .요청 (Request)

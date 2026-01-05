@@ -1,10 +1,19 @@
 // Book 도메인별 기능 통합 파일
+= 도서(Book) API
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectnums:
+:sectanchors:
 
-=== `도서 관리`
+== `도서 관리`
 include::book-book.adoc[]
 
-=== `카테고리 관리`
+== `카테고리 관리`
 include::book-category.adoc[]
 
-=== `리뷰 관리`
+== `리뷰 관리`
 include::book-review.adoc[]

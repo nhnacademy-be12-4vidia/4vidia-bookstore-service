@@ -1,6 +1,6 @@
 // 포장 옵션 R/C/U/D 기능
 
-==== 포장 옵션 전체 조회
+=== 포장 옵션 전체 조회
 :table-number: 0
 
 .요청 (Request)
@@ -21,7 +21,7 @@ include::{snippets}/packaging-option-get-all-get/response-fields.adoc[]
 
 
 
-==== 포장 옵션 생성
+=== 포장 옵션 생성
 :table-number: 0
 
 .요청 (Request)

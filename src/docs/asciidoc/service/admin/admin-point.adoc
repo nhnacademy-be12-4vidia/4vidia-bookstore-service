@@ -1,6 +1,6 @@
 // 관리자 포인트 R/C/U/D 기능
 
-==== 포인트 정책 조회 (전체)
+=== 포인트 정책 조회 (전체)
 :table-number: 0
 
 .요청 (Request)
@@ -19,7 +19,7 @@ include::{snippets}/admin-point-policies-all-get/http-response.adoc[]
 .응답 필드 (Response Fields)
 include::{snippets}/admin-point-policies-all-get/response-fields.adoc[]
 
-==== 포인트 정책 조회 (단일)
+=== 포인트 정책 조회 (단일)
 :table-number: 0
 
 .요청 (Request)
@@ -38,7 +38,7 @@ include::{snippets}/admin-point-policies-get/http-response.adoc[]
 .응답 필드 (Response Fields)
 include::{snippets}/admin-point-policies-get/response-fields.adoc[]
 
-==== 포인트 정책 수정
+=== 포인트 정책 수정
 :table-number: 0
 
 .요청 (Request)

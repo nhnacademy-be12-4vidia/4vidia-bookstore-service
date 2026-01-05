@@ -1,4 +1,13 @@
 // Global 도메인별 기능 통합 파일
+= 글로벌(Global) API
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectnums:
+:sectanchors:
 
-=== `내부 관리`
+== `내부 관리`
 include::global-internal.adoc[]
