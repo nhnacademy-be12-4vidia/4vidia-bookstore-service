@@ -55,6 +55,9 @@ public class BookDocument {
     @Field(type = FieldType.Double)
     private Double rating;
 
+    @Field(type = FieldType.Text, analyzer = "nori")
+    private String reviewSummary;
+
     public static BookDocument from(Book book, double[] vector) {
 
         return BookDocument.builder()
