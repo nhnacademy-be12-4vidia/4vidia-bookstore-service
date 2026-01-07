@@ -27,7 +27,11 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue discountPolicyQueue() {
-        return QueueBuilder.durable(QUEUE).build();
+        return QueueBuilder.durable(QUEUE)
+                .withArgument("x-dead-letter-exchange", "discount.dlx")
+                .withArgument("x-dead-letter-routing-key", "discount.failed")
+                .withArgument("x-message-ttl", 86400000)
+                .build();
     }
 
     @Bean
