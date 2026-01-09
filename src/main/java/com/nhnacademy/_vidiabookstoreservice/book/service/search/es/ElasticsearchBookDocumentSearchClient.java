@@ -201,12 +201,18 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
 
     private Query buildLexicalQuery(String keyword) {
         return Query.of(q -> q.bool(b -> b
-            .should(s -> s.match(m -> m.field("title").query(keyword).boost(100.0f)))
+            .should(s -> s.match(m -> m.field("title").query(keyword).boost(500.0f)))
             .should(s -> s.match(m -> m.field("authors").query(keyword).boost(90.0f)))
             .should(s -> s.match(m -> m.field("tags").query(keyword).boost(80.0f)))
             .should(s -> s.term(t -> t.field("isbn").value(keyword).boost(1000.0f)))
             .should(s -> s.match(m -> m.field("publisher").query(keyword).boost(60.0f)))
             .should(s -> s.match(m -> m.field("description").query(keyword).boost(50.0f)))
+                .should(s -> s.wildcard(w -> w
+                        .field("title")
+                        .value("*" + keyword + "*")
+                        .caseInsensitive(true)
+                        .boost(100.0f)
+                ))
             .minimumShouldMatch("1")
         ));
     }

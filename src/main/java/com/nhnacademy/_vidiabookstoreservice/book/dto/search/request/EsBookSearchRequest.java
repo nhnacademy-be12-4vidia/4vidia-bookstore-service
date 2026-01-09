@@ -20,6 +20,6 @@ public class EsBookSearchRequest {
 
     @Builder
     public EsBookSearchRequest(String keyword) {
-        this.keyword = keyword;
+        this.keyword = keyword.toLowerCase();
     }
 }
