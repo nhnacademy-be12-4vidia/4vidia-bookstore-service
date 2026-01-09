@@ -3,11 +3,13 @@ package com.nhnacademy._vidiabookstoreservice.book.service.impl;
 import com.nhnacademy._vidiabookstoreservice.book.ai.gemini.GeminiAnswerService;
 import com.nhnacademy._vidiabookstoreservice.book.domain.BookReviewSummary;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Review;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.ReviewSummarizedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.repository.BookReviewSummaryRepository;
 import com.nhnacademy._vidiabookstoreservice.book.service.BookReviewSummaryService;
 import com.nhnacademy._vidiabookstoreservice.book.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class BookReviewSummaryServiceImpl implements BookReviewSummaryService {
     private final BookReviewSummaryRepository bookReviewSummaryRepository;
     private final ReviewService reviewService;
     private final GeminiAnswerService geminiAnswerService;
+    private final ApplicationEventPublisher eventPublisher;
     private final int MAX_CHARS = 12_000;
 
     @Override
@@ -56,6 +59,7 @@ public class BookReviewSummaryServiceImpl implements BookReviewSummaryService {
                 Long lastReviewId = reviewList.isEmpty() ? null : reviewList.getFirst().getId();
 
                 s.markSuccess(summaryText, lastReviewId);
+                eventPublisher.publishEvent(new ReviewSummarizedEvent(String.valueOf(s.getBookId()), summaryText));
 
             } catch (Exception e) {
                 bookReviewSummaryRepository.findById(s.getBookId())

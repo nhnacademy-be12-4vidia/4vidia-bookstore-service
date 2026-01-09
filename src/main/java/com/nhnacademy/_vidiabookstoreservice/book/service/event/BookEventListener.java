@@ -5,6 +5,7 @@ import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.domain.Book;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookSavedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.BookStockChangedEvent;
+import com.nhnacademy._vidiabookstoreservice.book.dto.book.event.ReviewSummarizedEvent;
 import com.nhnacademy._vidiabookstoreservice.book.dto.review.event.ReviewRatingEvent;
 import com.nhnacademy._vidiabookstoreservice.book.exception.notfound.BookNotFoundException;
 import com.nhnacademy._vidiabookstoreservice.book.repository.search.BookSearchRepository;
@@ -110,4 +111,16 @@ public class BookEventListener {
         }
     }
 
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void updateReviewSummary(ReviewSummarizedEvent event) {
+        try {
+            BookDocument bookDocument = bookSearchRepository.findById(event.bookId()).orElseThrow(() -> new BookNotFoundException(Long.valueOf(event.bookId())));
+            BookDocument updatedDocument = bookDocument.toBuilder().reviewSummary(event.reviewSummary()).build();
+
+            bookSearchRepository.save(updatedDocument);
+        } catch (Exception e) {
+            log.error("Es 리뷰 요약 업데이트 실패, bookId = {}", event.bookId());
+        }
+    }
 }
