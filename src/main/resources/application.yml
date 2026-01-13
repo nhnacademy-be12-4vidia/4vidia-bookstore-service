@@ -52,6 +52,7 @@ spring:
 
     dbcp2:
       initial-size: 20
+#      톰캣스레드 + executor스레드
       max-total: 50
       max-idle: 20
       min-idle: 20
