@@ -132,6 +132,7 @@ public class BookController {
         Long userId = UserContext.get().getUserId();
 
         List<BookListResponse> responses = bookService.getMainBookList(tagId, userId);
+
         return ResponseEntity.ok(responses);
     }
 }
