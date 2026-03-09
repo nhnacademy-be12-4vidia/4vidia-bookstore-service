@@ -26,6 +26,7 @@ public class GeminiAnswerService {
     private final GeminiProperties geminiProperties;
     private final ObjectMapper objectMapper;
 
+
     @PostConstruct
     void logGeminiConfig() {
         List<String> keyList = geminiProperties.getApiKeyList();
