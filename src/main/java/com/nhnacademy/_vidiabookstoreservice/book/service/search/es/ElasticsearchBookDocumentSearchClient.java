@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.KnnSearch;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.mapping.FieldType;
+import co.elastic.clients.elasticsearch._types.query_dsl.FunctionBoostMode;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.nhnacademy._vidiabookstoreservice.book.document.BookDocument;
 import com.nhnacademy._vidiabookstoreservice.book.dto.search.request.EsBookSearchRequest;
@@ -20,6 +21,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -200,20 +202,42 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
     }
 
     private Query buildLexicalQuery(String keyword) {
-        return Query.of(q -> q.bool(b -> b
-            .should(s -> s.match(m -> m.field("title").query(keyword).boost(500.0f)))
-            .should(s -> s.match(m -> m.field("authors").query(keyword).boost(90.0f)))
-            .should(s -> s.match(m -> m.field("tags").query(keyword).boost(80.0f)))
-            .should(s -> s.term(t -> t.field("isbn").value(keyword).boost(1000.0f)))
-            .should(s -> s.match(m -> m.field("publisher").query(keyword).boost(60.0f)))
-            .should(s -> s.match(m -> m.field("description").query(keyword).boost(50.0f)))
+        // 1. 기존 텍스트 매칭 쿼리 (완벽하게 잘 짜셨으니 그대로 둡니다)
+        Query textMatchQuery = Query.of(q -> q.bool(b -> b
+                .should(s -> s.match(m -> m.field("title").query(keyword).boost(500.0f)))
+                .should(s -> s.match(m -> m.field("authors").query(keyword).boost(90.0f)))
+                .should(s -> s.match(m -> m.field("tags").query(keyword).boost(80.0f)))
+                .should(s -> s.term(t -> t.field("isbn").value(keyword).boost(1000.0f)))
+                .should(s -> s.match(m -> m.field("publisher").query(keyword).boost(60.0f)))
+                .should(s -> s.match(m -> m.field("description").query(keyword).boost(50.0f)))
                 .should(s -> s.wildcard(w -> w
                         .field("title")
                         .value("*" + keyword + "*")
                         .caseInsensitive(true)
                         .boost(100.0f)
                 ))
-            .minimumShouldMatch("1")
+                .minimumShouldMatch("1")
+        ));
+
+        // 2. 골치 아픈 Builder 대신, 가중치 함수를 순수 JSON 문자열로 정의합니다.
+        String gaussJson = """
+    {
+      "filter": { "match_all": {} },
+      "gauss": {
+        "publishedDate": {
+          "origin": "now",
+          "scale": "365d",
+          "decay": 0.5
+        }
+      }
+    }
+    """;
+
+        // 3. withJson()을 사용해 JSON 문자열을 그대로 때려 넣습니다! (빨간 줄 절대 안 뜸)
+        return Query.of(q -> q.functionScore(fs -> fs
+                .query(textMatchQuery)
+                .functions(f -> f.withJson(new StringReader(gaussJson)))
+                .boostMode(FunctionBoostMode.Multiply)
         ));
     }
 
