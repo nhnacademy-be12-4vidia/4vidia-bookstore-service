@@ -202,7 +202,6 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
     }
 
     private Query buildLexicalQuery(String keyword) {
-        // 1. 기존 텍스트 매칭 쿼리 (완벽하게 잘 짜셨으니 그대로 둡니다)
         Query textMatchQuery = Query.of(q -> q.bool(b -> b
                 .should(s -> s.match(m -> m.field("title").query(keyword).boost(500.0f)))
                 .should(s -> s.match(m -> m.field("authors").query(keyword).boost(90.0f)))
@@ -219,7 +218,6 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
                 .minimumShouldMatch("1")
         ));
 
-        // 2. 골치 아픈 Builder 대신, 가중치 함수를 순수 JSON 문자열로 정의합니다.
         String gaussJson = """
     {
       "filter": { "match_all": {} },
@@ -233,7 +231,6 @@ public class ElasticsearchBookDocumentSearchClient implements BookDocumentSearch
     }
     """;
 
-        // 3. withJson()을 사용해 JSON 문자열을 그대로 때려 넣습니다! (빨간 줄 절대 안 뜸)
         return Query.of(q -> q.functionScore(fs -> fs
                 .query(textMatchQuery)
                 .functions(f -> f.withJson(new StringReader(gaussJson)))
